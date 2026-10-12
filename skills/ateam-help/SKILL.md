@@ -103,13 +103,12 @@ Close calls:
 - `/architect` implements right after it settles the design. Add "with checkpoint" to review the design before it writes code.
 - `/interrogate` reviews the diff. `/blast-radius` looks for breakage outside the diff and proves the one fact that makes the change safe.
 - `/recall` rebuilds context across recent chats. `/ketchup` covers only this chat since the user's last message. Resuming one specific chat or branch is the Session pickup playbook.
-- `/figure-it-out` designs one rigorous run. The Orchestrate playbook runs a program that spans days and many PRs. The Autonomous run playbook drives one task to a finish condition.
+- `/figure-it-out` designs one rigorous run. A program of many stacked PRs is a Multi-phase plan, run by an Autopilot playbook. The Autonomous run playbook drives one task to a finish condition.
 
 Not in mstack:
 
 - A UI or browser control skill. mstack ships none. For GPU runs, use `verify-gpu-kernel`.
 - `/loop` and `/create-skill` are Cursor built-ins.
-- mstack has no `/orchestrate` skill. Orchestrate is a `/ateam-mode` playbook. If the slash menu shows `/orchestrate`, another plugin provides it.
 
 ## Playbooks and principles
 

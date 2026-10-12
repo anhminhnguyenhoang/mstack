@@ -31,7 +31,7 @@ use [`/ateam-mode`](./skills/ateam-mode/SKILL.md) at the start of a task. it rea
 
 ### just use [`/ateam-mode`](./skills/ateam-mode/SKILL.md)
 
-this skill is the main shortcut. i use it whenever i need the agent to do rigorous engineering work. it comes with twenty-seven playbooks:
+this skill is the main shortcut. i use it whenever i need the agent to do rigorous engineering work. it comes with twenty-six playbooks:
 
 ```
 /ateam-mode this flydsl kernel returns nan at T=4096 on gfx950. repro first, then fix and
@@ -44,7 +44,7 @@ morning.
 ```
 
 <details>
-<summary>the twenty-seven playbooks</summary>
+<summary>the twenty-six playbooks</summary>
 
 | playbook | for |
 |---|---|
@@ -65,7 +65,6 @@ morning.
 | [babysit](./skills/ateam-mode/playbooks/babysit.md) | drive a pr or a stack to merge-ready: conflicts, review threads, ci. |
 | [shipping](./skills/ateam-mode/playbooks/shipping.md) | independently verify a green stack, then land the contiguous verified run bottom-up through github by default or origin when available. |
 | [autonomous run](./skills/ateam-mode/playbooks/autonomous-run.md) | drive a long task to completion without stopping. |
-| [orchestrate](./skills/ateam-mode/playbooks/orchestrate.md) | a standing project handed to one coordinator chat: multi-day, many stacked prs, fleets of subagents. |
 | [autopilot-full](./skills/ateam-mode/playbooks/autopilot-full.md) | run independent prs to merged with one owner per pr and a root swarm verdict on each round, from the code-ready head on. |
 | [autopilot-stack](./skills/ateam-mode/playbooks/autopilot-stack.md) | build and verify one linear base-branch stack for the operator to review and land. |
 | [session pickup](./skills/ateam-mode/playbooks/session-pickup.md) | resume or take over a prior agent's in-flight work. |
@@ -206,10 +205,10 @@ mstack also ships [Comment Sicko](./agents/comment-sicko.md), a read-only commen
 
 ## principles
 
-twenty-seven short skills, one principle each. `ateam-mode` indexes them inline and reads that index at task start. the standalone files are there so other skills can reference a principle by name, and so the index can point at the full rule for each.
+twenty-six short skills, one principle each. `ateam-mode` indexes them inline and reads that index at task start. the standalone files are there so other skills can reference a principle by name, and so the index can point at the full rule for each.
 
 <details>
-<summary>all twenty-seven principles</summary>
+<summary>all twenty-six principles</summary>
 
 | principle | group | rule |
 |---|---|---|

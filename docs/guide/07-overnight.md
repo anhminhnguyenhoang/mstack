@@ -69,7 +69,7 @@ Before the skill hands back its summary, it spawns a reviewer on a different mod
 
 ## When the night holds a queue, not a task
 
-The contract above drives one task to one finish condition. Some nights hold more, a queue of independent changes or a whole program. Three playbooks scale the same trust up.
+The contract above drives one task to one finish condition. Some nights hold a queue of independent changes instead of one task. Two playbooks scale the same trust up.
 
 [Autopilot-full](../../skills/ateam-mode/playbooks/autopilot-full.md) runs a queue of independent PRs to merged. PRs open as drafts, and each merges only after you mark it ready. Each PR gets one owner agent that carries it from build through merge, and no owner merges on its own verdict. A swarm of fresh verifiers starts a round at the owner's code-ready head and again at every later push that changes the patch. Only a clean verdict on the patch that merges authorizes the merge:
 
@@ -83,15 +83,11 @@ The contract above drives one task to one finish condition. Some nights hold mor
 /ateam-mode autopilot these five changes but stack them, don't ship. i'll land the stack in the morning.
 ```
 
-[Orchestrate](../../skills/ateam-mode/playbooks/orchestrate.md) is for a program that outlives any single agent: multi-day, many stacked PRs, fleets of subagents under one standing coordinator chat. The coordinator authors briefs, collects what its subagents finish, keeps the lowest unmerged PR green, and never writes code itself. It's deliberately heavy machinery. If one agent could finish the work in a session, the playbook itself routes you back to the overnight contract above:
-
-```text
-/ateam-mode orchestrate the migration of every aiter op test to run_perftest. own it until every file is converted and merged. i'll check in twice a day.
-```
+For a program of many stacked PRs, write the plan first. The [Multi-phase plan playbook](../../skills/ateam-mode/playbooks/multi-phase-plan.md) names which of the two playbooks above runs it.
 
 ## Run many projects in parallel
 
-A [Cursor Project](https://cursor.com/blog/projects) gives one coordinator agent a persistent thread. The coordinator doesn't write code. It directs subagents, which run in the cloud by default, so the work continues when your laptop is closed. That's the shape the Orchestrate playbook expects. Start your prompts to the coordinator with `/ateam-mode`, and the subagents it spawns follow the playbooks.
+A [Cursor Project](https://cursor.com/blog/projects) gives one coordinator agent a persistent thread. The coordinator doesn't write code. It directs subagents, which run in the cloud by default, so the work continues when your laptop is closed. That's the shape the Autopilot playbooks expect. Start your prompts to the coordinator with `/ateam-mode`, and the subagents it spawns follow the playbooks.
 
 A few habits help:
 
