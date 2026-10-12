@@ -240,7 +240,7 @@ twenty-seven short skills, one principle each. `ateam-mode` indexes them inline 
 
 a few things `ateam-mode` references but doesn't bundle:
 
-- the kernel skills it routes to (`cdna-kernel-opt`, `flydsl-kernel-authoring`, `format-code`, `validate-kernel-pr`, and the rest of the [kernel skill map](./skills/ateam-mode/references/kernel-skill-map.md)) live in `~/.claude/skills`, not in this plugin.
+- the kernel skills it routes to (`cdna-kernel-opt`, `flydsl-kernel-authoring`, `format-code`, `validate-kernel-pr`, and the rest of the [port bindings](./skills/ateam-mode/references/ports.md)) live in `~/.claude/skills`, not in this plugin.
 - `/create-skill` is a cursor built-in. cursor also ships a built-in `/babysit`; inside `ateam-mode`, the [babysit playbook](./skills/ateam-mode/playbooks/babysit.md) supersedes it for pr-status requests.
 
 ## why are there no planning skills?
