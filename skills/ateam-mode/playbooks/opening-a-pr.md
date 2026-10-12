@@ -31,7 +31,7 @@ After the sections, attach videos or screenshots when they prove a claim. Full S
 
 `ROCm/aiter`, `ROCm/FlyDSL`, and `triton-lang/triton` are public upstreams. Opening a PR in one pauses for the human, per Autonomy. Prepare the branch, the title, and the body, then stop.
 
-**Forge.** Resolve the forge before the first PR operation and keep that choice for create, edit, view, watch, and merge. GitHub CLI (`gh`) is the default. If `command -v origin` succeeds and Origin can resolve the repository, prefer `origin pr ...`. If Origin is absent or cannot resolve the repository, stay on `gh` and record the fallback. Do not require Graphite (`gt`).
+**Forge.** Resolve the forge before the first PR operation and keep that choice for create, edit, view, watch, and merge. Resolve it per `../references/forge.md`: built-in PR tool, Origin, `gh` once signed in, then the GitHub MCP namespace that the Forge table of `~/.cursor/mstack/env.md` maps to the repo. Record the path and why. Push is `git push` over the Repos table's remote on every path. Where this playbook names `origin pr ...` or `gh pr ...`, an MCP path uses the matching tool from that file's table. Do not require Graphite (`gt`).
 
 **Built-in PR tool.** When the run provides a built-in PR tool, create, edit, retarget, and mark ready through it, never through a forge CLI. A CLI-made PR misses what the tool tracks. Use the resolved forge for everything the tool does not cover, and for every PR operation when the run has no such tool.
 
