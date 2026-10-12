@@ -50,10 +50,6 @@ When a bug has a cheap local test path, the whole prompt can be two words:
 
 In context, that's enough. [`/tdd`](../../skills/tdd/SKILL.md) writes the smallest test that fails for the intended reason, then the fix, then reruns the test. If a test would need broad harness setup or brittle mocks, the skill says so and uses the closest executable check instead. Don't force a test where a real command is stronger evidence.
 
-## Load the TypeScript rules by name
-
-[`typescript-best-practices`](../../skills/typescript-best-practices/SKILL.md) turns the type-system principles into concrete rules: discriminated unions, `unknown` at boundaries, exhaustive variants, schema-derived types. It doesn't load on its own, so type `/typescript-best-practices` when a task touches `.ts` or `.tsx` files.
-
 ## Clean before you commit
 
 The [Opening a PR playbook](../../skills/ateam-mode/playbooks/opening-a-pr.md) runs the `format-code` skill and the `comment-sicko` agent on the diff before each commit and applies [`/unslop`](../../skills/unslop/SKILL.md) to the PR description and commit bodies. `format-code` is one of the kernel skills in `~/.claude/skills`. To clean slop beyond style, ask in plain words: remove narrating comments, unsupported guards, dead compatibility paths, and unrelated edits.
