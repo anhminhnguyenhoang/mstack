@@ -49,7 +49,7 @@ fail = 0
 
 def walk(hidden):
     for dirpath, dirnames, filenames in os.walk("."):
-        dirnames[:] = sorted(d for d in dirnames if d not in (".git", "node_modules") and (hidden or not d.startswith(".")))
+        dirnames[:] = sorted(d for d in dirnames if d != ".git" and (hidden or not d.startswith(".")))
         for name in sorted(filenames):
             if name == ".git" or (not hidden and name.startswith(".")):
                 continue
