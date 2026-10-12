@@ -6,6 +6,9 @@
 #
 # Usage: worktree-audit.sh [-b|--base <ref>] [repo-path]
 #   repo-path defaults to the current repo.
+#   Outside a git repo, with no repo-path, it audits every repo in the Repos
+#   table of the env file (the Path column). The env file is
+#   $MSTACK_ENV, default ~/.cursor/mstack/env.md. /setup-mstack env writes it.
 #   -b sets the ref the MERGED column checks against (e.g. origin/integration).
 #   Without it the base is origin/HEAD, then origin/main, then origin/master.
 #   origin/HEAD is the remote's default branch, not necessarily the branch PRs
@@ -21,6 +24,39 @@ while [ $# -gt 0 ]; do
 	*) break ;;
 	esac
 done
+
+# Repo paths from the Repos table of the env file, one per line.
+env_repos() {
+	[ -r "$1" ] || return 0
+	awk -F'|' '
+		/^## /{ inrepos = ($0 ~ /^## Repos[ \t]*$/); col = 0; next }
+		inrepos && /^\|/ {
+			if (!col) {
+				for (i = 1; i <= NF; i++) { c = $i; gsub(/^[ \t`]+|[ \t`]+$/, "", c); if (c == "Path") col = i }
+				next
+			}
+			c = $col; gsub(/^[ \t`]+|[ \t`]+$/, "", c)
+			if (c == "" || c == "not set" || c ~ /^:?-+:?$/) next
+			print c
+		}' "$1"
+}
+
+if [ $# -eq 0 ] && ! git rev-parse --show-toplevel >/dev/null 2>&1; then
+	env_file="${MSTACK_ENV:-$HOME/.cursor/mstack/env.md}"
+	paths=$(env_repos "$env_file")
+	if [ -z "$paths" ]; then
+		echo "not in a git repo; pass a repo path" >&2
+		echo "hint: run /setup-mstack env to record your repos in $env_file" >&2
+		exit 1
+	fi
+	rc=0
+	while IFS= read -r p; do
+		case "$p" in "~"*) p="$HOME${p#\~}" ;; esac
+		echo "## repo: $p"
+		"$0" ${base:+-b "$base"} "$p" || rc=1
+	done <<< "$paths"
+	exit $rc
+fi
 
 repo="${1:-$(git rev-parse --show-toplevel 2>/dev/null)}"
 [ -z "$repo" ] && { echo "not in a git repo; pass a repo path" >&2; exit 1; }
