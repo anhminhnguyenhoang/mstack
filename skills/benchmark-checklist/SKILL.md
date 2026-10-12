@@ -26,6 +26,37 @@ For a quick ballpark the user asked for, one run is enough. Still check question
 6. **Does it matter?** Next to any micro result, measure the end-to-end path a user waits on, with realistic data sizes and concurrency, and report the micro result as a share of the whole. A helper that takes 1% of a request can make the request at most 1% faster, however fast the helper gets.
 7. **Did it even happen?** Confirm the work ran inside the timed region: the request reached the server, the rows were written, the bytes were read, and the code used the result. Lazy code (generators nobody iterates, promises nobody awaits, results the JIT can discard) and timeouts produce numbers for work that never happened.
 
+## GPU kernels
+
+Use this section for a number from a GPU kernel on AMD Instinct (MI300X `gfx942`, MI355X `gfx950`). It adds to the questions above and does not replace them. Questions 1 to 7 still apply, read as below. A claim without an arch, a GPU, and an image or ROCm version is not a GPU claim.
+
+**Before you run.**
+
+- Run `rocm-smi` and check the target GPU is idle: no other process, near-zero utilization and VRAM use. A shared GPU makes the run inconclusive.
+- Use the same GPU id for both sides (`HIP_VISIBLE_DEVICES`, or `ROCR_VISIBLE_DEVICES` inside a container). Different GPUs of one host differ by several percent.
+- Note clocks and power state from `rocm-smi`. Say so when the GPU is not in its normal performance state.
+- Clear the JIT caches so both sides compile fresh, and exclude compile time from the timed region. For FlyDSL and aiter, clear the cache directories the build uses, and check the resolved paths before you delete anything.
+- Record the arch, the ROCm and torch versions, the docker image, and the repo SHAs (`~/aiter`, `~/FlyDSL`) for both sides.
+
+**The questions, for a kernel.**
+
+1. **Why not double?** Name the limiter: HBM bandwidth, MFMA throughput, LDS, latency, or launch overhead. Take it from one unreported `rocprofv3` counter pass or an ATT trace, not from the source. `MfmaUtil`, `VALUBusy`, `LDSBankConflict`, and `MemUnitStalled` are the counters the **cdna-kernel-opt** skill reads. Use **kernel-trace-analysis** or **analyze-att-trace** to go further.
+2. **Was it tuned?** Both sides use the same compile flags, the same torch and ROCm, and the same launch mode. Eager and hipGraph differ in launch cost, so compare like with like. A Triton baseline gets its autotune run. A FlyDSL or aiter side gets its tuned config for that shape (the **aiter-config-shape** skill).
+3. **Did it break limits?** Do the roofline arithmetic. Bytes moved divided by time gives bytes per second, to compare with the HBM peak. FLOPs divided by time gives FLOP/s, to compare with the MFMA peak for that arch and dtype. State the percent of peak, per the **principle-respect-the-roofline** principle skill. A result above the HBM peak measured the L2 or MALL cache, not HBM. Evict inputs between launches for a cold-cache number.
+4. **Did it error?** Check the output against a torch reference with `allclose`, state `rtol` and `atol`, and count NaN and inf. A fast wrong kernel is not a result (the **principle-correctness-before-speed** principle skill).
+5. **Does it reproduce?** Warm up first. Flush the L2 between timed launches when the kernel is cold in production, and say which regime you report. Take the median of N launches, and alternate sides (A, B, A, B). Both regimes can flip the verdict for an L2-sensitive change, so measure both for one.
+6. **Does it matter?** Report the kernel as a share of the model step (for example the mHC seam as a share of a DeepSeek decode step or prefill chunk). A fast kernel on 1% of the step is 1% of the step.
+7. **Did it even happen?** Confirm the kernel name appears in a `rocprofv3` kernel trace, and that it is the kernel you meant and not a fallback path. For a knob or flag, confirm the ISA or IR changed (the **principle-prove-it-reached-codegen** principle skill).
+
+**Peaks.** Do not quote a peak from memory. State the peak, its source, the arch, and whether it is per GCD or per module. Local references:
+
+- `~/KernelForge/knowledge_base/shared/gemm_roofline.md` lists HBM bandwidth as 5.3 TB/s (MI300X), 6.0 TB/s (MI325X), and 8.0 TB/s (MI355X). It lists max-achievable BF16 and FP8 TFLOPs as about 650 and 1300 (MI300X) and about 1260 and 2500 (MI355X), and says to use these instead of vendor peak.
+- `~/knowledge-base/amd-instinct-mi350/00-fundamentals/specification-comparison.md` lists the MI355X vendor peaks, 8 TB/s HBM and about 2.5 PFLOPS FP16 and 5.0 PFLOPS FP8 matrix.
+- `~/FlyDSL/docs/kernel_tuning_guide.md` gives gfx942 peaks per GCD (about 653 TFLOPS FP8 and 326 TFLOPS BF16), which differ from the module-level table above. Name which you used.
+- Achievable bandwidth sits below peak. `~/KernelForge/local_knowledge/flydsl/operators/reduction/numerics.md` puts the MI300X BabelStream-class ceiling at about 4.3 TB/s. `~/SILOTIGER-1164/comment-draft-in-model-targets-feasibility.md` measured a best-case copy at 5.86 TB/s on MI355X. Measure a copy of the same bytes on the same GPU when the claim is near the floor.
+
+If the arch or dtype is not in these files, say the peak is unstated and give the number with its source before you compute a percent.
+
 ## Report
 
 - Lead with the verdict: faster, slower, no measurable difference, or inconclusive.
