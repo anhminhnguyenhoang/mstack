@@ -8,6 +8,7 @@
    - A defect to reproduce and fix → **Bug fix**.
    - A kernel metric to improve against a target → **Kernel hillclimb** (`playbooks/kernel-hillclimb.md`).
    - A claim to verify, or a version matrix to run → **Repro audit** (`playbooks/repro-audit.md`).
+   - A redesign whose ceiling is unknown, or a feasibility question about a target → **Bound probe** (`playbooks/bound-probe.md`).
    - A question about a number, a design, or feasibility → **Investigation**, with **benchmark-checklist** on every number.
    - A profiling artifact from the customer or a teammate → **Trace forensics**.
 4. Keep artifacts in `~/<KEY>/`. Use `decision.tsv` for the decision log, `bench_*.json` for harness output, `notes/` for root causes and review notes, and `patches/` for diffs against repos you do not own. Repo changes go in a worktree of the target repo (`~/aiter`, `~/FlyDSL`), never in the ticket folder.

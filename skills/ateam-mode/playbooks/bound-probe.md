@@ -1,0 +1,24 @@
+### Bound probe
+
+**You own the go or no-go on a redesign. Measure the ceiling first. Build only if the ceiling clears the target.** For a redesign, a new kernel design, or a target whose feasibility is unknown. A probe is cheap and throwaway. The deliverable is a verdict and the lever the bound points at.
+
+A probe proves a ceiling, never a speedup. Never report a probe result as a kernel gain. Only the real kernel, measured by **Kernel hillclimb**, earns a gain.
+
+1. Write the redesign's claim as one number with its condition. Example: "v2 reaches ≤ 94.7 µs at T = 4096, bf16, `gfx950`". Take the number from the ticket target, or from the in-model share (step 2). A claim with no number has no probe. Ask the one question that fixes the number.
+2. Pick the cheapest probe that bounds the claim. Take it from this menu, and run more than one when the first leaves the verdict open.
+   - **Analytic lower bound.** Bytes and FLOPs against the peak, with the peak's source (**principle-respect-the-roofline**). It needs no GPU. Run it first. It can end the work alone.
+   - **Copy roofline.** Move the same bytes with no math, in kernels of the proposed geometry. The best copy is the HBM-honest floor. A target below it is infeasible (B2: 71.6 µs for 419 MB at T = 4096, so a ≤ 70 µs target was ruled out).
+   - **Remove-one-piece diagnostic.** A knob that drops one stage (all `fn` loads, the MFMAs) to bound what that stage costs. Run each variant that separates the cause (B3: `const`, `small`, `nomfma`). With the knob off, the final ISA must be byte-identical to the product kernel (**principle-prove-it-reached-codegen**). Removing a stage frees registers too, so the result is an optimistic bound.
+   - **Staged copy of the proposed data flow.** Build the redesign in stages, each stage adding one real cost on top of the last (Gate B: copy at the new geometry, then resident `fn` plus MFMA, then post-mix and finish). Stop and read after each stage. Stop building at the stage where the bound already fails.
+   - **In-model share.** Measure how much of the model step the kernel is, in the real serving stack (B1: 80 boundaries, 8.1% of a 192.6 ms prefill chunk). The end-to-end gain cannot exceed the share times the kernel gain. This also fixes the baseline the target is compared with. An isolated benchmark can differ from the in-model time by 12% or more.
+3. Build the probe as throwaway code in `~/<KEY>/probes/<name>/`, outside the product branch. Keep the driver, the raw samples, and a `results.md` that lists the files, the headline numbers, and the command that reproduced them. A diagnostic knob that must touch kernel source goes on a probe branch, with its patch saved next to the results (`probes/b3_no_fn/diag_fn.patch`). A probe never lands in the product branch. Outside a ticket, use `./probes/<name>/`.
+4. Measure with the same discipline as any GPU number. Use the **GPU kernels** section of **benchmark-checklist**. Use **verify-gpu-kernel** for the host, container, and one locked GPU. Run one probe at a time. Gate correctness on every probe that computes (bit-exact for a copy, `allclose` against a torch reference for math). Use a graph-replay median over repeated processes, and report the regime. Alternate two buffer sets for a cold-MALL number, and say which you quote. Time the product kernel in the same harness, so the comparison is local. Use **show-me-your-work** for the decision log.
+5. Give the verdict by comparing the bound with the target from step 1.
+   - `go`. The bound clears the target with margin. Build it, through **Feature** or **Kernel hillclimb**.
+   - `no-go`. The bound misses the target, or clears it with no margin. Do not build. Name the number that failed (Gate B: best case 92–97 µs against a 94.7 µs target).
+   - `re-target`. The target is infeasible or the baseline moved. Propose the target the bound supports.
+   State the direction of the bound: a ceiling on gain, not an estimate of it. Name the lever the bound points at. B2 and B3 together showed that half the gap was layout and `fn` was a modest share, so they pointed at the 128 B-line layout (G1), not at the redesign.
+6. Record the verdict where the next reader looks. Append it to the lever document `~/<KEY>/<topic>-opt.md` with the probe path, the bound, the target, and the verdict. When the probe rejects a design, add a rejected-design entry to the decision record. In ticket work, update `~/<KEY>/STATUS.md`.
+7. Run **Deliver** as a finding. The comment draft leads with the verdict, then the bound against the target, then the probe table and the reproduce command. Say in the draft that the numbers are bounds, not kernel results.
+
+**Reply:** the claim as a number, the probes you ran and what each bounded, the bound against the target, the verdict (`go`, `no-go`, or `re-target`), the lever the bound points at, the probe folder, and the draft path.
