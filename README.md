@@ -112,6 +112,7 @@ to keep [`/ateam-mode`](./skills/ateam-mode/SKILL.md) on across turns, pick it f
 | [`/ateam-mode`](./skills/ateam-mode/SKILL.md) | default entry point for any non-trivial task. |
 | [`/ateam-help`](./skills/ateam-help/SKILL.md) | you're new to mstack, or unsure which skill, playbook, or principle fits. finds out what you're trying to do, answers that part, and hands you a prompt to type. runs only when you type `/ateam-help`. |
 | [`/ticket-init`](./skills/ticket-init/SKILL.md) | you start from a jira key. writes `~/<key>/ticket-raw.md`, a brief of at most 150 words, and an acceptance predicate. |
+| [`/verify-gpu-kernel`](./skills/verify-gpu-kernel/SKILL.md) | you need to run, reproduce, or benchmark a kernel on the real gpu. resolves the host and container, locks one idle gpu, runs the op_test, and writes a json artifact into `~/<key>/`. |
 | [`/how`](./skills/how/SKILL.md) | you want a walkthrough of how a subsystem works. |
 | [`/why`](./skills/why/SKILL.md) | you want to know why something was built this way. discovers available MCPs at run time and queries each evidence category in parallel (source control, issue tracker, long-form docs, real-time chat, infra observability, error tracking, analytics warehouse). |
 | [`/recall`](./skills/recall/SKILL.md) | you're starting or resuming work and want your recent context on a topic rebuilt from your own chat history and the shared record, handed back as a tight current-state brief. |
