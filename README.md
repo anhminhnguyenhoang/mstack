@@ -257,12 +257,6 @@ models are configurable too. type [`/setup-mstack`](./skills/setup-mstack/SKILL.
 
 when a default changes, a rule written before the change still pins the old default. delete those role lines, or delete the file, then run `/setup-mstack` again. a rerun keeps any role whose model differs from the default.
 
-## automations
-
-mstack also ships a dormant [benny automation pack](./automations/benny/). benny triages slack issue reports, then reproduces and fixes confirmed bugs with real ui evidence. its files are not registered as slash skills.
-
-to set it up, point cursor at [`FOR_AGENTS.md`](./automations/benny/FOR_AGENTS.md). setup copies the pack into the target repository at `.cursor/automations/benny/`, enables mstack there for shared skills, and keeps user configuration outside the copied pack.
-
 ## Upstream
 
 mstack is forked from [pstack](https://github.com/cursor/plugins/tree/main/pstack) 0.15.20 by poteto (Lauren Tan), MIT licensed. The pristine import is commit `1491916`. [`LICENSE`](./LICENSE) keeps the upstream copyright notice.
