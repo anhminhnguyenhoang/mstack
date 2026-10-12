@@ -119,6 +119,7 @@ Playbooks are step lists inside `/ateam-mode`, not skills, so they have no slash
 - "pause safely" runs Pause safely.
 - "full autopilot on this queue" runs Autopilot-full. "stack them, don't ship" runs Autopilot-stack.
 - "run the eval playbook" runs Eval.
+- "hillclimb this kernel" or "beat the Triton baseline" runs Kernel hillclimb.
 - "work on ROCM-1234" runs Ticket. It starts with `/ticket-init`.
 
 Without `/ateam-mode`, a phrase such as "babysit this pr" can start Cursor's own skill for the same job instead. The Playbooks section of [`ateam-mode`](../ateam-mode/SKILL.md) lists every playbook and when it applies. [Guide page 6](../../docs/guide/06-verify-and-ship.md) covers opening, babysitting, and landing a PR.
