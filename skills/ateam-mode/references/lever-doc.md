@@ -6,7 +6,7 @@ Update the doc in place as levers change status. The decision log is the append-
 
 ## Layout
 
-1. Header. Kernel, arch, GPU, dtypes, shapes with their production mix, metric, target, noise floor, and B (commit SHA and metric).
+1. Header. Kernel, arch, GPU, dtypes, shapes with their production mix, metric, target, noise floor, and B (commit SHA and metric). Then `Hard limits`, one line per WaveScope `constraint` note, or `none`.
 2. Lever table.
 3. Combo table.
 4. Ablation table for S*.
@@ -28,7 +28,7 @@ One row per lever. IDs are `L1`, `L2`, and so on, or the owner's own scheme (P1 
 - **Marginal Δ in S\*.** Metric without the lever minus the metric of S*, from the ablation. `-` outside S*.
 - **Why it failed.** The root cause in one line. Empty for a winner.
 - **Retry if.** The condition that makes a retry worth it, or `no`.
-- **Evidence.** A path or SHA to the trace, ISA diff, counter table, or bench log. Never prose.
+- **Evidence.** A path or SHA to the trace, ISA diff, counter table, or bench log, or a WaveScope note id. Never prose.
 
 Example rows, from the mega-mHC record.
 
@@ -97,6 +97,29 @@ Verdict is `keep` when the marginal gain is past noise, and `drop` when it is in
 ## Retired list
 
 One line per retired lever: `<ID>: <class>. <root cause>. Evidence: <path>. Retry if: <condition>.` It goes into the Deliver finding unchanged.
+
+## WaveScope notes
+
+The `trace.annotate` port publishes trace findings as `annotations.json`, and the human verifies them in WaveScope. The human replies in `notes.json` beside the trace. When a `notes.json` exists for a trace of B or S*, read it before the next phase, the way the port's skill says.
+
+```
+annotations.json ──► human reads in WaveScope ──► notes.json ──► lever doc ──► next phase
+     (ours)                                         (theirs)
+```
+
+Each open note maps to one change in this doc.
+
+| Note kind | Lever doc change |
+| --- | --- |
+| `rejected` | Retire the lever it names, and add its row if none exists. Choose the class and the root cause from the note's evidence. The Evidence cell is the note id. `Retry if` is new evidence that answers the note. Never re-propose the lever without that evidence. |
+| `constraint` | Add a line to `Hard limits` in the header. Every lever respects it, in every phase. A lever that would break it is not built. |
+| `question` | Add it to "For the human" in `~/<KEY>/STATUS.md`. Answer it with an annotation through the `trace.annotate` port. |
+| `problem`, `hypothesis` | Queue a lever or open an investigation. Verify it against the trace before you write its premise. |
+
+Other kinds, and notes that are not open, follow the `trace.annotate` skill.
+
+- An existing `annotations.json` is a prior round. Read it. Do not restate it.
+- Never write `notes.json`. It is the human's file.
 
 ## decision.tsv columns
 
