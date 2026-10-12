@@ -8,11 +8,11 @@ host ──► container ──► repo path ──► test command ──► ar
 
 The facts for this machine are not in the plugin. They are in `~/.cursor/mstack/env.md`, which `/setup-mstack env` writes (**setup-mstack**, Part B). That file has the hosts and their SSH aliases, the user's containers and mounts, the forge, the Jira site to MCP namespace map, the GPU lock convention, and one table per local resource: `repos`, `skills`, `kb`, `refs`, and `tickets`. [`resources.md`](resources.md) is the contract for them. A resource is optional unless its row there says it is required.
 
-- The file is missing → stop, and ask the user to run `/setup-mstack env`.
+- The file is missing → stop, and ask the user to run `/setup-mstack env`. An optional resource alone (`kb`, `refs`) is skipped with a note instead, per `resources.md`.
 - A fact you need is `not set` → stop, and ask the user for it or to rerun `/setup-mstack env`. Do not guess a host, a container, or a remote.
 - A fact looks stale (a container that no longer exists, a different arch) → run the **verify-gpu-kernel** doctor, then ask the user to rerun `/setup-mstack env`.
 
-A ticket can override the defaults. `~/<KEY>/.devcontainer/devcontainer.json` names the ticket's container (`--name=` in `runArgs`) and its mount (`workspaceMount`). Prefer it over the env file's default container.
+A ticket can override the defaults. `<tickets>/<KEY>/.devcontainer/devcontainer.json` names the ticket's container (`--name=` in `runArgs`) and its mount (`workspaceMount`). Prefer it over the env file's default container.
 
 Rules.
 
@@ -22,6 +22,6 @@ Rules.
 - Use `HIP_VISIBLE_DEVICES` to pick the GPU, one per run. A container's default GPU is not necessarily idle.
 - Give each worktree and each side of a comparison its own `AITER_JIT_DIR`.
 - Check the arch from inside the container (`rocminfo | grep -m1 gfx`) before you trust a number.
-- A ticket's scripts, artifacts, and notes live in `~/<KEY>/`, mounted in its container.
+- A ticket's scripts, artifacts, and notes live in `<tickets>/<KEY>/`, mounted in its container.
 - Pick the Jira MCP namespace from the ticket URL's site, or from the project-prefix map for a bare key, per the env file's Jira table. Pick the GitHub path per its Forge table.
 - Resolve the forge, and map `gh` to MCP tools, per [`forge.md`](forge.md).

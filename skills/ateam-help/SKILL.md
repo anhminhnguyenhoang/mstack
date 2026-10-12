@@ -81,7 +81,7 @@ The default answer is `/ateam-mode`, which runs most of the others when its step
 | Hear the last reply again in plain words | [`/bro`](../bro/SKILL.md) |
 | Give agents a scripted way to drive the app and prove behavior | [`/create-verification-skill`](../create-verification-skill/SKILL.md) |
 | Bring a verification skill and its feature map back in line with the app | [`/maintain-verification-skill`](../maintain-verification-skill/SKILL.md) |
-| Start from a Jira ticket key and set up its `~/<KEY>/` folder | [`/ticket-init`](../ticket-init/SKILL.md) |
+| Start from a Jira ticket key and set up its ticket folder | [`/ticket-init`](../ticket-init/SKILL.md) |
 | Run, reproduce, or benchmark a kernel on the real GPU | [`/verify-gpu-kernel`](../verify-gpu-kernel/SKILL.md) |
 | Vet a performance number before reporting or acting on it | [`/benchmark-checklist`](../benchmark-checklist/SKILL.md) |
 | Find the domain skill for a kernel step: write, optimize, debug, trace, or ship | The port bindings in [`ports.md`](../ateam-mode/references/ports.md) |
@@ -124,7 +124,7 @@ Playbooks are step lists inside `/ateam-mode`, not skills, so they have no slash
 - "reproduce their numbers" or "verify this claim" runs Repro audit.
 - "hillclimb this kernel" or "beat the Triton baseline" runs Kernel hillclimb.
 - "will this redesign pay off" or "bound the ceiling before we build" runs Bound probe. It measures a ceiling and gives go, no-go, or re-target.
-- "work on ROCM-1234" runs Ticket. It starts with `/ticket-init`.
+- "work on PROJ-123" runs Ticket. It starts with `/ticket-init`.
 
 Without `/ateam-mode`, a phrase such as "babysit this pr" can start Cursor's own skill for the same job instead. The Playbooks section of [`ateam-mode`](../ateam-mode/SKILL.md) lists every playbook and when it applies. [Guide page 6](../../docs/guide/06-verify-and-ship.md) covers opening, babysitting, and landing a PR.
 

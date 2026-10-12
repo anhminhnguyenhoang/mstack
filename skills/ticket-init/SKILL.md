@@ -1,6 +1,6 @@
 ---
 name: ticket-init
-description: "Load a Jira ticket into ~/<KEY>/ before any work. Writes ticket-raw.md, a brief of at most 150 words, and an acceptance predicate. Use for /ticket-init <KEY>, or when the user names a ticket key (ROCM-1234, SILOTIGER-1164) and no ~/<KEY>/ folder exists yet. When the folder exists, it resumes from ~/<KEY>/STATUS.md and replies with a state brief."
+description: "Load a Jira ticket into its ticket folder (`<tickets>/<KEY>/`) before any work. Writes ticket-raw.md, a brief of at most 150 words, and an acceptance predicate. Use for /ticket-init <KEY>, or when the user names a ticket key (PROJ-123) and no ticket folder exists yet. When the folder exists, it resumes from its STATUS.md and replies with a state brief."
 disable-model-invocation: true
 ---
 
@@ -8,11 +8,13 @@ disable-model-invocation: true
 
 Turn a Jira key into a working folder and a checkable goal. This skill reads Jira. It never writes to Jira.
 
-Two modes. If `~/<KEY>/` does not exist, run steps 1 to 5. If it exists, run resume mode, below.
+The ticket folder is `<tickets>/<KEY>/`, with `<tickets>` from the `tickets` resource (`../ateam-mode/references/resources.md`). When that row is missing or `not set`, stop. Ask the user for the root, or for `/setup-mstack env`. Never write a ticket folder to a guessed path.
+
+Two modes. If `<tickets>/<KEY>/` does not exist, run steps 1 to 5. If it exists, run resume mode, below.
 
 ## 1. Resolve the key and the site
 
-Take the key from the argument or the user's message, such as `ROCM-31582`. With no key, ask for it. The key alone does not name the Jira site. Resolve the site before any Jira call:
+Take the key from the argument or the user's message, such as `PROJ-123`. With no key, ask for it. The key alone does not name the Jira site. Resolve the site before any Jira call:
 
 - A browse URL names the site. Extract the key from it.
 - A bare key uses the project-prefix map in the Jira table of `~/.cursor/mstack/env.md` (written by `/setup-mstack env`).
@@ -26,9 +28,9 @@ If the mapped namespace returns not-found, say so and ask the user. Try one othe
 
 If the mapped namespace fails on auth, say which one and stop. Do not invent ticket content.
 
-## 3. Write `~/<KEY>/ticket-raw.md`
+## 3. Write `<tickets>/<KEY>/ticket-raw.md`
 
-Create `~/<KEY>/` if missing. Keep the raw text, with no summary and no edits, in this shape:
+Create `<tickets>/<KEY>/` if missing. Keep the raw text, with no summary and no edits, in this shape:
 
 ```
 # <KEY>
@@ -56,7 +58,7 @@ Add each custom field that carries content (such as an AI insight) under its own
 
 ## 4. Write the brief and the predicate
 
-Write `~/<KEY>/brief.md` with these parts, at most 150 words in total:
+Write `<tickets>/<KEY>/brief.md` with these parts, at most 150 words in total:
 
 - **Ask.** What the ticket wants, in one sentence.
 - **Scope.** The repos, kernels, shapes, and GPU arch it names (for example `gfx942`, `gfx950`). Say `not stated` for each one the ticket leaves out.
@@ -71,9 +73,9 @@ Give the folder path, the brief, and the route: Bug fix, Kernel hillclimb, Repro
 
 ## Resume mode
 
-Use when `~/<KEY>/` exists. The folder holds the work. Do not rebuild context from the ticket alone.
+Use when `<tickets>/<KEY>/` exists. The folder holds the work. Do not rebuild context from the ticket alone.
 
-1. Read `~/<KEY>/STATUS.md`. Its format is in the Ticket playbook. Read `brief.md` too.
+1. Read `<tickets>/<KEY>/STATUS.md`. Its format is in the Ticket playbook. Read `brief.md` too.
 2. Run step 2 and step 3. Take the site and namespace from the `**Site:**` and `**MCP:**` lines of the last load when present, else resolve them per step 1. Save the new load as `ticket-raw.<date>.md` and diff it against the last load. Note new comments, status changes, and edits to the description. A folder from before mstack may hold `ticket-description.md` or `ticket-description.txt` instead of `ticket-raw.md`. Treat it as the last load.
 3. Rewrite `brief.md` only when the ticket's ask or scope changed. Say so in the reply. Otherwise leave it as is.
 4. If `STATUS.md` is missing, build a first one from the folder. Read the newest files, the `comment-draft-*.md` files, and the git branches and worktrees in the repos the ticket touches. Label every line `inferred`. Tell the human to correct it.
