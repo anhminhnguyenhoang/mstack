@@ -12,7 +12,7 @@ Every spawn is a Task subagent with `subagent_type: generalPurpose` and `readonl
 
 ## 0. Check the knowledge base
 
-Read the knowledge base index (`~/.cursor/mstack/env.md` Knowledge base table, default `~/knowledge-base/README.md`) and the matching topic `README.md`. When a note covers the question, cite it and explore only the gap. Pass the note paths to every explorer and explainer.
+Read the knowledge base root `README.md` (`~/.cursor/mstack/env.md` Knowledge base table, default `~/knowledge-base/README.md`), the matching area `README.md`, then the note. When a note covers the question, cite it and explore only the gap. Pass the note paths to every explorer and explainer.
 
 ## 1. Assess complexity
 
