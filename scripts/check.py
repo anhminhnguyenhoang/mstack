@@ -23,6 +23,8 @@ STALE = re.compile(
     re.I,
 )
 TODO = re.compile(r"`TODO`|TODO:")
+KB_AREAS = ("hardware", "kernel-optimization", "papers", "dsl")
+KB_PATH = re.compile(r"knowledge-base/([^\s`'\")\]>]*)")
 
 ap = argparse.ArgumentParser(
     description="mstack consistency checks. The skills dir is $MSTACK_SKILLS_DIR, default ~/.claude/skills."
@@ -234,6 +236,21 @@ if not args.skills_only:
                 print(f"SKILL NAME OUTSIDE PORTS {path}:{n}: {m.group(1)}")
     fail += leaks
     summary.append(f"name leaks {leaks}")
+
+    deep = 0
+    for path, text in walk(hidden=True):
+        if path == "scripts/check.py" or path.startswith(NAME_EXEMPT_DIRS):
+            continue
+        for n, line in enumerate(text.splitlines(), 1):
+            for m in KB_PATH.finditer(line):
+                rest = m.group(1).rstrip(".,;:")
+                parts = [x for x in rest.split("/") if x]
+                ok = not parts or parts == ["README.md"] or (parts[0] in KB_AREAS and (len(parts) == 1 or parts[1:] == ["README.md"]))
+                if not ok:
+                    deep += 1
+                    print(f"KB DEEP PATH {path}:{n}: knowledge-base/{rest}")
+    fail += deep
+    summary.append(f"kb deep paths {deep}")
 
 print(" | ".join(summary))
 print("RESULT", "PASS" if fail == 0 else f"FAIL ({fail})")
