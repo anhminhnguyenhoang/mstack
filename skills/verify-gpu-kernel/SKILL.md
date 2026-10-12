@@ -11,6 +11,8 @@ Every `TODO` below marks a fact not verified on this machine. Resolve it with th
 
 ## Resolve the host
 
+The host, container, repo path, and arch map is in [`env.md`](../ateam-mode/references/env.md).
+
 Observed on the machine this skill was written on, by read-only commands:
 
 | Fact | Value |

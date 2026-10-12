@@ -2,7 +2,7 @@
 
 Invoked by Deliver (`playbooks/deliver.md`) when the output is code.
 
-**Worktree.** Work from a git worktree off main. Subagents inherit it. Multiple `Task` calls on the same branch each get their own worktree, or `git fetch && git reset --hard origin/<branch>` between them. Dirty branch with unrelated work: patch out, fresh worktree, apply. Snarled worktree: reset from main, redo minimally.
+**Worktree.** For GPU work, make the worktree inside the container's mount, such as `~/aiter/.worktrees/<name>`, which the container sees as `/workspaces/aiter/.worktrees/<name>` (`references/env.md`). A worktree outside a mount is invisible to the container. GPU jobs never run in parallel across worktrees. Builds and ISA checks may, and benchmarks queue on one locked GPU. For other repos, work from a git worktree off main. Subagents inherit it. Multiple `Task` calls on the same branch each get their own worktree, or `git fetch && git reset --hard origin/<branch>` between them. Dirty branch with unrelated work: patch out, fresh worktree, apply. Snarled worktree: reset from main, redo minimally.
 
 **Commits.** Commit liberally. Rebase into small, ordered commits before opening PRs. Each commit is a future PR: landable, ordered to tell the story. Amend when the fix belongs in a just-made commit. New commit when separable. Commit bodies don't restate the subject.
 
