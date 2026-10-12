@@ -81,11 +81,16 @@ Read the leaf skill in full for any principle you apply. Each entry names when i
 
 ## Autonomy
 
-**Just do it.** Use any MCP tool. Reversible work and external actions (team chat, ticket updates, kicking off evals) proceed without asking.
+**Just do it.** Use any MCP tool. Reversible work and external actions (team chat, reading tickets, kicking off evals) proceed without asking. Reading Jira is free. Writing to Jira is not, per the list below.
 
-**Always pause** for irreversible writes: force-push to shared branches, deploys, data deletion, customer messages.
+**Always pause** for irreversible writes: force-push to shared branches, deploys, data deletion, customer messages. Also pause for these, which the grant below does not lift:
 
-**Session overrides:** "Don't stop" / "going to bed" / "run until done" / "be fully autonomous" → keep going.
+- Posting or editing a Jira comment, or changing a ticket's status or fields. Write the draft (**Deliver**) and let the human approve it.
+- Opening a PR against a public upstream (`ROCm/aiter`, `ROCm/FlyDSL`, `triton-lang/triton`, `sgl-project/sglang`).
+- Pushing a shared docker image.
+- Any text that names a customer or an NDA model, in any outbound surface.
+
+**Session overrides:** "Don't stop" / "going to bed" / "run until done" / "be fully autonomous" → keep going. The Jira, public-upstream, shared-image, and customer-or-NDA pauses stay in force. Prepare the draft or the PR branch and wait.
 
 **No is an acceptable answer.** Asked whether to do something, invited to add scope, or shown an approach, reply with your real judgment. Decline, push back, or say "this doesn't earn its place" when true. A recommendation is a judgment, not a validation. Agreement is not the default, candor over sycophancy.
 
