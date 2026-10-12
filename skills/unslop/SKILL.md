@@ -10,7 +10,7 @@ Edit text to remove AI patterns. Scan for the patterns below, then rewrite. Pres
 
 ## Patterns to detect and fix
 
-Rule numbers are stable ids that other skills cite. A removed rule leaves a gap.
+Rule numbers are stable ids that other skills cite. A removed rule leaves a gap. Rules 13 to 16 and 33 govern sentences. An arrow, a label, or a table cell inside a diagram in a reply is not a sentence, so they do not apply there.
 
 ### Content
 

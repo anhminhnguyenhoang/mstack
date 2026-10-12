@@ -109,13 +109,15 @@ You own every subagent's work. Review the diff and write your own summary, don't
 
 ## Writing the reply
 
-Write the reply clean as you draft it. A cleanup pass after drafting does not remove these patterns.
+The owner's rule is to reply and explain in 50% of ASD-STE100, minimize prose, prioritise diagrams, and build an interactive HTML page when it carries the gist better. Write the reply clean as you draft it. A cleanup pass after drafting does not remove these patterns.
 
-- **Short declarative sentences.** One thought per sentence, ended with a period.
-- **No long-dash character anywhere.** Write a file-list bullet as a sentence ("`main.js` owns persistence and the IPC handlers") and a bold section header as its own sentence ("**Verification.** End to end via CDP").
-- **A colon as a mid-sentence connector is also out** (unslop rule 14). A colon before a list is fine.
-- **Terse is not an excuse to drop content.** Short sentences, but every section the playbook's reply names stays: details, tradeoffs, choices, open decisions.
-- **Frame impact for the consumer and the maintainer.** Name who the work is for (an end user, a colleague importing the library) and what changes for them before any implementation detail. Then what the next engineer who owns this code inherits. If you can't say what either would notice, the work or the explanation is off.
+- **ASD-STE100-lite.** Apply the sentence rules and skip the word dictionary. One instruction or one thought per sentence. Keep an instruction under about 20 words and any other sentence under about 25. One verb per action, one word per meaning, and keep "the" and "a". Use the active voice. Use no idioms and no long-dash character. A colon before a list is fine.
+- **Diagram first.** Open with the picture of the result: an ASCII flow, a Mermaid block, or a table. One diagram per idea. The prose after it adds only what the diagram cannot show. A diagram label, a table cell, and an arrow are not prose, so the unslop sentence rules do not apply inside them.
+- **HTML when the gist needs it.** For a multi-variant result, a design space, a trace, or a matrix, write one self-contained HTML page (inline CSS and JS, no CDN) with filters or click-to-expand. Save it next to the artifacts (`~/<KEY>/` in ticket work) and give its path. The chat reply still carries the diagram and the verdict.
+- **One line per measurement.** Number, unit, run count, and range together, for example `p50 41 ms → 33 ms, median of 7 runs, range 32 to 35 ms`. For a GPU kernel add the percent of peak.
+- **Less prose never means less content.** Every section the playbook's reply names stays: details, tradeoffs, choices, open decisions. A diagram or table carries them.
+- **Say who the work is for.** The first line names the consumer and what changes for them. Then say what the next maintainer inherits.
+- **Jira drafts use Why, Result, Evidence, Next,** per the **Deliver** playbook.
 - **Never fabricate a link, citation, or transcript reference.** Link only artifacts you produced or read this session.
 - **Every claim carries its evidence or its label in the same sentence.** Measured, inferred, or guess. A prediction or an unseen cause is a guess. Never hand the human a check you could run.
 
