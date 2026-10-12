@@ -55,8 +55,8 @@ morning.
 | [kernel hillclimb](./skills/ateam-mode/playbooks/kernel-hillclimb.md) | hillclimb for a gpu kernel: correctness-gated harness, isa resource pre-check before any benchmark, one benchmark on a locked gpu at a time, levers named from the `lever.menu` port. |
 | [bound probe](./skills/ateam-mode/playbooks/bound-probe.md) | before a redesign, measure the ceiling cheaply (analytic bound, copy roofline, remove-one-piece diagnostic, staged copy, in-model share) and decide go, no-go, or re-target. a probe proves a ceiling, never a speedup. |
 | [repro audit](./skills/ateam-mode/playbooks/repro-audit.md) | verify someone else's claim, number, or bug report on the real gpu: pin the environment, reproduce as stated, vary one axis, and give each claim a verdict. |
-| [runtime forensics](./skills/ateam-mode/playbooks/runtime-forensics.md) | diagnose a live symptom (hang, memory leak, stalled launch) from instrumentation. |
-| [trace forensics](./skills/ateam-mode/playbooks/trace-forensics.md) | diagnose a captured profiling artifact (an att trace, a rocprofv3 trace, a counter table). |
+| [runtime forensics](./skills/ateam-mode/playbooks/runtime-forensics.md) | diagnose a live symptom (a hang, wrong results, nan, a slowdown, a gpu stuck busy, or a host-side leak) from instrumentation. |
+| [trace forensics](./skills/ateam-mode/playbooks/trace-forensics.md) | diagnose a captured profiling artifact (an att trace, rocprofv3 output, isa or ir dumps, or a host-side profile). |
 | [feature](./skills/ateam-mode/playbooks/feature.md) | new or changed behavior, built from a named data shape. |
 | [refactoring](./skills/ateam-mode/playbooks/refactoring.md) | a behavior-preserving change to structure or shape. |
 | [prototype](./skills/ateam-mode/playbooks/prototype.md) | a throwaway sketch to make a design or behavioral decision cheaply, or to settle an empirical fork by observing it. |
