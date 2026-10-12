@@ -10,6 +10,10 @@ Explore the codebase to answer "how does X work?" questions. Produce architectur
 
 Every spawn is a Task subagent with `subagent_type: generalPurpose` and `readonly: true`. Explorers use the `how explorer` line in the `mstack-models.mdc` rule (default `claude-sonnet-5-5-high`), and every explainer uses the `how explainer` line (default `claude-opus-5-5-xhigh`). Set `model` to that line's value, or to the default if the rule or the line is missing. Leave `model` unset when the value is `auto` or `inherit-parent`. If the Task tool rejects a slug, use the default and say so. If it rejects the default, use the closest valid slug of the same family from its error message.
 
+## 0. Check the knowledge base
+
+Read the knowledge base index (`~/.cursor/mstack/env.md` Knowledge base table, default `~/knowledge-base/README.md`) and the matching topic `README.md`. When a note covers the question, cite it and explore only the gap. Pass the note paths to every explorer and explainer.
+
 ## 1. Assess complexity
 
 If the scope is ambiguous, state your interpretation and explore. The user can redirect.

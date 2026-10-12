@@ -4,6 +4,7 @@
 
 Investigation requests are read-only. They produce a cited explanation or a recommendation, not a code change.
 
+0. Read the knowledge base index (`~/.cursor/mstack/env.md` Knowledge base table, default `~/knowledge-base/README.md`), then the matching topic `README.md`. Cite a covering note and build on it. Explore code or the web only for the gap.
 1. Route through the **how** skill. For motivation questions, also route through the **why** skill.
 2. Throughput checkpoint stays one line: `throughput checkpoint: n/a, read-only investigation`.
 3. Produce the `how`-shaped output (Overview / Key Concepts / How It Works / Where Things Live / Gotchas), or a recommendation with a tradeoffs table if the request is a decision between alternatives.

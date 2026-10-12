@@ -46,6 +46,8 @@ Move any Accepted item that a lint rule, script, metadata flag, or runtime check
 
 Present the synthesizer's full Accepted / Rejected / Backlog output and wait for explicit approval before applying any Accepted edit. The user picks the subset and may redirect routings. Skill changes affect every future agent in the org. Do not auto-apply.
 
+A learning about a technique, a hardware fact, or a method that is not a skill edit may go to the knowledge base instead. Propose it as an extra Accepted row routed to `/kb-add-topic`, with the transcript path as the source. Run it only after approval.
+
 File each Backlog item to your team's devex or backlog tracker without waiting. Only the Accepted list waits for approval.
 
 Follow each approved row's Routing exactly:
