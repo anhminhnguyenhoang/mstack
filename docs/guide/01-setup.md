@@ -30,11 +30,13 @@ You might be wondering what happens if you use Auto. Set a role to `inherit-pare
 
 ## Map this machine
 
-After the models, `/setup-mstack` maps the machine for kernel work. It detects the GPU arch, your containers and their mounts, each repo's remotes, the forge you can push and open PRs through, the Jira sites in your MCP config, and the GPU lock picker. Then it asks in one form for what it cannot detect: the SSH alias, hosts for other archs, the push remote per repo, the default container per repo, and the lock convention.
+After the models, `/setup-mstack` maps the machine for kernel work. It detects the GPU arch, your containers and their mounts, the forge you can push and open PRs through, the Jira sites in your MCP config, and the GPU lock picker. It also looks for your local resources: the domain repos, the skills dir, a knowledge base, reference docs, and a ticket root. Then it asks in one form for what it cannot detect: the SSH alias, hosts for other archs, the push remote and default container per repo, the lock convention, and a path for each resource it did not find (give the path, or skip).
+
+Every resource is optional until a step needs it. A step that only benefits from a resource you skipped does its work without it, says so in one line, and asks once per session whether you have it. A step that requires one stops: `repos` for a GPU run, a worktree, or a PR, `skills` for a port, and `tickets` for ticket work. [`resources.md`](../../skills/ateam-mode/references/resources.md) lists the five resources.
 
 It also runs `scripts/check.py --skills-only`. That checks every domain skill the [port bindings](../../skills/ateam-mode/references/ports.md) name: it is installed, its frontmatter is valid, and no installed skill is left unbound. It warns when a linked skill's repo is not on `main`, because the link follows that repo's checked-out branch.
 
-It writes `~/.cursor/mstack/env.md`, outside the plugin, so an update never overwrites it. A fact you skip is `not set`, and a skill that needs it stops and asks rather than guessing. Rerun `/setup-mstack env` when a container or host changes.
+It writes `~/.cursor/mstack/env.md`, outside the plugin, so an update never overwrites it. A fact you skip is `not set`. A skill that needs a required fact stops and asks rather than guessing. Rerun `/setup-mstack env` when a container, a host, or a resource path changes, or when you get a knowledge base or reference docs later.
 
 ## Accept the verification offer, or don't
 

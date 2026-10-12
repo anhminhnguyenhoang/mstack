@@ -6,7 +6,7 @@ It is a fork of [pstack](https://github.com/cursor/plugins/tree/main/pstack) (se
 
 **mstack ends in a deliverable, not always a PR.** A ticket can end in a PR, a Jira comment draft, or both. A human approves every Jira post.
 
-**mstack routes kernel work through ports.** A playbook names a capability, such as `lever.menu` or `isa.diff`. One file, [`ports.md`](./skills/ateam-mode/references/ports.md), binds each port to the matching skill in `~/.claude/skills`. `python3 scripts/check.py` keeps that file in step with the installed skills.
+**mstack routes kernel work through ports.** A playbook names a capability, such as `lever.menu` or `isa.diff`. One file, [`ports.md`](./skills/ateam-mode/references/ports.md), binds each port to the matching skill in your skills dir, the `skills` resource. `python3 scripts/check.py` keeps that file in step with the installed skills.
 
 ## install
 
@@ -18,7 +18,7 @@ It is a fork of [pstack](https://github.com/cursor/plugins/tree/main/pstack) (se
 
 two steps:
 
-1. run [`/setup-mstack`](./skills/setup-mstack/SKILL.md), pick a reasoning budget, and choose which models you want. it then maps this machine (gpu hosts, your containers, repo remotes, forge, jira sites, gpu lock) into `~/.cursor/mstack/env.md` and asks for what it cannot detect.
+1. run [`/setup-mstack`](./skills/setup-mstack/SKILL.md), pick a reasoning budget, and choose which models you want. it then maps this machine (gpu hosts, your containers, forge, jira sites, gpu lock) and your local resources into `~/.cursor/mstack/env.md` and asks for what it cannot detect. the resources are your repos, your skills dir, a knowledge base, reference docs, and a ticket root. each is optional until a step needs it. a step that only benefits from one skips it with a note and asks once whether you have it. a step that requires one stops and asks. see [`resources.md`](./skills/ateam-mode/references/resources.md).
 2. use [`/ateam-mode`](./skills/ateam-mode/SKILL.md) whenever you're doing anything that requires rigor.
 
 new here? the [mstack guide](./docs/guide/README.md) walks you through a first real task, from setup and prompting through verification and overnight runs. stuck, or unsure which skill fits? ask [`/ateam-help`](./skills/ateam-help/SKILL.md).
@@ -72,7 +72,7 @@ morning.
 | [pause safely](./skills/ateam-mode/playbooks/pause-safely.md) | suspend in-flight work cleanly so it can be resumed later. |
 | [multi-phase plan](./skills/ateam-mode/playbooks/multi-phase-plan.md) | work that spans phases or stacked PRs. |
 | [worktree cleanup](./skills/ateam-mode/playbooks/worktree-cleanup.md) | reclaim disk by pruning merged or abandoned worktrees, safety-gated. |
-| [ticket](./skills/ateam-mode/playbooks/ticket.md) | work that starts from a jira key. loads the ticket into `~/<key>/` with `/ticket-init`, sets a checkable predicate, routes to the matching playbook, and ends in deliver. |
+| [ticket](./skills/ateam-mode/playbooks/ticket.md) | work that starts from a jira key. loads the ticket into its ticket folder with `/ticket-init`, sets a checkable predicate, routes to the matching playbook, and ends in deliver. |
 | [deliver](./skills/ateam-mode/playbooks/deliver.md) | classify the output as code, finding, or both. code goes to opening a pr. a finding becomes a jira comment draft the human approves. invoked at the end of every other playbook. |
 | [opening a pr](./skills/ateam-mode/playbooks/opening-a-pr.md) | open a draft pr from small ordered commits with a conventional commits title and a briefing-style body. invoked by deliver for code output. |
 
@@ -111,8 +111,8 @@ to keep [`/ateam-mode`](./skills/ateam-mode/SKILL.md) on across turns, pick it f
 |---|---|
 | [`/ateam-mode`](./skills/ateam-mode/SKILL.md) | default entry point for any non-trivial task. |
 | [`/ateam-help`](./skills/ateam-help/SKILL.md) | you're new to mstack, or unsure which skill, playbook, or principle fits. finds out what you're trying to do, answers that part, and hands you a prompt to type. runs only when you type `/ateam-help`. |
-| [`/ticket-init`](./skills/ticket-init/SKILL.md) | you start from a jira key. writes `~/<key>/ticket-raw.md`, a brief of at most 150 words, and an acceptance predicate. |
-| [`/verify-gpu-kernel`](./skills/verify-gpu-kernel/SKILL.md) | you need to run, reproduce, or benchmark a kernel on the real gpu. resolves the host and container, locks one idle gpu, runs the op_test, and writes a json artifact into `~/<key>/`. |
+| [`/ticket-init`](./skills/ticket-init/SKILL.md) | you start from a jira key. writes `ticket-raw.md` in the ticket folder, a brief of at most 150 words, and an acceptance predicate. |
+| [`/verify-gpu-kernel`](./skills/verify-gpu-kernel/SKILL.md) | you need to run, reproduce, or benchmark a kernel on the real gpu. resolves the host and container, locks one idle gpu, runs the op_test, and writes a json artifact into the ticket folder. |
 | [`/how`](./skills/how/SKILL.md) | you want a walkthrough of how a subsystem works. |
 | [`/why`](./skills/why/SKILL.md) | you want to know why something was built this way. discovers available MCPs at run time and queries each evidence category in parallel (source control, issue tracker, long-form docs, real-time chat, infra observability, error tracking, analytics warehouse). |
 | [`/recall`](./skills/recall/SKILL.md) | you're starting or resuming work and want your recent context on a topic rebuilt from your own chat history and the shared record, handed back as a tight current-state brief. |
@@ -240,7 +240,7 @@ twenty-seven short skills, one principle each. `ateam-mode` indexes them inline 
 
 a few things `ateam-mode` references but doesn't bundle:
 
-- the kernel skills its ports bind (listed in [`ports.md`](./skills/ateam-mode/references/ports.md)) live in `~/.claude/skills`, not in this plugin. `python3 scripts/check.py` checks that each one resolves. `--no-skills` skips that check on a machine without them.
+- the kernel skills its ports bind (listed in [`ports.md`](./skills/ateam-mode/references/ports.md)) live in your skills dir (the `skills` resource), not in this plugin. `python3 scripts/check.py` checks that each one resolves. it reads the dir from `$MSTACK_SKILLS_DIR`, else from the skills table of `~/.cursor/mstack/env.md`, and skips the check with a note when neither is set. `--no-skills` skips it on purpose.
 - `/create-skill` is a cursor built-in. cursor also ships a built-in `/babysit`; inside `ateam-mode`, the [babysit playbook](./skills/ateam-mode/playbooks/babysit.md) supersedes it for pr-status requests.
 
 ## why are there no planning skills?
