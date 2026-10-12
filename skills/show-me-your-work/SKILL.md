@@ -31,6 +31,8 @@ ts	phase	decision	why	evidence	result
 2026-05-24T12:30:00Z	widget	threw out a helper's work because its screenshots were blank	checked the real files instead of trusting its summary	worktree reset	reverted, tightened the instructions for next time
 ```
 
+For kernel work, the columns and the extra ones are in `lever-doc.md` (`../ateam-mode/references/lever-doc.md`).
+
 ## Logging a row
 
 Write each entry the way you'd tell a teammate what you did. Plain words, concrete actions, no AI speak or abstract jargon (the **unslop** skill applies to log text too).

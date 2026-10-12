@@ -7,8 +7,8 @@
 3. `finding` → write `~/<KEY>/comment-draft-<topic>.md`. Outside a ticket, write it in the working directory. Use this shape, then apply `/technical-writing` and `/unslop`:
    - Title as `## <the result, in one line>`, then `**TL;DR:**` in 1–2 sentences.
    - `### Why`. The question the ticket asked and why the work answers it.
-   - `### Result`. The numbers with unit, run count, and spread. A table when there are two or more variants.
-   - `### Evidence`. Setup (GPU, image, ROCm, torch, repo SHAs), the command that reproduces it, artifact paths, and an evidence label (measured, inferred, guess) on each claim. Caveats go here.
+   - `### Result`. The numbers with unit, run count, and spread. A table when there are two or more variants. A kernel optimization result carries S* (the kept levers), its ablation table, and the gain over B.
+   - `### Evidence`. Setup (GPU, image, ROCm, torch, repo SHAs), the command that reproduces it, artifact paths, and an evidence label (measured, inferred, guess) on each claim. Caveats go here. A kernel optimization result adds the retired list, each lever with its class, root cause, and `Retry if` condition, from the lever doc (`references/lever-doc.md`).
    - `### Next`. The action you recommend, and what stays open.
 4. `both` → open the PR first. Link it in the draft's `### Evidence`.
 5. Stop at the draft. The human reads and approves it. Post to Jira only after that, per the Autonomy pause list. Post only through the namespace in the `**MCP:**` line of `~/<KEY>/ticket-raw.md`. Never post, edit, or transition a ticket on your own.
