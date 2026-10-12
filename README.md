@@ -23,7 +23,7 @@ two steps:
 
 new here? the [mstack guide](./docs/guide/README.md) walks you through a first real task, from setup and prompting through verification and overnight runs. stuck, or unsure which skill fits? ask [`/ateam-help`](./skills/ateam-help/SKILL.md).
 
-that's it. the other skills are situational; the mode skill uses them for you as needed. out of the box the mode splits work by model strength: code delegates (feature, refactoring, bug fix, perf, hillclimb) go to grok, while the hardest changes, prose, and judgment go to opus 5.5. the default panel is opus 5.5 / grok. [`/setup-mstack`](./skills/setup-mstack/SKILL.md) changes any of it.
+that's it. the other skills are situational; the mode skill uses them for you as needed. out of the box the mode splits work by model strength: code delegates (feature, refactoring, bug fix, perf, hillclimb) go to sonnet 5.5, while the hardest changes, prose, and judgment go to opus 5.5. the default panel is opus 5.5 / sonnet 5.5. [`/setup-mstack`](./skills/setup-mstack/SKILL.md) changes any of it.
 
 ## usage
 
