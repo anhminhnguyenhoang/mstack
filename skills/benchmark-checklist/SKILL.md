@@ -51,7 +51,7 @@ Use this section for a number from a GPU kernel on AMD Instinct (MI300X `gfx942`
 **Peaks.** Do not quote a peak from memory. State the peak, its source, the arch, and whether it is per GCD or per module. Local references:
 
 - `~/KernelForge/knowledge_base/shared/gemm_roofline.md` lists HBM bandwidth as 5.3 TB/s (MI300X), 6.0 TB/s (MI325X), and 8.0 TB/s (MI355X). It lists max-achievable BF16 and FP8 TFLOPs as about 650 and 1300 (MI300X) and about 1260 and 2500 (MI355X), and says to use these instead of vendor peak.
-- `~/knowledge-base/amd-instinct-mi350/00-fundamentals/specification-comparison.md` lists the MI355X vendor peaks, 8 TB/s HBM and about 2.5 PFLOPS FP16 and 5.0 PFLOPS FP8 matrix.
+- The `hardware/` area of the knowledge base (`~/.cursor/mstack/env.md` Knowledge base table, default `~/knowledge-base/`) holds the MI355X vendor peaks in its MI350 family note. Cite the note file you used.
 - `~/FlyDSL/docs/kernel_tuning_guide.md` gives gfx942 peaks per GCD (about 653 TFLOPS FP8 and 326 TFLOPS BF16), which differ from the module-level table above. Name which you used.
 - Achievable bandwidth sits below peak. `~/KernelForge/local_knowledge/flydsl/operators/reduction/numerics.md` puts the MI300X BabelStream-class ceiling at about 4.3 TB/s. `~/SILOTIGER-1164/comment-draft-in-model-targets-feasibility.md` measured a best-case copy at 5.86 TB/s on MI355X. Measure a copy of the same bytes on the same GPU when the claim is near the floor.
 
