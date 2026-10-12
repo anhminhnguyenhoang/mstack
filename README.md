@@ -31,7 +31,7 @@ use [`/ateam-mode`](./skills/ateam-mode/SKILL.md) at the start of a task. it rea
 
 ### just use [`/ateam-mode`](./skills/ateam-mode/SKILL.md)
 
-this skill is the main shortcut. i use it whenever i need the agent to do rigorous engineering work. it comes with twenty-six playbooks:
+this skill is the main shortcut. i use it whenever i need the agent to do rigorous engineering work. it comes with twenty-seven playbooks:
 
 ```
 /ateam-mode this pr has a subtle bug where the scroll drifts every 750ms even when idle. repro
@@ -44,7 +44,7 @@ morning.
 ```
 
 <details>
-<summary>the twenty-six playbooks</summary>
+<summary>the twenty-seven playbooks</summary>
 
 | playbook | for |
 |---|---|
@@ -53,6 +53,7 @@ morning.
 | [perf](./skills/ateam-mode/playbooks/perf-issue.md) | trace a measured slowness and improve it against a baseline. |
 | [hillclimb](./skills/ateam-mode/playbooks/hillclimb.md) | sustained, scientific improvement of one metric against a target, looping hypotheses with before/after measurement and one commit per accepted win. |
 | [kernel hillclimb](./skills/ateam-mode/playbooks/kernel-hillclimb.md) | hillclimb for a gpu kernel: correctness-gated harness, isa resource pre-check before any benchmark, one benchmark on a locked gpu at a time, levers named from the cdna-kernel-opt menu. |
+| [repro audit](./skills/ateam-mode/playbooks/repro-audit.md) | verify someone else's claim, number, or bug report on the real gpu: pin the environment, reproduce as stated, vary one axis, and give each claim a verdict. |
 | [runtime forensics](./skills/ateam-mode/playbooks/runtime-forensics.md) | diagnose a live symptom (leak, idle-cpu spin, glitch) from instrumentation. |
 | [trace forensics](./skills/ateam-mode/playbooks/trace-forensics.md) | diagnose a captured profiling artifact (cpuprofile, trace, spindump, heap snapshot). |
 | [feature](./skills/ateam-mode/playbooks/feature.md) | new or changed behavior, built from a named data shape. |

@@ -119,6 +119,7 @@ Playbooks are step lists inside `/ateam-mode`, not skills, so they have no slash
 - "pause safely" runs Pause safely.
 - "full autopilot on this queue" runs Autopilot-full. "stack them, don't ship" runs Autopilot-stack.
 - "run the eval playbook" runs Eval.
+- "reproduce their numbers" or "verify this claim" runs Repro audit.
 - "hillclimb this kernel" or "beat the Triton baseline" runs Kernel hillclimb.
 - "work on ROCM-1234" runs Ticket. It starts with `/ticket-init`.
 
