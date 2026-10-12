@@ -40,6 +40,8 @@ The values live only in `~/.cursor/mstack/env.md`. `/setup-mstack env` writes th
 - A required resource that is missing or `not set`: stop the step. Name the key, and ask the user for the value or for `/setup-mstack env`. A port whose skill is missing is the `skills` case (`ports.md`).
 - A resource row can be present and wrong, such as a path that no longer exists. Treat that as missing. Say so, and point at `/setup-mstack env`.
 
+`python3 scripts/check.py` enforces the rules. It fails on a home-directory path, a real ticket key, or a file path inside a `kb` area in mstack text. Only a line that carries the `(probe)` marker in `skills/setup-mstack/SKILL.md` may name a default location, and only as a guess to test. Cursor's own config paths and the upstream `~/Library/Application` line are exempt. With no `skills` directory configured, the check skips the skills checks with a note.
+
 ## Reading the `kb` resource
 
 Read in three levels: the root `README.md`, then the `README.md` of the matching area, then the note. Cite the note. Re-derive only what it does not cover. A reference to a file deeper than an area is a leak, because a note can be renamed.

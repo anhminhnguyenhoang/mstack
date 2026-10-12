@@ -24,10 +24,18 @@ STALE = re.compile(
 )
 TODO = re.compile(r"`TODO`|TODO:")
 KB_AREAS = ("hardware", "kernel-optimization", "papers", "dsl")
-KB_PATH = re.compile(r"knowledge-base/([^\s`'\")\]>]*)")
+KB_AREA_PATH = re.compile(r"(?<![\w./-])(" + "|".join(KB_AREAS) + r")/([^\s`'\")\]>]*)")
+HOME_PATH = re.compile(r"(?<!\w)~/([^\s`'\")\]>,;|]*)|/home/[A-Za-z0-9_.-]+/")
+LOCAL_NAMES = re.compile(r"knowledge-base|KernelForge")
+HOME_OK = (".cursor", ".config/benny")
+HOME_OK_LINE = "~/Library/Application"
+PROBE_FILE = "skills/setup-mstack/SKILL.md"
+PROBE_MARK = "(probe)"
+TICKET_KEY = re.compile(r"\bSILOTIGER-\d+|\bROCM-3\d+", re.I)
+ENV_FILE = "~/.cursor/mstack/env.md"
 
 ap = argparse.ArgumentParser(
-    description="mstack consistency checks. The skills dir is $MSTACK_SKILLS_DIR, default ~/.claude/skills."
+    description="mstack consistency checks. The skills dir is $MSTACK_SKILLS_DIR, else the Skills table of ~/.cursor/mstack/env.md. With neither, the skills checks are skipped."
 )
 ap.add_argument("root", nargs="?", default=os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 mode = ap.add_mutually_exclusive_group()
@@ -35,7 +43,6 @@ mode.add_argument("--no-skills", action="store_true", help="skip the checks that
 mode.add_argument("--skills-only", action="store_true", help="run only the port and skills-dir checks, and print the Skills table")
 args = ap.parse_args()
 os.chdir(os.path.abspath(args.root))
-skills_dir = os.path.expanduser(os.environ.get("MSTACK_SKILLS_DIR", "~/.claude/skills"))
 home = os.path.expanduser("~")
 fail = 0
 
@@ -67,6 +74,25 @@ def cells(line):
     return [c.strip() for c in re.split(r"(?<!\\)\|", line.strip())[1:-1]]
 
 
+def env_skills_dir():
+    try:
+        text = open(os.path.expanduser(ENV_FILE), encoding="utf-8").read()
+    except OSError:
+        return None
+    m = re.search(r"^## Skills[ \t]*\n(.*?)(?=^## |\Z)", text, re.M | re.S)
+    if not m:
+        return None
+    lines = m.group(1).splitlines()
+    for i, line in enumerate(lines):
+        if line.startswith("|") and cells(line)[:1] == ["Dir"]:
+            for row in lines[i + 2:]:
+                if not row.startswith("|"):
+                    break
+                value = cells(row)[0].strip("`").strip()
+                return None if value in ("", "not set") else os.path.expanduser(value)
+    return None
+
+
 def parse_ports():
     text = open(PORTS, encoding="utf-8").read()
     lines = text.splitlines()
@@ -96,6 +122,13 @@ def git(cwd, *cmd):
 
 def tilde(path):
     return "~" + path[len(home):] if path.startswith(home + os.sep) else path
+
+
+skills_dir = os.environ.get("MSTACK_SKILLS_DIR") or env_skills_dir()
+skills_dir = os.path.expanduser(skills_dir) if skills_dir else None
+skip_skills = skills_dir is None and not args.no_skills
+if skip_skills:
+    print(f"NOTE skills checks skipped: no skills dir. Set MSTACK_SKILLS_DIR, or run /setup-mstack env to fill the Skills table of {ENV_FILE}.")
 
 
 def resolve(name):
@@ -181,7 +214,7 @@ for p in sorted({p for p in port_names if port_names.count(p) > 1}):
 bound = {s for _, skills in bindings for s in skills}
 own = set(os.listdir("skills"))
 
-if not args.no_skills:
+if not args.no_skills and not skip_skills:
     rows, bad = [], {"missing": 0, "malformed": 0}
     for port, skills in bindings:
         for s in skills:
@@ -199,7 +232,7 @@ if not args.no_skills:
     else:
         installed = []
         fail += 1
-        print(f"NO SKILLS DIR {skills_dir}: set MSTACK_SKILLS_DIR, or run with --no-skills on a machine without the domain skills")
+        print(f"NO SKILLS DIR {skills_dir}: fix MSTACK_SKILLS_DIR or the Skills table of {ENV_FILE}, or run with --no-skills")
     unbound = [s for s in installed if s not in bound and s not in ignored]
     for s in unbound:
         status, why, repo, branch, warn = resolve(s)
@@ -242,15 +275,37 @@ if not args.skills_only:
         if path == "scripts/check.py" or path.startswith(NAME_EXEMPT_DIRS):
             continue
         for n, line in enumerate(text.splitlines(), 1):
-            for m in KB_PATH.finditer(line):
-                rest = m.group(1).rstrip(".,;:")
-                parts = [x for x in rest.split("/") if x]
-                ok = not parts or parts == ["README.md"] or (parts[0] in KB_AREAS and (len(parts) == 1 or parts[1:] == ["README.md"]))
-                if not ok:
+            for m in KB_AREA_PATH.finditer(line):
+                rest = m.group(2).rstrip(".,;:")
+                if rest not in ("", "README.md"):
                     deep += 1
-                    print(f"KB DEEP PATH {path}:{n}: knowledge-base/{rest}")
+                    print(f"KB DEEP PATH {path}:{n}: {m.group(1)}/{rest}")
     fail += deep
-    summary.append(f"kb deep paths {deep}")
+
+    local = 0
+    for path, text in walk(hidden=True):
+        if path == "scripts/check.py" or path.startswith(NAME_EXEMPT_DIRS):
+            continue
+        for n, line in enumerate(text.splitlines(), 1):
+            if HOME_OK_LINE in line or (path == PROBE_FILE and PROBE_MARK in line):
+                continue
+            hits = [m.group(0) for m in HOME_PATH.finditer(line) if m.group(1) is None or not m.group(1).startswith(HOME_OK)]
+            hits += LOCAL_NAMES.findall(line)
+            for hit in hits:
+                local += 1
+                print(f"LOCAL PATH {path}:{n}: {hit}")
+    fail += local
+
+    keys = 0
+    for path, text in walk(hidden=True):
+        if path == "scripts/check.py" or path.startswith(NAME_EXEMPT_DIRS):
+            continue
+        for n, line in enumerate(text.splitlines(), 1):
+            for m in TICKET_KEY.finditer(line):
+                keys += 1
+                print(f"TICKET ID {path}:{n}: {m.group(0)}")
+    fail += keys
+    summary.append(f"kb deep paths {deep} | local paths {local} | ticket ids {keys}")
 
 print(" | ".join(summary))
 print("RESULT", "PASS" if fail == 0 else f"FAIL ({fail})")
