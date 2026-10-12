@@ -32,6 +32,8 @@ You might be wondering what happens if you use Auto. Set a role to `inherit-pare
 
 After the models, `/setup-mstack` maps the machine for kernel work. It detects the GPU arch, your containers and their mounts, each repo's remotes, the forge you can push and open PRs through, the Jira sites in your MCP config, and the GPU lock picker. Then it asks in one form for what it cannot detect: the SSH alias, hosts for other archs, the push remote per repo, the default container per repo, and the lock convention.
 
+It also runs `scripts/check.py --skills-only`. That checks every domain skill the [port bindings](../../skills/ateam-mode/references/ports.md) name: it is installed, its frontmatter is valid, and no installed skill is left unbound. It warns when a linked skill's repo is not on `main`, because the link follows that repo's checked-out branch.
+
 It writes `~/.cursor/mstack/env.md`, outside the plugin, so an update never overwrites it. A fact you skip is `not set`, and a skill that needs it stops and asks rather than guessing. Rerun `/setup-mstack env` when a container or host changes.
 
 ## Accept the verification offer, or don't

@@ -1,6 +1,6 @@
 ---
 name: setup-mstack
-description: Configure mstack for this user and this machine. Part A sets the model per role and the reasoning budget. Part B detects the GPU hosts, containers, repos, forge, Jira sites, and GPU lock, asks for what it cannot detect, and writes the machine-local env file every kernel skill reads. Use for /setup-mstack, /setup-mstack models, /setup-mstack env, "configure mstack", "mstack budget", or when a skill reports that ~/.cursor/mstack/env.md is missing or a fact in it is `not set`.
+description: Configure mstack for this user and this machine. Part A sets the model per role and the reasoning budget. Part B detects the GPU hosts, containers, repos, forge, Jira sites, GPU lock, and the domain skills the ports bind, asks for what it cannot detect, and writes the machine-local env file every kernel skill reads. Use for /setup-mstack, /setup-mstack models, /setup-mstack env, "configure mstack", "mstack budget", or when a skill reports that ~/.cursor/mstack/env.md is missing or a fact in it is `not set`.
 ---
 
 # Setup mstack
@@ -10,7 +10,7 @@ Two outputs, both outside the plugin, so a plugin update never overwrites them:
 | Part | Writes | Read by |
 |---|---|---|
 | A. Models | `~/.cursor/rules/mstack-models.mdc` | `ateam-mode` and every routed skill that spawns a subagent |
-| B. Environment | `~/.cursor/mstack/env.md` and `~/.cursor/rules/mstack-env.mdc` | `verify-gpu-kernel`, `references/env.md`, Ticket, Deliver, Opening a PR |
+| B. Environment | `~/.cursor/mstack/env.md` and `~/.cursor/rules/mstack-env.mdc` | `verify-gpu-kernel`, `references/env.md`, `references/ports.md`, Ticket, Deliver, Opening a PR |
 
 `/setup-mstack` runs A, B, then C. `/setup-mstack models` runs A only. `/setup-mstack env` runs B only. A skill that stops on a missing or `not set` env fact sends the user to `/setup-mstack env`.
 
@@ -101,6 +101,7 @@ Run these and keep the raw output for step 10. A command that fails or is missin
 | Jira sites | The `JIRA_URL` of each server in `~/.cursor/mcp.json`, and each remote Atlassian MCP namespace in the session (such as `mcp-amd-hub-atlassian`). Seed project prefixes from the URL and `**Site:**` lines in `~/*/ticket-raw.md`: the key prefix maps to that site |
 | GPU picker | `test -f ~/.claude/skills/validate-kernel-pr/pick-idle-gpu.py` |
 | Knowledge base | `test -f ~/knowledge-base/README.md` |
+| Domain skills | `python3 <plugin>/scripts/check.py --skills-only`, where `<plugin>` is the mstack plugin root, two directories above this SKILL.md. It resolves every binding in [`references/ports.md`](../ateam-mode/references/ports.md), checks each bound skill's frontmatter, names each installed skill that no port binds, and prints the Skills table. A symlinked skill's row carries its repo and checked-out branch. Exit 1 means at least one row is not `ok`. Record the rows either way. No skills dir: record the section as `absent` |
 
 ### 9. Ask what detection cannot settle
 
@@ -143,7 +144,12 @@ Overwrite `~/.cursor/mstack/env.md` in full, so a rerun stays idempotent. Every 
 
 ## Knowledge base
 | Path | Source |
+
+## Skills
+| Port | Skill | Status | Repo | Branch | Warning | Source |
 ```
+
+The Skills rows are the rows `check.py --skills-only` prints, plus the Source column. Status is `ok`, `missing`, `malformed`, or `unbound`. Repo is `mstack` for mstack's own skill, `local` for a plain directory, and the repo root for a symlinked skill. A symlink follows its repo's checked-out branch, so a repo that is not on `main` gets a warning.
 
 The GPU lock row holds commands, not paths. The Picker cell is the full picker command line, which prints one HIP index, as the GPU claim stage of `validate-kernel-pr` runs it. The Lock cell is the lock prefix with `<id>` for that index, such as `flock /tmp/gpu-<id>.lock`. **verify-gpu-kernel** runs both cells as written.
 
@@ -154,12 +160,12 @@ Then write `~/.cursor/rules/mstack-env.mdc`, overwriting it in full:
 description: mstack machine facts
 alwaysApply: true
 ---
-mstack machine facts (hosts, containers, repos, forge, Jira sites, GPU lock) are in ~/.cursor/mstack/env.md. Read it before a GPU run, a container exec, a PR, or a Jira read. A missing file or a `not set` fact means: stop and ask the user to run /setup-mstack env.
+mstack machine facts (hosts, containers, repos, forge, Jira sites, GPU lock, domain skills) are in ~/.cursor/mstack/env.md. Read it before a GPU run, a container exec, a PR, or a Jira read. A missing file or a `not set` fact means: stop and ask the user to run /setup-mstack env.
 ```
 
 ### 11. Report
 
-Show the env file as a short table per section. List each fact that is `not set`, and which skill stops on it. Show what changed since the last run.
+Show the env file as a short table per section. List each fact that is `not set`, and which skill stops on it. List each Skills row that is not `ok` or has a warning, and the port it breaks. Show what changed since the last run.
 
 ## Part C. Verification
 
