@@ -1,12 +1,14 @@
 ---
 name: ticket-init
-description: "Load a Jira ticket into ~/<KEY>/ before any work. Writes ticket-raw.md, a brief of at most 150 words, and an acceptance predicate. Use for /ticket-init <KEY>, or when the user names a ticket key (ROCM-1234, SILOTIGER-1164) and no ~/<KEY>/ folder exists yet."
+description: "Load a Jira ticket into ~/<KEY>/ before any work. Writes ticket-raw.md, a brief of at most 150 words, and an acceptance predicate. Use for /ticket-init <KEY>, or when the user names a ticket key (ROCM-1234, SILOTIGER-1164) and no ~/<KEY>/ folder exists yet. When the folder exists, it resumes from ~/<KEY>/STATUS.md and replies with a state brief."
 disable-model-invocation: true
 ---
 
 # Ticket init
 
 Turn a Jira key into a working folder and a checkable goal. This skill reads Jira. It never writes to Jira.
+
+Two modes. If `~/<KEY>/` does not exist, run steps 1 to 5. If it exists, run resume mode, below.
 
 ## 1. Resolve the key and the site
 
@@ -66,3 +68,13 @@ Label each claim from the ticket as `stated`. Label your own reading as `inferre
 ## 5. Reply
 
 Give the folder path, the brief, and the route: Bug fix, Kernel hillclimb, Repro audit, or Investigation, per the Ticket playbook (`../ateam-mode/playbooks/ticket.md`). If the ticket names a customer or an NDA model, say so. That tightens what may leave the machine, per the Autonomy section of `ateam-mode`.
+
+## Resume mode
+
+Use when `~/<KEY>/` exists. The folder holds the work. Do not rebuild context from the ticket alone.
+
+1. Read `~/<KEY>/STATUS.md`. Its format is in the Ticket playbook. Read `brief.md` too.
+2. Run step 2 and step 3. Take the site and namespace from the `**Site:**` and `**MCP:**` lines of the last load when present, else resolve them per step 1. Save the new load as `ticket-raw.<date>.md` and diff it against the last load. Note new comments, status changes, and edits to the description. A folder from before mstack may hold `ticket-description.md` or `ticket-description.txt` instead of `ticket-raw.md`. Treat it as the last load.
+3. Rewrite `brief.md` only when the ticket's ask or scope changed. Say so in the reply. Otherwise leave it as is.
+4. If `STATUS.md` is missing, build a first one from the folder. Read the newest files, the `comment-draft-*.md` files, and the git branches and worktrees in the repos the ticket touches. Label every line `inferred`. Tell the human to correct it.
+5. Reply with a state brief, not a new brief: the predicate and whether it holds, the best result, open work, drafts awaiting approval, what changed in the ticket since the last load, and the next step. Take each line from `STATUS.md`. Do not write `STATUS.md` here unless you built it in step 4. The playbook that does the work updates it.
