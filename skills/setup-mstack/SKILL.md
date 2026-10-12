@@ -100,7 +100,7 @@ Run these and keep the raw output for step 10. A command that fails or is missin
 | Forge | `gh auth status`, `timeout 15 ssh -o BatchMode=yes -T git@github.com`, `command -v origin`, and `get_me` on each GitHub MCP namespace in the session. Per host or org, push path is the SSH remote that works. PR path is `gh` only if `gh auth status` succeeds, `origin` only if it resolves the repo, else the MCP namespace whose sign-in covers that host or org. Resolution order is in [`references/forge.md`](../ateam-mode/references/forge.md) |
 | Jira sites | The `JIRA_URL` of each server in `~/.cursor/mcp.json`, and each remote Atlassian MCP namespace in the session (such as `mcp-amd-hub-atlassian`). Seed project prefixes from the URL and `**Site:**` lines in `~/*/ticket-raw.md`: the key prefix maps to that site |
 | GPU picker | `test -f ~/.claude/skills/validate-kernel-pr/pick-idle-gpu.py` |
-| Knowledge base | `test -f ~/knowledge-base/README.md` |
+| Knowledge base | `test -f ~/knowledge-base/README.md`. Record the path, the git remote (`git -C <path> remote get-url origin`), and whether all four areas exist (`test -f <path>/<area>/README.md` for `hardware`, `kernel-optimization`, `papers`, `dsl`). A missing area is `not set` |
 | Domain skills | `python3 <plugin>/scripts/check.py --skills-only`, where `<plugin>` is the mstack plugin root, two directories above this SKILL.md. It resolves every binding in [`references/ports.md`](../ateam-mode/references/ports.md), checks each bound skill's frontmatter, names each installed skill that no port binds, and prints the Skills table. A symlinked skill's row carries its repo and checked-out branch. Exit 1 means at least one row is not `ok`. Record the rows either way. No skills dir: record the section as `absent` |
 
 ### 9. Ask what detection cannot settle
@@ -143,7 +143,7 @@ Overwrite `~/.cursor/mstack/env.md` in full, so a rerun stays idempotent. Every 
 | Picker | Lock | Source |
 
 ## Knowledge base
-| Path | Source |
+| Path | Remote | Areas | Source |
 
 ## Skills
 | Port | Skill | Status | Repo | Branch | Warning | Source |
