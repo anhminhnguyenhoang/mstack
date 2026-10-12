@@ -49,7 +49,7 @@ Status, for a lever. Use it in the `result` cell of `decision.tsv`.
 - `loser`. Did not. It has a class.
 - `kept`. In S*.
 - `dropped`. Was in S*, and the ablation showed a marginal gain inside noise.
-- `retired`. A loser with a root cause, evidence, and a `Retry if` condition that does not hold now.
+- `retired`. A loser with a root cause, evidence, and a `Retry if` condition that does not hold now. A lever that the KB `kernel-optimization/` area records as a dead end for the same mechanism starts here, before any screen. Its root cause is the one the KB note states, its Evidence is the KB note (cite the note file), and its `Retry if` is the KB's stated condition, or "new evidence that the premise holds here". Screen it only when that condition holds now.
 
 Class, for a loser. Each class has a retry rule.
 
@@ -97,6 +97,8 @@ Verdict is `keep` when the marginal gain is past noise, and `drop` when it is in
 ## Retired list
 
 One line per retired lever: `<ID>: <class>. <root cause>. Evidence: <path>. Retry if: <condition>.` It goes into the Deliver finding unchanged.
+
+A retired lever whose root cause is general is a candidate for the `kb.capture` port. General means true for any kernel with that mechanism, not tied to this ticket's shapes or machine. Mark those lines `KB candidate`, and offer them in Deliver. Run the port only after the user says yes. The numbers, shapes, and SHAs stay in this doc.
 
 ## WaveScope notes
 
