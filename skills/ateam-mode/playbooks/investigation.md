@@ -4,7 +4,7 @@
 
 Investigation requests are read-only. They produce a cited explanation or a recommendation, not a code change.
 
-0. Read the knowledge base root `README.md` (`~/.cursor/mstack/env.md` Knowledge base table, default `~/knowledge-base/README.md`), then the matching area `README.md`, then the note. Cite a covering note and build on it. Explore code or the web only for the gap.
+0. Read the `kb` resource when it is configured: its root `README.md`, then the matching area `README.md`, then the note. Cite a covering note and build on it. Explore code or the web only for the gap. When `kb` is `not set`, write one line that it was skipped and go on (`../references/resources.md`).
 1. Route through the **how** skill. For motivation questions, also route through the **why** skill.
 2. Throughput checkpoint stays one line: `throughput checkpoint: n/a, read-only investigation`.
 3. Produce the `how`-shaped output (Overview / Key Concepts / How It Works / Where Things Live / Gotchas), or a recommendation with a tradeoffs table if the request is a decision between alternatives.

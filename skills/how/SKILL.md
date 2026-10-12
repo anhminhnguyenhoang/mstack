@@ -10,9 +10,9 @@ Explore the codebase to answer "how does X work?" questions. Produce architectur
 
 Every spawn is a Task subagent with `subagent_type: generalPurpose` and `readonly: true`. Explorers use the `how explorer` line in the `mstack-models.mdc` rule (default `claude-sonnet-5-5-high`), and every explainer uses the `how explainer` line (default `claude-opus-5-5-xhigh`). Set `model` to that line's value, or to the default if the rule or the line is missing. Leave `model` unset when the value is `auto` or `inherit-parent`. If the Task tool rejects a slug, use the default and say so. If it rejects the default, use the closest valid slug of the same family from its error message.
 
-## 0. Check the knowledge base
+## 0. Check the `kb` resource
 
-Read the knowledge base root `README.md` (`~/.cursor/mstack/env.md` Knowledge base table, default `~/knowledge-base/README.md`), the matching area `README.md`, then the note. When a note covers the question, cite it and explore only the gap. Pass the note paths to every explorer and explainer.
+Read the `kb` resource when it is configured: its root `README.md`, the matching area `README.md`, then the note. When a note covers the question, cite it and explore only the gap. Pass the note paths to every explorer and explainer. When `kb` is missing or `not set`, say so in one line, skip this step, and ask once per session whether the user has one (`../ateam-mode/references/resources.md`).
 
 ## 1. Assess complexity
 

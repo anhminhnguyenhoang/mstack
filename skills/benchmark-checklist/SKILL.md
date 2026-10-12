@@ -36,7 +36,7 @@ Use this section for a number from a GPU kernel on AMD Instinct (MI300X `gfx942`
 - Use the same GPU id for both sides (`HIP_VISIBLE_DEVICES`, or `ROCR_VISIBLE_DEVICES` inside a container). Different GPUs of one host differ by several percent.
 - Note clocks and power state from `rocm-smi`. Say so when the GPU is not in its normal performance state.
 - Clear the JIT caches so both sides compile fresh, and exclude compile time from the timed region. For FlyDSL and aiter, clear the cache directories the build uses, and check the resolved paths before you delete anything.
-- Record the arch, the ROCm and torch versions, the docker image, and the repo SHAs (`~/aiter`, `~/FlyDSL`) for both sides.
+- Record the arch, the ROCm and torch versions, the docker image, and the repo SHAs (each repo in the `repos` resource) for both sides.
 
 **The questions, for a kernel.**
 
@@ -45,17 +45,20 @@ Use this section for a number from a GPU kernel on AMD Instinct (MI300X `gfx942`
 3. **Did it break limits?** Do the roofline arithmetic. Bytes moved divided by time gives bytes per second, to compare with the HBM peak. FLOPs divided by time gives FLOP/s, to compare with the MFMA peak for that arch and dtype. State the percent of peak, per the **principle-respect-the-roofline** principle skill. A result above the HBM peak measured the L2 or MALL cache, not HBM. Evict inputs between launches for a cold-cache number.
 4. **Did it error?** Check the output against a torch reference with `allclose`, state `rtol` and `atol`, and count NaN and inf. A fast wrong kernel is not a result (the **principle-correctness-before-speed** principle skill).
 5. **Does it reproduce?** Warm up first. Flush the L2 between timed launches when the kernel is cold in production, and say which regime you report. Alternate sides (A, B, A, B). A fixed-config kernel reports the median of N launches. An autotuning baseline (such as Triton with `@triton.autotune`) reports either the median after you exclude the autotune trial dispatches, or its min or p10. State which. One benchmarked call can fire many trial-config dispatches, and the slow trials inflate the median by 30 to 40 percent. Both regimes can flip the verdict for an L2-sensitive change, so measure both for one.
-6. **Does it matter?** Report the kernel as a share of the model step (for example the mHC seam as a share of a DeepSeek decode step or prefill chunk). A fast kernel on 1% of the step is 1% of the step.
+6. **Does it matter?** Report the kernel as a share of the model step (for example the kernel's time as a share of one decode step or one prefill chunk). A fast kernel on 1% of the step is 1% of the step.
 7. **Did it even happen?** Confirm the kernel name appears in a `rocprofv3` kernel trace. Match the full kernel name exactly, because a short substring can match the wrong kernel. Confirm that it is the kernel you meant and not a fallback path. For a knob or flag, confirm the ISA or IR changed (the **principle-prove-it-reached-codegen** principle skill).
 
-**Peaks.** Do not quote a peak from memory. State the peak, its source, the arch, and whether it is per GCD or per module. Local references:
+**Peaks.** Do not quote a peak from memory. State the peak, its source, the arch, and whether it is per GCD or per module. Take it from the first source that is configured:
 
-- `~/KernelForge/knowledge_base/shared/gemm_roofline.md` lists HBM bandwidth as 5.3 TB/s (MI300X), 6.0 TB/s (MI325X), and 8.0 TB/s (MI355X). It lists max-achievable BF16 and FP8 TFLOPs as about 650 and 1300 (MI300X) and about 1260 and 2500 (MI355X), and says to use these instead of vendor peak.
-- The `hardware/` area of the knowledge base (`~/.cursor/mstack/env.md` Knowledge base table, default `~/knowledge-base/`) holds the MI355X vendor peaks in its MI350 family note. Cite the note file you used.
-- `~/FlyDSL/docs/kernel_tuning_guide.md` gives gfx942 peaks per GCD (about 653 TFLOPS FP8 and 326 TFLOPS BF16), which differ from the module-level table above. Name which you used.
-- Achievable bandwidth sits below peak. `~/KernelForge/local_knowledge/flydsl/operators/reduction/numerics.md` puts the MI300X BabelStream-class ceiling at about 4.3 TB/s. `~/SILOTIGER-1164/comment-draft-in-model-targets-feasibility.md` measured a best-case copy at 5.86 TB/s on MI355X. Measure a copy of the same bytes on the same GPU when the claim is near the floor.
+- A `refs` source tagged `peaks` or `roofline`. Prefer its max-achievable figure over the vendor peak, and cite the source name and the file.
+- The `hardware/` area of the `kb` resource. Cite the note file you used.
+- Neither is configured: state the vendor peak with its public source. Write `skipped refs: not set` in the report, and ask once per session whether the user has reference docs (`../ateam-mode/references/resources.md`).
 
-If the arch or dtype is not in these files, say the peak is unstated and give the number with its source before you compute a percent.
+Two sources can differ because one counts per GCD and the other per module. Name which you used.
+
+Achievable bandwidth sits below peak. A `refs` source tagged `numerics` or `roofline` may give a measured ceiling. When the claim is near the floor, measure a copy of the same bytes on the same GPU.
+
+If the arch or dtype is not in the source, say the peak is unstated and give the number with its source before you compute a percent.
 
 ## Report
 
