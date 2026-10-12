@@ -31,7 +31,7 @@ use [`/ateam-mode`](./skills/ateam-mode/SKILL.md) at the start of a task. it rea
 
 ### just use [`/ateam-mode`](./skills/ateam-mode/SKILL.md)
 
-this skill is the main shortcut. i use it whenever i need the agent to do rigorous engineering work. it comes with twenty-four playbooks:
+this skill is the main shortcut. i use it whenever i need the agent to do rigorous engineering work. it comes with twenty-five playbooks:
 
 ```
 /ateam-mode this pr has a subtle bug where the scroll drifts every 750ms even when idle. repro
@@ -44,7 +44,7 @@ morning.
 ```
 
 <details>
-<summary>the twenty-four playbooks</summary>
+<summary>the twenty-five playbooks</summary>
 
 | playbook | for |
 |---|---|
@@ -70,6 +70,7 @@ morning.
 | [pause safely](./skills/ateam-mode/playbooks/pause-safely.md) | suspend in-flight work cleanly so it can be resumed later. |
 | [multi-phase plan](./skills/ateam-mode/playbooks/multi-phase-plan.md) | work that spans phases or stacked PRs. |
 | [worktree cleanup](./skills/ateam-mode/playbooks/worktree-cleanup.md) | reclaim disk by pruning merged or abandoned worktrees and stale ios simulators, safety-gated. |
+| [ticket](./skills/ateam-mode/playbooks/ticket.md) | work that starts from a jira key. loads the ticket into `~/<key>/` with `/ticket-init`, sets a checkable predicate, routes to the matching playbook, and ends in deliver. |
 | [deliver](./skills/ateam-mode/playbooks/deliver.md) | classify the output as code, finding, or both. code goes to opening a pr. a finding becomes a jira comment draft the human approves. invoked at the end of every other playbook. |
 | [opening a pr](./skills/ateam-mode/playbooks/opening-a-pr.md) | open a ready pr from small ordered commits with a conventional commits title and a briefing-style body. invoked by deliver for code output. |
 
@@ -108,6 +109,7 @@ to keep [`/ateam-mode`](./skills/ateam-mode/SKILL.md) on across turns, pick it f
 |---|---|
 | [`/ateam-mode`](./skills/ateam-mode/SKILL.md) | default entry point for any non-trivial task. |
 | [`/ateam-help`](./skills/ateam-help/SKILL.md) | you're new to mstack, or unsure which skill, playbook, or principle fits. finds out what you're trying to do, answers that part, and hands you a prompt to type. runs only when you type `/ateam-help`. |
+| [`/ticket-init`](./skills/ticket-init/SKILL.md) | you start from a jira key. writes `~/<key>/ticket-raw.md`, a brief of at most 150 words, and an acceptance predicate. |
 | [`/how`](./skills/how/SKILL.md) | you want a walkthrough of how a subsystem works. |
 | [`/why`](./skills/why/SKILL.md) | you want to know why something was built this way. discovers available MCPs at run time and queries each evidence category in parallel (source control, issue tracker, long-form docs, real-time chat, infra observability, error tracking, analytics warehouse). |
 | [`/recall`](./skills/recall/SKILL.md) | you're starting or resuming work and want your recent context on a topic rebuilt from your own chat history and the shared record, handed back as a tight current-state brief. |
