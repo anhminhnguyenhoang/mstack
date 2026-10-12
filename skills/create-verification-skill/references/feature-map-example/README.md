@@ -1,33 +1,37 @@
-# Notes verification map
+# Kernel library verification map
 
-This directory is the maintained source for verifying the user-facing behavior of Notes. Read the index before driving the app, then use the matching feature file as the recipe.
+This directory is the maintained source for verifying the user-facing behavior of a GPU kernel library. Read the index before you run anything, then use the matching feature file as the recipe.
+
+The example assumes a library with an op test, `op_tests/test_gemm.py`, that takes `-d`, `-m`, `-n`, and `-k`. A real map names the flags of the real test.
 
 ## Baseline preconditions
 
-- Launch Notes at `http://127.0.0.1:4173` with a disposable data directory.
-- Set `NOTES_DATA_DIR=/tmp/notes-verify-$RUN_ID` so concurrent runs do not share state.
-- Seed notes titled `Quarterly plan` and `Grocery list`.
-- Put `control-notes` and the `notes` CLI on `PATH`.
-- Run `control-notes doctor` and require the expected URL, data directory, and build revision.
-- Never drive an instance that was not started by this verification run.
+- Resolve the library path, the container, and the path in the container from the `repos` resource. Never write them into the map.
+- Run every command inside the container. The host has no torch.
+- Run the `bench.run` doctor first. Require the expected arch, an idle GPU, and the repo SHA.
+- Hold one lock on one GPU for each run, and give the run its own JIT cache directory.
+- Check the arch from inside the container. A number from the wrong arch is not a number.
+- Never run on a GPU that this run did not lock.
 
 ## Driving conventions
 
-- Start every recipe from the baseline state unless its preconditions say otherwise.
-- Prefer ARIA roles and accessible names over CSS selectors or DOM position.
-- Treat every command as literal. Keep quoted names and flags unchanged.
-- Run browser actions through `control-notes browser`.
-- Run terminal actions through `control-notes cli -- <command>`.
-- Restore seeded data after a mutation. Do not remove proof artifacts during cleanup.
+- Start every recipe from a clean checkout of the revision under test. Record its SHA.
+- Treat every command as literal. Keep flags and shapes unchanged.
+- Run correctness before perf. A perf row next to a failed or unchecked correctness row is not a result.
+- Write a missing op test through the `test.author` port. Do not hand-roll its table.
+- Compare two revisions through the `pr.validate` port. Do not rerun by hand and compare.
+- Clear the JIT cache for a cold-compile run. State the regime of every perf row.
+- Remove the run's scratch files and JIT directory after the run. Do not remove proof artifacts.
 
 ## Proof and skip reporting
 
-- Capture the user action and the resulting state, not only the final screen.
-- UI proof includes an ARIA snapshot and a screenshot with the app identity visible.
-- CLI proof includes the command, stdout, stderr, and exit code.
-- Mutation proof includes a read-only second view of the stored value.
-- Record the feature ID and entry point used with every artifact.
-- Report an unreachable path with the attempted command and the unmet precondition.
+- Capture the command, the full stdout, and the exit code.
+- Proof of correctness includes the tolerance, the NaN count, and the number of shapes checked.
+- Proof of perf includes the median, the run count, the range, the regime, and the percent of peak.
+- Every number comes from a run. Never type a result by hand.
+- A mutation proof pairs the result with a negative control that must fail.
+- Record the feature ID and the entry point used with every artifact.
+- Report an unreachable path with the attempted command and the unmet precondition. A busy GPU, a missing container, or an unreadable output is `INCONCLUSIVE`.
 - Do not report a skipped entry point as verified through a different path.
 
 ## Feature entry contract
@@ -43,5 +47,5 @@ Keep implementation details out of the map. Name only user paths, stable handles
 
 ## Features
 
-- [Create a note](./create-note.md) covers browser and CLI creation, cancellation, persistence, and cleanup.
-- [Search notes](./search.md) covers toolbar, keyboard, and CLI search with matching, empty, and clear states.
+- [GEMM correctness](./gemm-correctness.md) covers the `allclose` gate over aligned shapes, small M, partial tiles, dtypes, and NaN handling, with a negative control.
+- [GEMM perf](./gemm-perf.md) covers one locked GPU, the frozen harness, the JSON artifact, the reference side, and the base-to-head comparison.
