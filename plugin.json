@@ -1,21 +1,25 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
-  "name": "pstack",
-  "version": "0.15.20",
-  "description": "if you want to go fast, go deep first. pstack helps you write less, but higher quality code. rigorous agent workflows you can parallelize with confidence.",
+  "name": "mstack",
+  "version": "0.1.0",
+  "description": "Rigorous agent workflows for AMD GPU kernel development (aiter, FlyDSL, Triton, HIP/MFMA on gfx942 and gfx950) and Jira-ticket-driven work. A fork of pstack.",
   "author": {
-    "name": "Lauren Tan"
+    "name": "anhminhnguyenhoang"
   },
-  "homepage": "https://github.com/cursor/plugins/tree/main/pstack",
-  "repository": "https://github.com/cursor/plugins",
+  "homepage": "https://github.com/anhminhnguyenhoang/mstack",
+  "repository": "https://github.com/anhminhnguyenhoang/mstack",
   "license": "MIT",
   "keywords": [
-    "pstack",
-    "poteto-mode",
+    "mstack",
+    "ateam-mode",
+    "amd",
+    "rocm",
+    "gpu-kernels",
+    "flydsl",
+    "aiter",
+    "jira",
     "workflow",
     "principles",
-    "agent-style",
-    "subagents",
-    "unslop"
+    "subagents"
   ]
 }

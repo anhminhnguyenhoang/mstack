@@ -11,7 +11,7 @@ const commanderPackagePath = join(
 );
 const installKeyPath = join(
   nodeModulesDirectory,
-  ".poteto-mode-tools-install-key"
+  ".ateam-mode-tools-install-key"
 );
 
 function currentInstallKey(): string {

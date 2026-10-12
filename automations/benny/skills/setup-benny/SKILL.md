@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Set up Benny
 
-Benny ships as a dormant automation pack inside pstack. The plugin manifest exposes only pstack's normal skill root; this file and the two operational files are not slash skills.
+Benny ships as a dormant automation pack inside mstack. The plugin manifest exposes only mstack's normal skill root; this file and the two operational files are not slash skills.
 
 The human enters setup by pointing Cursor at the pack's `FOR_AGENTS.md`. The bootstrap flow copies the whole pack into the target repository, then reads this file directly at `.cursor/automations/benny/skills/setup-benny/SKILL.md`.
 
@@ -14,7 +14,7 @@ Benny needs external configuration and two live Cursor automations.
 
 Do not create or update an automation until the user explicitly asks. Never put a secret value in plugin files, prompts, or committed configuration.
 
-## 1. Copy the pack and enable shared pstack skills
+## 1. Copy the pack and enable shared mstack skills
 
 Do this before asking for Benny configuration and before invoking the built-in `/automate` skill.
 
@@ -31,21 +31,21 @@ Merge the entire source pack into the destination:
 
 If this file is already being read from the target destination, treat the copy as complete and run the same verification before continuing.
 
-Add pstack to the target repository's `.cursor/settings.json`. If the file or `.cursor` directory does not exist, create it.
+Add mstack to the target repository's `.cursor/settings.json`. If the file or `.cursor` directory does not exist, create it.
 
 Merge this entry into the existing JSON or JSONC:
 
 ```json
 {
 	"plugins": {
-		"pstack": { "enabled": true }
+		"mstack": { "enabled": true }
 	}
 }
 ```
 
-Preserve every unrelated top-level setting and every other plugin entry. If `plugins.pstack` already exists, change only its `enabled` value. Preserve comments and valid JSONC syntax when the file uses JSONC. Validate the file after editing it.
+Preserve every unrelated top-level setting and every other plugin entry. If `plugins.mstack` already exists, change only its `enabled` value. Preserve comments and valid JSONC syntax when the file uses JSONC. Validate the file after editing it.
 
-Reload the target project or start a fresh agent rooted there. Verify that these shared pstack skills resolve from project scope:
+Reload the target project or start a fresh agent rooted there. Verify that these shared mstack skills resolve from project scope:
 
 - `how`
 - `why`
@@ -58,7 +58,7 @@ Reload the target project or start a fresh agent rooted there. Verify that these
 - `principle-fix-root-causes`
 - `principle-prove-it-works`
 
-Do not count a skill loaded from the current session or a user-scoped plugin. The check must show that a fresh agent in the target repository receives pstack through project settings.
+Do not count a skill loaded from the current session or a user-scoped plugin. The check must show that a fresh agent in the target repository receives mstack through project settings.
 
 If project-scoped plugin installation is unavailable or any shared dependency does not resolve, stop and explain the failure.
 
@@ -113,7 +113,7 @@ Use only model slugs shown as available in the user's Cursor model picker or sup
 
 The source channel, triage identity, repository, tracker adapter, control skill, and feature map must be explicit. Fail setup if any required value stays ambiguous.
 
-Use pstack's `unslop` skill on the final automation names, descriptions, and prompt shims before saving them.
+Use mstack's `unslop` skill on the final automation names, descriptions, and prompt shims before saving them.
 
 ## 4. Check integration capabilities
 

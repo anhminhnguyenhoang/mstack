@@ -1,14 +1,14 @@
-# Route work through `/poteto-mode`
+# Route work through `/ateam-mode`
 
-`/poteto-mode` is the front door. You give it a goal, it matches one of twenty-three playbooks, copies that playbook's steps into the todo list, and calls the other skills as the steps need them. In this page you learn what a good prompt looks like, and how little of one you actually need.
+`/ateam-mode` is the front door. You give it a goal, it matches one of twenty-three playbooks, copies that playbook's steps into the todo list, and calls the other skills as the steps need them. In this page you learn what a good prompt looks like, and how little of one you actually need.
 
-![A dispatcher pulls a switch lever to route robots on rail handcars toward lit gates, under a /poteto-mode departure board listing BUG FIX, FEATURE, and INVESTIGATION.](./images/router.jpg)
+![A dispatcher pulls a switch lever to route robots on rail handcars toward lit gates, under a /ateam-mode departure board listing BUG FIX, FEATURE, and INVESTIGATION.](./images/router.jpg)
 
 ## What happens to your prompt
 
 ```mermaid
 flowchart TD
-    A[Your prompt] --> B[poteto-mode]
+    A[Your prompt] --> B[ateam-mode]
     B --> C[Read the Principles section]
     C --> D{Match the task}
     D -->|Read-only question| E[Investigation]
@@ -25,14 +25,14 @@ flowchart TD
     J --> K
 ```
 
-The diagram shows the common routes. There are also playbooks for hillclimbing a metric, diagnosing runtime symptoms and captured traces, prototypes, visual parity, authoring and evaluating skills, autonomous runs, babysitting a PR or stack to merge-ready, shipping a verified stack, running a PR queue on autopilot, orchestrating project-scale programs, session pickup, pausing safely, multi-phase plans, and worktree cleanup. The [playbook directory](../../skills/poteto-mode/playbooks/) has the full set.
+The diagram shows the common routes. There are also playbooks for hillclimbing a metric, diagnosing runtime symptoms and captured traces, prototypes, visual parity, authoring and evaluating skills, autonomous runs, babysitting a PR or stack to merge-ready, shipping a verified stack, running a PR queue on autopilot, orchestrating project-scale programs, session pickup, pausing safely, multi-phase plans, and worktree cleanup. The [playbook directory](../../skills/ateam-mode/playbooks/) has the full set.
 
 ## Say the goal, not the ceremony
 
 You don't write a spec. You say what's wrong or what you want, plus anything you already know that saves the agent time:
 
 ```text
-/poteto-mode users get two notifications after a retry. repro first, then fix and verify.
+/ateam-mode users get two notifications after a retry. repro first, then fix and verify.
 ```
 
 That's a Bug fix prompt. "repro first" is a real constraint, not politeness, and the playbook honors it. Watch the todo list fill with the Bug fix steps. A skipped step stays visible with `skip: <reason>`.
@@ -50,7 +50,7 @@ A useful prompt carries up to five things, and each one fits in a sentence:
 Here's one prompt with all five:
 
 ```text
-/poteto-mode the csv export drops its last row since yesterday's deploy. failing job id is 4812. repro first, then fix. done means the 60k-row fixture exports every row. show me the row counts before and after.
+/ateam-mode the csv export drops its last row since yesterday's deploy. failing job id is 4812. repro first, then fix. done means the 60k-row fixture exports every row. show me the row counts before and after.
 ```
 
 Two things are worth leaving out:
@@ -61,7 +61,7 @@ Two things are worth leaving out:
 For a noisy report, such as a long thread or a vague bug, make the restatement the first step:
 
 ```text
-/poteto-mode read this thread. restate the underlying issue in your own words, in plain english. don't change any code yet.
+/ateam-mode read this thread. restate the underlying issue in your own words, in plain english. don't change any code yet.
 ```
 
 A misreading shows up in the restatement, before any code exists. Correct it there, and it costs you one message instead of one wrong fix.
@@ -71,7 +71,7 @@ A misreading shows up in the restatement, before any code exists. Correct it the
 When the conversation already carries the context, the prompt shrinks to almost nothing. All of these are enough:
 
 ```text
-/poteto-mode do it
+/ateam-mode do it
 ```
 
 ```text
@@ -82,17 +82,17 @@ continue
 keep going until done
 ```
 
-Short works because the playbook holds the structure, and a Custom Mode keeps `/poteto-mode` in context on every turn. [Set up pstack](./01-setup.md#run-your-first-task) shows how to start one. Your words carry the intent, and the skill carries the rigor.
+Short works because the playbook holds the structure, and a Custom Mode keeps `/ateam-mode` in context on every turn. [Set up mstack](./01-setup.md#run-your-first-task) shows how to start one. Your words carry the intent, and the skill carries the rigor.
 
 ## Switch tasks with "new task"
 
 A long chat accumulates context from the last task. When you change subjects, say so:
 
 ```text
-/poteto-mode new task. figure out why the cache entry survives logout. don't change any code yet.
+/ateam-mode new task. figure out why the cache entry survives logout. don't change any code yet.
 ```
 
-"new task" tells `/poteto-mode` to re-match rather than continue the prior playbook. "don't change any code yet" pins this one to Investigation. Without those two phrases, a mode mid-Feature tends to treat your question as the next feature step.
+"new task" tells `/ateam-mode` to re-match rather than continue the prior playbook. "don't change any code yet" pins this one to Investigation. Without those two phrases, a mode mid-Feature tends to treat your question as the next feature step.
 
 ## Give parallel work its own machine
 
@@ -101,31 +101,31 @@ If you run several agents against one repository on one computer, they will figh
 When the work has to stay local, ask for a worktree up front:
 
 ```text
-/poteto-mode new task. branch off <base> in a fresh worktree, then port the parser change there.
+/ateam-mode new task. branch off <base> in a fresh worktree, then port the parser change there.
 ```
 
-Each task in its own branch and worktree means no agent stomps another's files. Worktrees cost disk and machine resources, so a laptop runs only a handful at once. The [Opening a PR playbook](../../skills/poteto-mode/playbooks/opening-a-pr.md) already works from a worktree for code changes, so mostly you only say this when a specific base or location matters.
+Each task in its own branch and worktree means no agent stomps another's files. Worktrees cost disk and machine resources, so a laptop runs only a handful at once. The [Opening a PR playbook](../../skills/ateam-mode/playbooks/opening-a-pr.md) already works from a worktree for code changes, so mostly you only say this when a specific base or location matters.
 
 Worktrees accumulate. When disk gets tight, ask:
 
 ```text
-/poteto-mode what's eating my disk? prune the worktrees that are safe to prune.
+/ateam-mode what's eating my disk? prune the worktrees that are safe to prune.
 ```
 
-The [Worktree cleanup playbook](../../skills/poteto-mode/playbooks/worktree-cleanup.md) classifies every worktree by merge state, uncommitted work, and which chats still touch it. It deletes only what that evidence clears and pauses for your call on anything holding uncommitted work.
+The [Worktree cleanup playbook](../../skills/ateam-mode/playbooks/worktree-cleanup.md) classifies every worktree by merge state, uncommitted work, and which chats still touch it. It deletes only what that evidence clears and pauses for your call on anything holding uncommitted work.
 
 ## Leave it running
 
 When you step away, say what done means and go:
 
 ```text
-/poteto-mode im stepping away. keep going until the migration check reports zero old callers. log your decisions.
+/ateam-mode im stepping away. keep going until the migration check reports zero old callers. log your decisions.
 ```
 
 Work you'll review later routes through [`/figure-it-out`](../../skills/figure-it-out/SKILL.md), which designs the run's phases and keeps a [`/show-me-your-work`](../../skills/show-me-your-work/SKILL.md) decision log. [Run work while you sleep](./07-overnight.md) covers the full overnight contract.
 
 **Pitfall:** don't enumerate skills in your prompt ("use /how, then /architect, then /arena..."). The playbook already sequences them, and a hand-written sequence usually reorders or drops steps the playbook would have kept. Name a skill only when you want to override a specific choice.
 
-Read [`poteto-mode`](../../skills/poteto-mode/SKILL.md) itself for the full routing rules.
+Read [`ateam-mode`](../../skills/ateam-mode/SKILL.md) itself for the full routing rules.
 
 Next: [Understand the code](./03-understand.md).
