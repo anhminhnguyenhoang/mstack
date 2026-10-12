@@ -4,7 +4,7 @@ Fill in the placeholders.
 
 ---
 
-You are answering a "why" question about a piece of code by synthesizing findings from investigators who searched different historical sources (source control, issue / ticket tracker, long-form documents, real-time team chat, infrastructure observability, error / exception tracking, product analytics warehouse, and code comments). Produce a confidence-weighted, evidence-cited narrative that says honestly what the evidence supports, and just as honestly what it doesn't.
+You are answering a "why" question about a piece of code by synthesizing findings from investigators who searched different historical sources (code history, source control and PRs, issue tracker, long-form documents, and chat). Produce a confidence-weighted, evidence-cited narrative that says honestly what the evidence supports, and just as honestly what it doesn't.
 
 ## The Question
 
@@ -87,30 +87,28 @@ Skip this section if there's a single clear answer.
 
 ### What We Don't Know
 
-Specific gaps: "We searched the issue tracker for [query1], [query2], [query3] and found no issue discussing the rate-limit threshold", not "We don't know why." Include:
+Specific gaps: "We searched the issue tracker for [query1], [query2], [query3] and found no issue discussing the small-M dispatch threshold", not "We don't know why." Include:
 
 - Questions that went unanswered
 - Searches that returned nothing
-- Sources that were unavailable, and why (such as a missing real-time team chat MCP)
+- Sources that were unavailable, and why (such as a missing chat MCP)
 - People who would likely know but whom you can't ask
 
 ### Sources Consulted
 
 What was actually searched, so the user can judge coverage and redirect:
 
-- **Source control history**: {file paths}, {number of commits reviewed}, PRs #{numbers}, and code comments searched. Or "Not searched. This should not happen because git and `gh` are always expected."
-- **Issue / ticket tracker**: {ticket IDs and keyword searches}. Or "Not searched. No matching MCP available in this environment."
+- **Code history**: {file paths}, {number of commits reviewed}, and code comments, tests, and configs searched. Or "Not searched. This should not happen because git is always expected."
+- **Source control and PRs**: {PRs #numbers, issues, review threads, and checks read}. Or "Not searched. This should not happen because `gh` or the GitHub MCP is always expected."
+- **Issue tracker**: {ticket keys and JQL searches}. Or "Not searched. No matching MCP available in this environment."
 - **Long-form documents**: {page titles and search queries}. Or "Not searched. No matching MCP available in this environment."
-- **Real-time team chat**: {channels searched, date ranges, queries}. Or "Not searched. No matching MCP available in this environment."
-- **Infrastructure observability**: {dashboards, monitors, metrics, logs, traces, or incidents searched}. Or "Not searched. No matching MCP available in this environment."
-- **Error / exception tracking**: {issues, events, or releases searched}. Or "Not searched. No matching MCP available in this environment."
-- **Product analytics warehouse**: {fully-qualified tables queried, the time windows, and the numeric summaries (counts, percentiles, first/last-seen timestamps) that bore on the question}. Or "Not searched. No matching MCP available in this environment."
+- **Chat**: {channels searched, date ranges, queries}. Or "Not searched. No matching MCP available in this environment."
 
 ### Confidence Summary
 
 One or two sentences on overall confidence, e.g.:
 
-> "The core rationale (A) is well-supported by direct PR and ticket evidence. The specific threshold value (100) is inferred from the surrounding context but not explicitly documented. The question of whether this was driven by a customer request could not be answered. No relevant issue tracker or long-form doc content surfaced, and real-time team chat search was unavailable."
+> "The core rationale (the tile cap) is well-supported by direct PR and ticket evidence. The specific threshold value (64) is inferred from the surrounding bench table but not explicitly documented. The question of whether a specific model shape drove it could not be answered. No relevant long-form doc content surfaced, and chat search was unavailable."
 
 ---
 

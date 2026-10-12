@@ -49,3 +49,36 @@ rg -n -C2 '(TODO|FIXME|HACK|XXX|NOTE)' <target_file>
 # Related tests
 rg -l '<symbol>' --glob '*test*'
 ```
+
+Look for kernel-specific records:
+
+```bash
+# Constants that encode a decision: tile sizes, thresholds, arch gates
+git log -S 'BLOCK_M = 128' -- <file>
+git log -G 'gfx9(42|50)' -- <file>
+
+# Tuned config rows: who added a shape and when
+git log -p --follow -- <config_csv>
+
+# Dispatch and shape lists in tests
+rg -n -C2 '<symbol>|<shape>' --glob '*test*'
+
+# Revert and re-land pairs near the target
+git log --oneline -i --grep='revert' -- <file>
+```
+
+## What good evidence looks like here
+
+- A comment that states the limit: "256 spills VGPRs past 512".
+- A test whose shape list names the edge case: a partial tail tile, an empty group, a varlen batch.
+- A commit that adds a guard together with the test that fails without it.
+- An arch gate added with a message that names the missing instruction.
+
+## Common pitfalls
+
+- **Rename and move noise.** `git blame -w -C -C` skips whitespace and moved lines. Use it before you trust the last-touch commit.
+- **Mass reformat commits.** A format commit owns the line but not the idea. Step past it.
+- **Tuned CSV churn.** Tuning commits rewrite many rows at once. Read the diff for the row you care about.
+- **Code as its own proof.** A threshold in code shows what the code does. It does not show why. Look for text that states the reason.
+
+For PR discussion, review threads, and issue text, see [`github.md`](./github.md).

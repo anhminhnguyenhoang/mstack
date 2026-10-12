@@ -1,6 +1,6 @@
 ---
 name: why
-description: "Use for 'why does X work this way', 'why we picked Y', design rationale, regressions, postmortems, or data-backed thresholds. Discovers available MCPs and queries each evidence category (source control, issue tracker, long-form docs, real-time chat, infrastructure observability, error tracking, product analytics warehouse) in parallel, then returns a cited read on decisions and tradeoffs. Use how for runtime behavior."
+description: "Use for 'why does X work this way', 'why does this kernel use this tile size', 'why does this dispatch threshold exist', 'why was this perf guard added', design rationale, regressions, or postmortems. Discovers available MCPs and queries each evidence category (code history, source control and PRs, issue tracker, long-form docs, chat) in parallel, with an incident lens for defensive code, then returns a cited read on decisions and tradeoffs. Use how for runtime behavior."
 disable-model-invocation: true
 ---
 
@@ -18,13 +18,21 @@ Operate as a **careful, cautious, and precise investigator**. Be honest about wh
 
 ## Step 1. Understand the Target and the Question
 
-The **target** is usually a chunk of code, a pattern, a feature, or a named design decision. The **question** is usually a design rationale, a tradeoff, a motivating edge case, an external constraint, dead code, or a broad history sweep.
+The **target** is usually a chunk of code, a kernel, a pattern, or a named design decision. The **question** is usually a design rationale, a tradeoff, a motivating edge case, an external constraint, dead code, or a broad history sweep.
+
+Examples of kernel questions:
+
+- Why does this kernel use a 128 by 128 tile?
+- Why does the dispatcher send small M to a different kernel, and why at this threshold?
+- Why was this perf regression guard added, and why at this tolerance?
+- Why is this path gated to `gfx950`?
+- Why does this tail tile keep a mask?
 
 If the target is vague ("why do we do it this way?" with no clear referent), make your best guess from conversation context (open files, recent edits, cursor location, what was just discussed). State your interpretation briefly so the user can redirect if you're off, then proceed.
 
 ## Step 2. Establish the Code Anchor
 
-Before spawning investigators, build the seed context inline: file paths and line ranges, key symbols (functions, classes, constants), the last few commits touching the target, PR numbers from merge commits (pattern `(#1234)` in the subject line), and any linked ticket IDs. Run `git blame -L <start>,<end> <file>` for last-touch commits, `git log --follow -p -- <file>` for full history with patches through renames, `git log --oneline -20 -- <file>` for recent commits with PR numbers visible, and `git log -1 --format=%B <commit>` to extract PR numbers. Then pull the PR bodies and discussion for any substantive commit: `gh pr view <number> --json title,body,author,createdAt,mergedAt,labels,closingIssuesReferences,comments,reviews`. This anchor goes to every investigator and to the synthesizer.
+Before spawning investigators, build the seed context inline: file paths and line ranges, key symbols (functions, classes, constants), the last few commits touching the target, PR numbers from merge commits (pattern `(#1234)` in the subject line), and any linked ticket IDs. Run `git blame -L <start>,<end> <file>` for last-touch commits, `git log --follow -p -- <file>` for full history with patches through renames, `git log --oneline -20 -- <file>` for recent commits with PR numbers visible, and `git log -1 --format=%B <commit>` to extract PR numbers. Then pull the PR bodies and discussion for any substantive commit: `gh pr view <number> --json title,body,author,createdAt,mergedAt,labels,closingIssuesReferences,comments,reviews`. On an MCP path, use `pull_request_read` instead, per [`forge.md`](../ateam-mode/references/forge.md). This anchor goes to every investigator and to the synthesizer.
 
 ## Step 3. Spawn Parallel Investigators
 
@@ -34,45 +42,43 @@ Before spawning investigators, build the seed context inline: file paths and lin
 
 Before spawning investigators, list the available MCPs from the Cursor environment. Use the available-tools map when present. Otherwise inspect the `mcps/` directory Cursor exposes for enabled MCP servers.
 
-Map each available MCP to one evidence category:
+Map each available source to one evidence category:
 
-1. Source control history
-2. Issue / ticket tracker
-3. Long-form documents
-4. Real-time team chat
-5. Infrastructure observability
-6. Error / exception tracking
-7. Product analytics warehouse
+1. Code history (local git and in-repo files)
+2. Source control and PRs (GitHub)
+3. Issue tracker (Jira)
+4. Long-form documents (Confluence)
+5. Chat (Slack)
 
-Source control is always available through git and `gh`. For the other six, classify using the MCP name, server instructions, tool names, and resource descriptors. If an MCP could fit more than one category, choose the one matching its primary evidence. Record ambiguous cases in the coverage map.
+Incidents are not a category. They are a lens. Append `references/sources/incident-postmortem.md` to the investigator of any category when the target is defensive.
 
-Spawn one investigator per category that has a matching MCP, all in a single message so they run concurrently, each owning exactly one tool or MCP. Don't ask one agent to cover multiple MCPs. `model`: the `why investigators` line, default `claude-sonnet-5-5-high`.
+Code history is always available through local git. Source control and PRs is always available through `gh` or, when `gh` is not signed in, the GitHub MCP namespace that the Forge table of `~/.cursor/mstack/env.md` maps to the repo. For the issue tracker and long-form documents, pick the Atlassian namespace of the ticket's site from the Jira table of the same file. For chat, use the Slack MCP. Classify any other MCP by its name, server instructions, tool names, and resource descriptors. If an MCP could fit more than one category, choose the one that matches its primary evidence. Record ambiguous cases in the coverage map.
+
+Spawn one investigator per category that has a source, all in a single message so they run concurrently, each owning exactly one tool or MCP. Don't ask one agent to cover multiple MCPs. `model`: the `why investigators` line, default `claude-sonnet-5-5-high`.
 
 Each investigator's prompt is `references/investigator-prompt.md` filled in, plus:
-- the category playbook `references/sources/<source>.md` for the selected MCP, adapted from the examples in `references/source-playbook.md`
-- `references/sources/incident-postmortem.md` **if the target code looks defensive** (null checks, retry logic, timeout handling, rate limiting, feature flags, egress guards, OOM handlers)
+- the category playbook `references/sources/<source>.md` for the selected source, listed in `references/source-playbook.md`
+- `references/sources/incident-postmortem.md` **if the target code looks defensive** (masked tails, bounds clamps, arch gates, fallback dispatch, NaN or inf guards, workspace-size checks, perf regression guards, retry or timeout handling)
 - the code anchor and the user's original question
 
 ### Investigator roster, one per available evidence category
 
 Each category below is uniquely positioned to surface one shape of "why", shown after "Best at". Use it to know what to expect back, to name a gap when a category returns empty, and, only in the rare provably-irrelevant case, to justify a skip.
 
-1. **Source control** (git history, `gh` for PRs, code comments, tests). Always spawn, the only guaranteed source. Best at *implementation-time rationale captured during review*.
-2. **Issue / ticket tracker** (e.g. Linear, Jira, GitHub Issues, Plane, Shortcut MCP). Best at *the product or business forcing function*. Strongest when the why is external to engineering.
-3. **Long-form documents** (e.g. Notion, Confluence, Google Docs, Coda MCP). Best at *long-form design rationale*, written out before it becomes code.
-4. **Real-time team chat** (e.g. Slack, Discord, Microsoft Teams, Mattermost MCP). Best at *real-time deliberation that never reached a doc*. Especially important when the source control, ticket, and doc paper trail is thin.
-5. **Infrastructure observability** (e.g. Datadog, New Relic, Honeycomb, Grafana, Splunk MCP). Best at *infrastructure and runtime reality that motivated the code*. Strongest when the target reacts to an infra signal (timeouts, retries, rate limits, circuit breakers).
-6. **Error / exception tracking** (e.g. Sentry, Rollbar, Bugsnag, Airbrake MCP). Best at *the specific exceptions and error trajectories that motivated defensive or corrective code*. Strongest for catch blocks, null guards, type checks, retries, and other defenses.
-7. **Product analytics warehouse** (e.g. Databricks, Snowflake, BigQuery, ClickHouse, dbt, Redshift MCP). Best at *product and data reality that shaped the code*. Strongest for flag-gated code, experiment-driven ships, data migrations, and "where did this number come from" questions.
+1. **Code history** (`git log -S`, `git blame`, in-repo comments, tests, tuned configs). Always spawn. Best at *the exact change that introduced a constant, a gate, or a guard*, and at the edge cases that tests encode.
+2. **Source control and PRs** (GitHub PRs, review threads, issues, CI checks). Always spawn. Best at *implementation-time rationale captured during review*, such as the bench table in a PR body or the reviewer's "why not X?".
+3. **Issue tracker** (Jira). Best at *the forcing function*: a shape that regressed, a model bring-up, a release perf target. Strongest when the why is external to engineering.
+4. **Long-form documents** (Confluence). Best at *design rationale written out before it became code*, such as an RFC, a perf study, or a tuning log.
+5. **Chat** (Slack). Best at *real-time deliberation that never reached a doc*. Especially important when the PR, ticket, and doc trail is thin.
 
 ### When to skip an investigator
 
 Only with an **explicit, written justification** that goes in the final Sources Consulted. Two valid reasons:
 
-- **No MCP is available for that category** in this environment. Flag it as a gap, not a choice: "Real-time team chat skipped. No matching MCP available, so the conversational record was not searchable."
-- **The source is provably irrelevant**, not just "probably irrelevant." A high bar: "Error / exception tracking skipped. Target is a build-time script with no runtime code path."
+- **No MCP is available for that category** in this environment. Flag it as a gap, not a choice: "Chat skipped. No matching MCP available, so the conversational record was not searchable."
+- **The source is provably irrelevant**, not just "probably irrelevant." A high bar: "Long-form documents skipped. Target is a one-line fix in a test helper."
 
-If your scope assessment suggests a single-commit trivial target where the PR description already contains the complete answer, you may answer inline **only after** confirming all seven available category searches would be redundant. Say so explicitly. This should be rare.
+If your scope assessment suggests a single-commit trivial target where the PR description already contains the complete answer, you may answer inline **only after** confirming all five category searches would be redundant. Say so explicitly. This should be rare.
 
 ## Step 4. Synthesize
 

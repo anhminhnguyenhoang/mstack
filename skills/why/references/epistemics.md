@@ -8,25 +8,25 @@ Every claim in the output must sit in one tier. The tier sets its section and it
 
 ### 1. Direct
 
-An explicit, textual citation answers the question: something an author actually *wrote* that says why, not "the code does X so the author must have wanted X." For example, a PR description "this fixes the bug where users with >1000 items couldn't paginate", a ticket "we're adding this because customer Acme requested it in their security review", a code comment "// clamp to 100 because the upstream API rejects larger values", a design doc "we chose option A over option B because we need persistence across restarts", or a chat message from the author "switching to this approach since the old one was flaky in tests".
+An explicit, textual citation answers the question: something an author actually *wrote* that says why, not "the code does X so the author must have wanted X." For example, a PR description "this fixes the wrong result for M not divisible by the tile", a ticket "we're adding this because decode shapes ran 30% under the reference on gfx950", a code comment "// cap the tile at 128 because 256 spills VGPRs", a design doc "we chose split-k over stream-k because the workspace stays fixed", or a chat message from the author "switching to this layout since the old one had LDS bank conflicts".
 
 Phrasing: confident, present tense, cited. "This exists because X."
 
 ### 2. Supported
 
-Multiple pieces of indirect evidence converge on one conclusion. No single source states it explicitly, but the pattern across sources makes it likely. For example, the PR title says "improve performance", the ticket is labeled "perf", and the surrounding commits all touch the same hot path. Or several tests added with the change all exercise very large inputs. Or the author's other PRs from the same week all name the same incident.
+Multiple pieces of indirect evidence converge on one conclusion. No single source states it explicitly, but the pattern across sources makes it likely. For example, the PR title says "improve performance", the ticket is labeled "perf", and the surrounding commits all touch the same hot path. Or several tests added with the change all exercise partial tail tiles. Or the author's other PRs from the same week all name the same incident.
 
 Phrasing: confident but clearly derived, citing each item. "The evidence points strongly to X: [the specific pieces]."
 
 ### 3. Inferred
 
-A reasonable reading of the context that nothing explicitly supports. It is *your interpretation*, not a fact from the record. For example, the PR doesn't say why, but the error was happening in production (per the incident channel timing) and the fix was rushed (merged the same day), so it was likely a hotfix. Or the function name suggests retry logic, and its retry count of 3 matches the team's 3-retry convention elsewhere in the codebase.
+A reasonable reading of the context that nothing explicitly supports. It is *your interpretation*, not a fact from the record. For example, the PR doesn't say why, but a regression was reported in the escalation channel (per the thread timing) and the fix was rushed (merged the same day), so it was likely a hotfix. Or the constant looks like a tile cap, and its value matches the cap in a sibling kernel in the same directory.
 
 Phrasing: hedged, with the chain explicit. "Given A and B, C seems likely because D."
 
 ### 4. Speculative
 
-A plausible hypothesis on thin evidence, where other explanations fit equally well. Worth presenting, since the user may know which is right, but mark it as a guess. For example, "This might be a workaround for a browser bug that's since been fixed, but we found no contemporary evidence of that", or "It's possible this threshold was chosen to match an SLA commitment, but no SLA doc references it."
+A plausible hypothesis on thin evidence, where other explanations fit equally well. Worth presenting, since the user may know which is right, but mark it as a guess. For example, "This might be a workaround for a compiler bug that's since been fixed, but we found no contemporary evidence of that", or "It's possible this threshold was chosen to match one release perf target, but no doc references it."
 
 Phrasing: "One possibility is X, but we have no direct evidence." Usually lives in Competing Hypotheses, alongside other possibilities.
 
@@ -60,7 +60,7 @@ Users often embed a hypothesis: "Why do we do it this way, I assume it's for per
 
 ## When Evidence Contradicts
 
-Surface both sources in the output, with citations. Don't pick the one that fits a tidier narrative. For example, the ticket says "we need this for customer X's compliance requirement" and the PR says "cleaning up tech debt in this area". Both may be true (the ticket motivated the work, the PR gave the author's framing), or one may be wrong. Let the user make the call.
+Surface both sources in the output, with citations. Don't pick the one that fits a tidier narrative. For example, the ticket says "we need this for a release perf target" and the PR says "cleaning up tech debt in this area". Both may be true (the ticket motivated the work, the PR gave the author's framing), or one may be wrong. Let the user make the call.
 
 ## When Evidence Is Missing
 
