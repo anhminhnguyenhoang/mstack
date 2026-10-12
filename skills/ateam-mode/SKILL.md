@@ -90,7 +90,7 @@ Read the leaf skill in full for any principle you apply. Each entry names when i
 **Always pause** for irreversible writes: force-push to shared branches, deploys, data deletion, customer messages. Also pause for these, which the grant below does not lift:
 
 - Posting or editing a Jira comment, or changing a ticket's status or fields. Write the draft (**Deliver**) and let the human approve it.
-- Opening a PR against a public upstream (`ROCm/aiter`, `ROCm/FlyDSL`, `triton-lang/triton`, `sgl-project/sglang`).
+- Marking any PR ready for review, or merging it, unless the user asked to ship. PRs open as drafts only, including on public upstreams (`ROCm/aiter`, `ROCm/FlyDSL`, `triton-lang/triton`, `sgl-project/sglang`).
 - Pushing a shared docker image.
 - Any text that names a customer or an NDA model, in any outbound surface.
 
@@ -160,4 +160,4 @@ A large or cross-cutting effort (a migration across many call sites, an ambitiou
 - **Worktree cleanup.** Reclaiming local disk by pruning merged or abandoned git worktrees ("what's using my disk", "clean up worktrees", "prune safe-to-prune worktrees", "free up space"). File: `playbooks/worktree-cleanup.md`.
 - **Ticket.** Work that starts from a Jira key. Loads the ticket into `~/<KEY>/` with `/ticket-init`, sets a checkable predicate, routes to the matching playbook, and ends in Deliver.
 - **Deliver.** Invoked at the end of every other playbook. Classifies the output as code, finding, or both. Code goes to Opening a PR. A finding becomes a Jira comment draft the human approves.
-- **Opening a PR.** Opens a ready PR from small ordered commits. Invoked by Deliver for code output.
+- **Opening a PR.** Opens a draft PR from small ordered commits. Invoked by Deliver for code output.

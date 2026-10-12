@@ -74,7 +74,7 @@ morning.
 | [worktree cleanup](./skills/ateam-mode/playbooks/worktree-cleanup.md) | reclaim disk by pruning merged or abandoned worktrees, safety-gated. |
 | [ticket](./skills/ateam-mode/playbooks/ticket.md) | work that starts from a jira key. loads the ticket into `~/<key>/` with `/ticket-init`, sets a checkable predicate, routes to the matching playbook, and ends in deliver. |
 | [deliver](./skills/ateam-mode/playbooks/deliver.md) | classify the output as code, finding, or both. code goes to opening a pr. a finding becomes a jira comment draft the human approves. invoked at the end of every other playbook. |
-| [opening a pr](./skills/ateam-mode/playbooks/opening-a-pr.md) | open a ready pr from small ordered commits with a conventional commits title and a briefing-style body. invoked by deliver for code output. |
+| [opening a pr](./skills/ateam-mode/playbooks/opening-a-pr.md) | open a draft pr from small ordered commits with a conventional commits title and a briefing-style body. invoked by deliver for code output. |
 
 </details>
 

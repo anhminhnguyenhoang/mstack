@@ -38,9 +38,9 @@ Rules for every MCP call.
 
 | Operation | `gh` | new-remote | older |
 |---|---|---|---|
-| PR create | `gh pr create --base <b>` | `create_pull_request` (`head`, `base`, `draft: false`) | `create_pull_request` (`draft: false`) |
+| PR create | `gh pr create --base <b>` | `create_pull_request` (`head`, `base`, `draft: true`) | `create_pull_request` (`draft: true`) |
 | PR edit, retarget base | `gh pr edit <n> --base <b>` | `update_pull_request` (`base`, `title`, `body`) | none: report |
-| PR ready | `gh pr ready <n>` | `update_pull_request` (`draft: false`) | none: report |
+| PR ready | `gh pr ready <n>` (human only) | `update_pull_request` (`draft: false`, human only) | none: report |
 | PR view | `gh pr view <n>` | `pull_request_read` (`get`) | `get_pull_request` |
 | Changed files | `gh pr diff <n> --name-only` | `pull_request_read` (`get_files`) | `get_pull_request_files` |
 | Checks | `gh pr checks <n>` | `pull_request_read` (`get_check_runs`, `get_status`) | `get_pull_request_status` |
