@@ -97,7 +97,7 @@ A row that carries the marker `(probe)` names a default location to look in. It 
 | Host ROCm | `readlink -f /opt/rocm` |
 | Host torch | `python3 -c 'import torch'` (expected `absent`: runs go in a container) |
 | The user's containers | `docker ps -a --format '{{.Names}}\t{{.Image}}\t{{.Status}}'`, then `docker inspect --format '{{.Name}} {{range .Mounts}}{{.Source}}:{{.Destination}} {{end}}' <name>`. Keep only containers with a mount under `$HOME`. Every other container belongs to someone else. List it nowhere |
-| Tickets | Probe `~/*/ticket-raw.md` (probe). The common parent of the folders that hold a `ticket-raw.md` is the root candidate |
+| Tickets | Probe `~/*/ticket-raw.md`, `~/*/ticket-description.md`, and `~/*/ticket-description.txt` (probe). The older two names are the last load of a folder from before mstack. The common parent of the folders that hold any of the three is the root candidate, confirmed by the user in step 9 |
 | Ticket containers | `<tickets>/*/.devcontainer/devcontainer.json`: the `--name=` entry in `runArgs`, and `workspaceMount`. Skipped when `tickets` is not found |
 | Repos | Probe `~/aiter`, `~/FlyDSL`, and `~/triton` (probe). For each that exists: `git -C <path> remote -v` and the current branch |
 | Forge | `gh auth status`, `timeout 15 ssh -o BatchMode=yes -T git@github.com`, `command -v origin`, and `get_me` on each GitHub MCP namespace in the session. Per host or org, push path is the SSH remote that works. PR path is `gh` only if `gh auth status` succeeds, `origin` only if it resolves the repo, else the MCP namespace whose sign-in covers that host or org. Resolution order is in [`references/forge.md`](../ateam-mode/references/forge.md) |
