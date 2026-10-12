@@ -13,6 +13,6 @@
 4. `both` → open the PR first. Link it in the draft's `### Evidence`.
 5. Stop at the draft. The human reads and approves it. Post to Jira only after that, per the Autonomy pause list. Post only through the namespace in the `**MCP:**` line of `~/<KEY>/ticket-raw.md`. Never post, edit, or transition a ticket on your own.
 6. In ticket work, update `~/<KEY>/STATUS.md` before the reply. Format: Ticket playbook.
-7. The work may have produced a durable lesson: a lever that worked or failed with its root cause, a hardware fact, or a method. Then offer the `kb.capture` port (`../references/ports.md`) with the source paths, in the reply. Run it only after the user says yes. It writes to a git repo the user owns.
+7. The work may have produced a durable lesson: a lever that worked or failed with its root cause, a hardware fact, or a method. Offer the `kb.capture` port (`../references/ports.md`) only when the lesson passes the knowledge base's own "What belongs here" rules: it holds without this machine, ticket, or chat, and it cites a public source. The root `README.md` of the knowledge base has the full list. The ticket record (lever doc, `STATUS.md`, numbers, shapes) stays in `~/<KEY>/`. Offer it with the source paths, in the reply. Run it only after the user says yes. The Autonomy pause on customer or NDA text still applies on top of the capture skill's own leak check. It writes to a git repo the user owns.
 
 **Reply:** the channel you chose and why, the PR link or the draft path, and the open decision for the human.
