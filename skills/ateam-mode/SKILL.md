@@ -68,6 +68,9 @@ Read the leaf skill in full for any principle you apply. Each entry names when i
 - **Fix Root Causes.** Debugging. Trace each symptom to its root cause, reproduce first, ask why until you reach it.
 - **Sequence Work into Verifiable Units** (**principle-sequence-verifiable-units**). Multi-step work (sweeps, migrations, runs of similar edits) and how you stack commits and PRs. Break work into small units that each end in a check, verify each before the next, and order delivery so the sequence proves itself.
 - **Test Behavior, Not Implementation.** Writing, changing, or keeping a test. Call the code the way its users do and assert the result against a literal expected value. If the test would still pass when every imported function returns `undefined`, rewrite the assertion or delete the test.
+- **Respect the Roofline.** A GPU kernel perf claim. State it as a percent of the HBM or MFMA peak for the arch and dtype, with the peak's source.
+- **Prove It Reached Codegen.** A compile hint, flag, attribute, or kernel structure change that you want credit for. A knob is real only if the ISA or IR changed.
+- **Correctness Before Speed.** Timing, reporting, or keeping any kernel change. `allclose` and the NaN count pass on the same run first.
 - **Explain the Number.** Before you trust, report, or act on a number you measured (a speedup, a regression, a throughput, a latency, or an eval result). Find what limits it, and rule out that it measured something other than the work you think.
 
 **Delegation**

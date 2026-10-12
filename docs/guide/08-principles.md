@@ -1,6 +1,6 @@
 # Steer with principle names
 
-mstack ships 24 principles as individual skills. `/ateam-mode` reads their index at the start of every multi-step task, applies the ones the task triggers, and names each applied principle in its reply along with the decision it changed.
+mstack ships 27 principles as individual skills. `/ateam-mode` reads their index at the start of every multi-step task, applies the ones the task triggers, and names each applied principle in its reply along with the decision it changed.
 
 You don't invoke principles. You use their names to steer. Each name points at a complete rule the agent has already read, so one phrase redirects the work more precisely than a paragraph of instructions.
 
@@ -26,7 +26,7 @@ separate before serializing shared state. give each attempt its own worktree, no
 
 Each phrase lands because the rule behind it is specific. The agent still has to say, in its reply, which decision the rule changed. A principle citation with no decision behind it is the tell that it name-dropped instead of applying.
 
-## The 24, briefly
+## The 27, briefly
 
 The core principles decide how much to build and when to rethink the design:
 
@@ -57,6 +57,9 @@ The verification principles define what counts as proof:
 - [Sequence Work into Verifiable Units](../../skills/principle-sequence-verifiable-units/SKILL.md) ends each small unit in a check before starting the next.
 - [Test Behavior, Not Implementation](../../skills/principle-test-behavior-not-implementation/SKILL.md) calls the code the way its users do and asserts a literal expected value, and deletes a test that would still pass if every imported function returned `undefined`.
 - [Explain the Number](../../skills/principle-explain-the-number/SKILL.md) names what limits a measured number and rules out that it measured something else, before anyone trusts or reports it. [`/benchmark-checklist`](../../skills/benchmark-checklist/SKILL.md) turns it into seven questions you answer from real runs.
+- [Respect the Roofline](../../skills/principle-respect-the-roofline/SKILL.md) states every GPU kernel perf claim as a percent of the HBM or MFMA peak, with the peak's source.
+- [Prove It Reached Codegen](../../skills/principle-prove-it-reached-codegen/SKILL.md) counts a compile knob as real only when the ISA or IR changed.
+- [Correctness Before Speed](../../skills/principle-correctness-before-speed/SKILL.md) gates every perf number on `allclose` and a NaN count from the same run.
 
 The delegation principles keep parallel work sane:
 
