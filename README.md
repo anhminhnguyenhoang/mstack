@@ -238,11 +238,8 @@ twenty-four short skills, one principle each. `ateam-mode` indexes them inline a
 
 a few things `ateam-mode` references but doesn't bundle:
 
-- `/deslop` and the `deslop` skill ship in the `cursor-team-kit` plugin.
-- `control-cli` (for CLIs and TUIs) and `control-ui` (for browser, Electron, web) ship in `cursor-team-kit` too.
+- the kernel skills it routes to (`cdna-kernel-opt`, `flydsl-kernel-authoring`, `format-code`, `validate-kernel-pr`, and the rest of the [kernel skill map](./skills/ateam-mode/references/kernel-skill-map.md)) live in `~/.claude/skills`, not in this plugin.
 - `/create-skill` is a cursor built-in. cursor also ships a built-in `/babysit`; inside `ateam-mode`, the [babysit playbook](./skills/ateam-mode/playbooks/babysit.md) supersedes it for pr-status requests.
-
-install `cursor-team-kit` alongside mstack if you want the full set.
 
 ## why are there no planning skills?
 

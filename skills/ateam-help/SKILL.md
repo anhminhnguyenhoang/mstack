@@ -105,7 +105,7 @@ Close calls:
 
 Not in mstack:
 
-- `/deslop`, `control-cli`, and `control-ui` ship in the `cursor-team-kit` plugin.
+- A UI or browser control skill. mstack ships none. For GPU runs, use `verify-gpu-kernel`.
 - `/loop` and `/create-skill` are Cursor built-ins.
 - mstack has no `/orchestrate` skill. Orchestrate is a `/ateam-mode` playbook. If the slash menu shows `/orchestrate`, another plugin provides it.
 
