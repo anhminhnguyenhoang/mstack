@@ -96,7 +96,7 @@ Run these and keep the raw output for step 10. A command that fails or is missin
 | Host torch | `python3 -c 'import torch'` (expected `absent`: runs go in a container) |
 | The user's containers | `docker ps -a --format '{{.Names}}\t{{.Image}}\t{{.Status}}'`, then `docker inspect --format '{{.Name}} {{range .Mounts}}{{.Source}}:{{.Destination}} {{end}}' <name>`. Keep only containers with a mount under `$HOME`. Every other container belongs to someone else. List it nowhere |
 | Ticket containers | `~/*/.devcontainer/devcontainer.json`: the `--name=` entry in `runArgs`, and `workspaceMount` |
-| Repos | For each of `~/aiter`, `~/FlyDSL`, `~/sglang`, `~/triton` that exists: `git -C <repo> remote -v` and the current branch |
+| Repos | For each of `~/aiter`, `~/FlyDSL`, `~/triton` that exists: `git -C <repo> remote -v` and the current branch |
 | Forge | `gh auth status`, `timeout 15 ssh -o BatchMode=yes -T git@github.com`, `command -v origin`, and `get_me` on each GitHub MCP namespace in the session. Per host or org, push path is the SSH remote that works. PR path is `gh` only if `gh auth status` succeeds, `origin` only if it resolves the repo, else the MCP namespace whose sign-in covers that host or org. Resolution order is in [`references/forge.md`](../ateam-mode/references/forge.md) |
 | Jira sites | The `JIRA_URL` of each server in `~/.cursor/mcp.json`, and each remote Atlassian MCP namespace in the session (such as `mcp-amd-hub-atlassian`). Seed project prefixes from the URL and `**Site:**` lines in `~/*/ticket-raw.md`: the key prefix maps to that site |
 | GPU picker | `test -f ~/.claude/skills/validate-kernel-pr/pick-idle-gpu.py` |

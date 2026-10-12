@@ -1,6 +1,6 @@
 ### Repro audit
 
-**You own the verdict on someone else's claim. Plan, run, judge.** For a result, a number, or a bug report you did not produce: "reproduce the SGLang numbers", a customer's failing script, a version matrix on a ticket. The deliverable is a finding, not a fix.
+**You own the verdict on someone else's claim. Plan, run, judge.** For a result, a number, or a bug report you did not produce: "reproduce the numbers in this PR", a customer's failing script, a version matrix on a ticket. The deliverable is a finding, not a fix.
 
 Run on the real GPU, in a container, with the claim's own script before any rewrite. A verdict from a rewritten script is a verdict on your script.
 
@@ -16,7 +16,5 @@ Run on the real GPU, in a container, with the claim's own script before any rewr
    - `blocked`. You could not run it: missing hardware, image, access, or data. Say what is missing.
    `blocked` is never `not reproduced`.
 7. Run **Deliver** as a finding. The comment draft lists the claims and verdicts first, then the environment matrix, the reproduce command, and the artifact paths. Keep the folder `~/<KEY>/` with the scripts, the raw output, and `notes/`.
-
-For an SGLang PR or an in-model number, add the pins and the head and base SHAs from `references/sglang.md`.
 
 **Reply:** one line per claim with its verdict, the matrix of environments with the cells that differ, the mechanism if you found one, the artifact folder, and the draft path.

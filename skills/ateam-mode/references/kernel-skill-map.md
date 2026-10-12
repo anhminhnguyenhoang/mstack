@@ -28,7 +28,6 @@ write ──► optimize ──► debug ──► prove ──► test ──�
 | Debug | Which commit made it slow | `bisect-perf-regression` |
 | Prove | Did VGPR, SGPR, spills, or LDS change. Compile-only, no GPU | `isa-resource-diff` |
 | Prove | Capture an ATT or `rocprofv3` trace | `capture-kernel-trace` |
-| Prove | A kernel's share of an SGLang prefill or decode step, an in-model A/B, an SGLang PR's numbers | [`sglang.md`](sglang.md) |
 | Prove | Stall hotspots from a `rocprofv3` run or dispatch dir | `kernel-trace-analysis` |
 | Prove | A decoded ATT folder, WaveScope annotations | `analyze-att-trace` |
 | Test | An `op_tests/test_*.py` for aiter | `aiter-op-test` |
