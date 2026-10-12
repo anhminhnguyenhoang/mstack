@@ -110,7 +110,7 @@ Ask once, in one AskQuestion form. Offer the detected values as options, plus `n
 - Other GPU hosts, one per arch not present here (for example `gfx942` when this host is `gfx950`). For each: SSH alias, default container, and repo path. `none` is a valid answer.
 - For each repo: the remote to push branches to, and the upstream PRs target.
 - For each repo: the default container and its mount path, when no ticket names one.
-- The GPU lock convention. The default is `flock /tmp/gpu-<id>.lock` with the `validate-kernel-pr` picker. Offer `team convention` as free text.
+- The GPU lock convention. The default is `flock /tmp/gpu-<id>.lock` with the picker that the `pr.validate` port's skill ships. Offer `team convention` as free text.
 - The Jira MCP namespace for each site it cannot map, and the project prefixes for each site it has no ticket for. A prefix maps to exactly one site.
 - The PR path for each GitHub host or org (`gh`, `origin`, or an MCP namespace name), when detection finds none or more than one. The push path is the SSH remote, asked only when SSH detection fails.
 

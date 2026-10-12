@@ -13,4 +13,4 @@ disable-model-invocation: true
 
 You skipped this when a result credits a flag or a hint, and no ISA or IR comparison backs the claim.
 
-Use **isa-resource-diff** for register, spill, scratch, and LDS deltas, and **llvm** to read the IR and ISA and to confirm an option reached the backend. Distinct from [Prove It Works](../principle-prove-it-works/SKILL.md), which checks that an output is real. This one checks that a code change is real.
+Use the `isa.diff` port for register, spill, scratch, and LDS deltas, and the `compiler.knob` port to read the IR and ISA and to confirm an option reached the backend. Both resolve in [`ports.md`](../ateam-mode/references/ports.md). Distinct from [Prove It Works](../principle-prove-it-works/SKILL.md), which checks that an output is real. This one checks that a code change is real.

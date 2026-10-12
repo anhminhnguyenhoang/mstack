@@ -13,6 +13,6 @@
 4. `both` → open the PR first. Link it in the draft's `### Evidence`.
 5. Stop at the draft. The human reads and approves it. Post to Jira only after that, per the Autonomy pause list. Post only through the namespace in the `**MCP:**` line of `~/<KEY>/ticket-raw.md`. Never post, edit, or transition a ticket on your own.
 6. In ticket work, update `~/<KEY>/STATUS.md` before the reply. Format: Ticket playbook.
-7. The work may have produced a durable lesson: a lever that worked or failed with its root cause, a hardware fact, or a method. Then offer `/kb-add-topic` with the source paths, in the reply. Run it only after the user says yes. It writes to a git repo the user owns.
+7. The work may have produced a durable lesson: a lever that worked or failed with its root cause, a hardware fact, or a method. Then offer the `kb.capture` port (`../references/ports.md`) with the source paths, in the reply. Run it only after the user says yes. It writes to a git repo the user owns.
 
 **Reply:** the channel you chose and why, the PR link or the draft path, and the open decision for the human.

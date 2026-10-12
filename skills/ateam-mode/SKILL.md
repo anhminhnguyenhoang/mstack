@@ -25,9 +25,9 @@ Remaining triggers:
 - Nontrivial multi-step → write the throughput checkpoint (Feature step 3).
 - Any prose surface, your reply to the user included → the **unslop** skill. Write the reply per **Writing the reply**. Agent-facing prose also follows the **create-skill** skill (Cursor's built-in for authoring SKILL.md files).
 - Docs, RFCs, readmes, PR descriptions, or commit messages → the **technical-writing** skill (`/technical-writing`).
-- Before commit → the **format-code** skill (the repo's CI style gate) and the `comment-sicko` agent over the diff.
+- Before commit → the `style.gate` port, run as the repo's row of the Opening a PR per-repo table says, and the `comment-sicko` agent over the diff.
 - Before review → the **no-comments** skill (`/no-comments`).
-- Running or shipping a GPU kernel, a kernel script, or a CLI → the **verify-gpu-kernel** skill. It is the control skill for this plugin. mstack has no UI or browser control skill. Host, container, and repo facts are in `~/.cursor/mstack/env.md`, written by `/setup-mstack env`. The rules are in `references/env.md`. For bug fixes, reproduce first on the same surface yourself. Hand to the user only under the narrow Bug fix step 1 exception.
+- Running or shipping a GPU kernel, a kernel script, or a CLI → the **verify-gpu-kernel** skill (the `bench.run` port). It is the control skill for this plugin. mstack has no UI or browser control skill. Host, container, and repo facts are in `~/.cursor/mstack/env.md`, written by `/setup-mstack env`. The rules are in `references/env.md`. For bug fixes, reproduce first on the same surface yourself. Hand to the user only under the narrow Bug fix step 1 exception.
 - FlyDSL, aiter, Triton, HIP, or MFMA kernel work, or a GPU perf number → the ports (`references/ports.md`). A playbook step names a port, such as `isa.diff`. That file binds it to the skill and says which one to pick. Read the skill before you apply it.
 - Researching a topic, a hardware fact, or a kernel technique → read the knowledge base index first (`~/.cursor/mstack/env.md` Knowledge base table, default `~/knowledge-base/README.md`). Cite the note when it covers the topic. Re-derive only what it does not cover.
 - Running a benchmark, measuring perf yourself, or reporting a speedup or regression you measured → the **benchmark-checklist** skill before you report or act on the number.
@@ -138,7 +138,7 @@ A large or cross-cutting effort (a migration across many call sites, an ambitiou
 - **Bug fix.** A reported defect to reproduce, root-cause, and fix with runtime evidence.
 - **Perf issue.** A measured slowness to trace and improve against a baseline.
 - **Hillclimb.** Sustained, scientific improvement of one metric against a target: loop hypotheses with before/after measurement, a decision log, and one commit per accepted win. Distinct from Perf issue, which is a one-off fix.
-- **Kernel hillclimb.** Hillclimb for a GPU kernel: GPU harness with a correctness gate, ISA resource pre-check before any benchmark, one benchmark on a locked GPU at a time, levers named from the cdna-kernel-opt menu. File: `playbooks/kernel-hillclimb.md`.
+- **Kernel hillclimb.** Hillclimb for a GPU kernel: GPU harness with a correctness gate, ISA resource pre-check before any benchmark, one benchmark on a locked GPU at a time, levers named from the `lever.menu` port. File: `playbooks/kernel-hillclimb.md`.
 - **Bound probe.** Before a redesign, measure the ceiling cheaply and decide go or no-go: analytic bound, copy roofline, remove-one-piece diagnostic, staged copy of the proposed data flow, in-model share. A probe proves a ceiling, never a speedup. File: `playbooks/bound-probe.md`.
 - **Repro audit.** Verify someone else's claim, number, or bug report on the real GPU: pin the environment, reproduce as stated, vary one axis, and give each claim a verdict (reproduced, partial, not reproduced, blocked). The deliverable is a finding. File: `playbooks/repro-audit.md`.
 - **Runtime forensics.** Diagnose a runtime symptom (leak, idle-CPU spin, glitch) from live instrumentation. The deliverable is a diagnosis, not a fix.

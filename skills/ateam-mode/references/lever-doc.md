@@ -21,7 +21,7 @@ One row per lever. IDs are `L1`, `L2`, and so on, or the owner's own scheme (P1 
 ```
 
 - **ID.** Stable. Never reused.
-- **Lever.** The name from the **cdna-kernel-opt** menu and the knob or edit, in one line.
+- **Lever.** The name from the `lever.menu` port and the knob or edit, in one line.
 - **Screen Δ vs B.** Median change against B with the spread, in the harness metric. For a lever added in Phase 3, the change against the S* of that time, marked `vs S*1`, `vs S*2`.
 - **Class.** Empty for a winner. A failure class for a loser.
 - **In S\*.** `yes`, `no`, or `-` when not yet decided.

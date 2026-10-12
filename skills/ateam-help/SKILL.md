@@ -84,6 +84,7 @@ The default answer is `/ateam-mode`, which runs most of the others when its step
 | Start from a Jira ticket key and set up its `~/<KEY>/` folder | [`/ticket-init`](../ticket-init/SKILL.md) |
 | Run, reproduce, or benchmark a kernel on the real GPU | [`/verify-gpu-kernel`](../verify-gpu-kernel/SKILL.md) |
 | Vet a performance number before reporting or acting on it | [`/benchmark-checklist`](../benchmark-checklist/SKILL.md) |
+| Find the domain skill for a kernel step: write, optimize, debug, trace, or ship | The port bindings in [`ports.md`](../ateam-mode/references/ports.md) |
 | Run a large or cross-cutting change, or one to review after stepping away | [`/figure-it-out`](../figure-it-out/SKILL.md) |
 | Keep a decision log during a run, and review it afterward | [`/show-me-your-work`](../show-me-your-work/SKILL.md) |
 | Pick a model for each role and a reasoning budget | [`/setup-mstack`](../setup-mstack/SKILL.md) |
@@ -142,6 +143,7 @@ Principles are one-rule skills that `/ateam-mode` reads and cites in its replies
 | A skill didn't load on its own | Only `/setup-mstack` loads from the user's words. The others load when the user types them or when `/ateam-mode` runs them, and it doesn't run every skill. |
 | Parallel agents overwrote each other | Give each agent its own worktree, or run them as cloud agents, which each get their own machine. |
 | An overnight run moved but finished nothing | `/loop` needs a check that can pass or fail, not a duration. See [guide page 7](../../docs/guide/07-overnight.md). |
+| A kernel step stopped because a port's skill is missing or malformed | Run `/setup-mstack env` and read its Skills table. A renamed or removed skill needs a fix in [`ports.md`](../ateam-mode/references/ports.md). |
 | The reply claims success from a green build | Ask for the real command, flow, stored value, or profile. That's the prove-it-works principle. |
 
 For a run that drifts, [`references/prompting.md`](references/prompting.md) has one-line steers. [Guide page 10](../../docs/guide/10-recipes-and-pitfalls.md) has more pitfalls and the recipes worth copying.

@@ -29,7 +29,7 @@ Prefer the container the ticket already names. Look in this order:
 1. `~/<KEY>/.devcontainer/devcontainer.json`. The `--name=` entry in `runArgs` is the container name, and `workspaceMount` is the bind mount.
 2. The repo's default container and mount path in the Repos table of `~/.cursor/mstack/env.md`.
 3. `docker ps --format '{{.Names}}\t{{.Image}}\t{{.Status}}'` for a running container in the env file's Containers table. Match by ticket key or image tag.
-4. If none exists, or the default is `not set`, ask the user which container or image to use, or build one with `build-flydsl` or `build-rocm-image`. Do not pick an unrelated container.
+4. If none exists, or the default is `not set`, ask the user which container or image to use, or build one through the `env.build` port. Do not pick an unrelated container.
 
 Only the containers in the env file's Containers table are the user's. Every other container belongs to another user or another task. Never `docker exec` into it, stop it, or remove it. A stopped container of the user's may be started only with the user's OK.
 
@@ -67,7 +67,7 @@ flock /tmp/gpu-$PICK.lock docker exec -e HIP_VISIBLE_DEVICES=$PICK <container> <
 - Run one benchmark per GPU at a time. Parallel worktrees may build and check ISA together. They queue for the GPU.
 - Use a distinct `AITER_JIT_DIR` per side or per worktree. Never share one between a baseline and a candidate.
 - The host is shared. A lock file coordinates only runs that use the same convention. Treat a busy GPU as taken, lock or no lock.
-- If no GPU stays idle, stop and report `NO_GPU`. Do not benchmark on a busy GPU. A compile-only check (**isa-resource-diff**) still works.
+- If no GPU stays idle, stop and report `NO_GPU`. Do not benchmark on a busy GPU. A compile-only check (the `isa.diff` port) still works.
 
 ## Run
 
@@ -75,12 +75,12 @@ Run the repo's own test target. Do not rewrite it.
 
 | Repo | Command (inside the container, in the repo root) |
 |---|---|
-| aiter | `python3 op_tests/test_<op>.py` with the test's own `-d`, `-b`, `-s` flags. It prints a correctness-and-perf markdown table per the **aiter-op-test** skill |
+| aiter | `python3 op_tests/test_<op>.py` with the test's own `-d`, `-b`, `-s` flags. It prints a correctness-and-perf markdown table per the `test.author` port |
 | FlyDSL | `python3 -m pytest tests/kernels/<test>.py -q` |
 | Triton kernel in aiter | The same `op_tests` script. Set `AITER_USE_SYSTEM_TRITON` as the container env sets it |
 | One-off bench script | `python3 <script>`, with the interleaved-median pattern of `~/SILOTIGER-1164/bench_hip_triton_flydsl_graph.py` |
 
-Set `GPU_ARCHS` (for example `gfx950`) when `aiter` import would otherwise call `rocminfo`. Clear JIT caches for a cold-compile comparison, per **benchmark-checklist**. For a tuned-config shape, follow **aiter-config-shape**.
+Set `GPU_ARCHS` (for example `gfx950`) when `aiter` import would otherwise call `rocminfo`. Clear JIT caches for a cold-compile comparison, per **benchmark-checklist**. For a tuned-config shape, follow the `config.tune` port. Ports resolve in [`ports.md`](../ateam-mode/references/ports.md).
 
 Read the tables the test prints. Copy numbers from the output, not from memory.
 

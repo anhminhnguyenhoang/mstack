@@ -2,7 +2,7 @@
 
 **You own the measurement story. Plan, review, verify the numbers.** Tie every fix to a measurement, don't read source instead of measuring.
 
-1. Capture a baseline trace via the matching control skill. Vet the baseline, and each later number, with the **benchmark-checklist** skill.
+1. Capture a baseline trace via the matching control skill. Vet the baseline, and each later number, with the **benchmark-checklist** skill. A GPU kernel follows the order of checks in `references/ports.md`: the `isa.diff` port first, then the `trace.capture` and `trace.analyze` ports. A regression from an unknown commit starts with the `perf.bisect` port.
 2. `how` to ground hypotheses. Don't claim a perf ceiling without running it first.
    Try the performance mantras in order, cheapest first:
    1. Don't do it. Stop work whose result nothing uses rather than cheapening it.
@@ -20,6 +20,6 @@
 5. Cite the measurement in the PR or the comment draft.
 6. Run **Deliver**.
 
-For sustained improvement against a metric rather than a one-off fix, use the Hillclimb playbook (`playbooks/hillclimb.md`).
+For sustained improvement against a metric rather than a one-off fix, use the Hillclimb playbook (`playbooks/hillclimb.md`). For a GPU kernel, use Kernel hillclimb (`playbooks/kernel-hillclimb.md`).
 
 **Reply:** baseline number, post-fix number, delta, artifact path.

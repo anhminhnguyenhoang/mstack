@@ -2,9 +2,9 @@
 
 **You own the diagnosis. Instrument the live process, don't theorize from source.** The deliverable is a cited diagnosis, not a fix.
 
-1. Capture the live signal on the matching surface via the control skill: a CPU profile for a spinning process, a heap snapshot for a leak, a CDP trace for a visual glitch. For a GPU symptom, run the kernel on a locked GPU (**verify-gpu-kernel**) and capture a `rocprofv3` kernel trace and counters for underuse, an ATT trace for stalls (**capture-kernel-trace**), or a minimal repro for NaN, wrong results, or a crash (**debug-flydsl-kernel**, **oob-detection**). A real artifact, not a guess.
+1. Capture the live signal on the matching surface via the control skill: a CPU profile for a spinning process, a heap snapshot for a leak, a CDP trace for a visual glitch. For a GPU symptom, run the kernel on a locked GPU (the `bench.run` port) and capture a `rocprofv3` kernel trace and counters for underuse, an ATT trace for stalls (the `trace.capture` port), or a minimal repro for NaN, wrong results, a crash, or an illegal address (the `kernel.debug` port). Ports resolve in `references/ports.md`. A real artifact, not a guess.
 2. Reduce the artifact to the smoking gun: the function on the hot path, the retainer chain from the leaked object to a GC root, the loop firing without input. Parse large artifacts in a subagent (the **guard-the-context-window** principle skill), keep the reduced finding in the main thread.
-3. Prove the mechanism before believing it. Inject instrumentation via CDP eval on the running process, or hotfix the live code without reloading, to confirm the hypothesis cheaply. For a kernel, add a device-side assert or printf, or run the all-ones and single-partition tests from **debug-flydsl-kernel**.
+3. Prove the mechanism before believing it. Inject instrumentation via CDP eval on the running process, or hotfix the live code without reloading, to confirm the hypothesis cheaply. For a kernel, add a device-side assert or printf, or run the error-isolation tests of the `kernel.debug` port.
 4. Map the finding back to source: file, symbol, the line that allocates or schedules.
 5. Throughput checkpoint stays one line: `throughput checkpoint: n/a, read-only forensics`.
 

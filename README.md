@@ -6,7 +6,7 @@ It is a fork of [pstack](https://github.com/cursor/plugins/tree/main/pstack) (se
 
 **mstack ends in a deliverable, not always a PR.** A ticket can end in a PR, a Jira comment draft, or both. A human approves every Jira post.
 
-**mstack routes to kernel skills.** Kernel work goes to the matching skills in `~/.claude/skills`, such as `cdna-kernel-opt`, `flydsl-kernel-authoring`, and `isa-resource-diff`.
+**mstack routes kernel work through ports.** A playbook names a capability, such as `lever.menu` or `isa.diff`. One file, [`ports.md`](./skills/ateam-mode/references/ports.md), binds each port to the matching skill in `~/.claude/skills`. `python3 scripts/check.py` keeps that file in step with the installed skills.
 
 ## install
 
@@ -52,7 +52,7 @@ morning.
 | [bug fix](./skills/ateam-mode/playbooks/bug-fix.md) | reproduce a defect, root-cause it, and fix with runtime evidence. |
 | [perf](./skills/ateam-mode/playbooks/perf-issue.md) | trace a measured slowness and improve it against a baseline. |
 | [hillclimb](./skills/ateam-mode/playbooks/hillclimb.md) | sustained, scientific improvement of one metric against a target, looping hypotheses with before/after measurement and one commit per accepted win. |
-| [kernel hillclimb](./skills/ateam-mode/playbooks/kernel-hillclimb.md) | hillclimb for a gpu kernel: correctness-gated harness, isa resource pre-check before any benchmark, one benchmark on a locked gpu at a time, levers named from the cdna-kernel-opt menu. |
+| [kernel hillclimb](./skills/ateam-mode/playbooks/kernel-hillclimb.md) | hillclimb for a gpu kernel: correctness-gated harness, isa resource pre-check before any benchmark, one benchmark on a locked gpu at a time, levers named from the `lever.menu` port. |
 | [bound probe](./skills/ateam-mode/playbooks/bound-probe.md) | before a redesign, measure the ceiling cheaply (analytic bound, copy roofline, remove-one-piece diagnostic, staged copy, in-model share) and decide go, no-go, or re-target. a probe proves a ceiling, never a speedup. |
 | [repro audit](./skills/ateam-mode/playbooks/repro-audit.md) | verify someone else's claim, number, or bug report on the real gpu: pin the environment, reproduce as stated, vary one axis, and give each claim a verdict. |
 | [runtime forensics](./skills/ateam-mode/playbooks/runtime-forensics.md) | diagnose a live symptom (leak, idle-cpu spin, glitch) from instrumentation. |
@@ -240,7 +240,7 @@ twenty-seven short skills, one principle each. `ateam-mode` indexes them inline 
 
 a few things `ateam-mode` references but doesn't bundle:
 
-- the kernel skills it routes to (`cdna-kernel-opt`, `flydsl-kernel-authoring`, `format-code`, `validate-kernel-pr`, and the rest of the [port bindings](./skills/ateam-mode/references/ports.md)) live in `~/.claude/skills`, not in this plugin.
+- the kernel skills its ports bind (listed in [`ports.md`](./skills/ateam-mode/references/ports.md)) live in `~/.claude/skills`, not in this plugin. `python3 scripts/check.py` checks that each one resolves. `--no-skills` skips that check on a machine without them.
 - `/create-skill` is a cursor built-in. cursor also ships a built-in `/babysit`; inside `ateam-mode`, the [babysit playbook](./skills/ateam-mode/playbooks/babysit.md) supersedes it for pr-status requests.
 
 ## why are there no planning skills?
