@@ -17,4 +17,6 @@ Run on the real GPU, in a container, with the claim's own script before any rewr
    `blocked` is never `not reproduced`.
 7. Run **Deliver** as a finding. The comment draft lists the claims and verdicts first, then the environment matrix, the reproduce command, and the artifact paths. Keep the folder `~/<KEY>/` with the scripts, the raw output, and `notes/`.
 
+For an SGLang PR or an in-model number, add the pins and the head and base SHAs from `references/sglang.md`.
+
 **Reply:** one line per claim with its verdict, the matrix of environments with the cells that differ, the mechanism if you found one, the artifact folder, and the draft path.
