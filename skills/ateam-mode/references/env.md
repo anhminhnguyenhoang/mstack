@@ -1,31 +1,26 @@
 ### Kernel environment
 
-Where kernel work runs. Read this before a GPU run, a worktree, or a PR. The **verify-gpu-kernel** skill owns the commands. This file owns the map.
+Where kernel work runs. Read this before a GPU run, a container exec, a worktree, a PR, or a Jira read. The **verify-gpu-kernel** skill owns the commands. This file owns the rules.
 
 ```
 host ──► container ──► repo path ──► test command ──► arch
 ```
 
-| Host | Container | Repo on host | Repo in container | Test command | Arch |
-|---|---|---|---|---|---|
-| `smci355-ccs-aus-m01-21` (8 GPUs) | `silotiger-1164-mhc` (running) | `~/aiter` | `/workspaces/aiter` | `python3 op_tests/test_<op>.py` | `gfx950` (MI355X) |
-| same | `silotiger-1164-mhc` | `~/aiter/.worktrees/<name>` | `/workspaces/aiter/.worktrees/<name>` | same, with `PYTHONPATH` set to the worktree | `gfx950` |
-| same | `TODO` FlyDSL container (`flydsl-dev` exists, stopped) | `~/FlyDSL` | `TODO` mount path | `python3 -m pytest tests/kernels/<test>.py -q` | `gfx950` |
-| same | `rocm-31582-sdpa` (defined in `~/ROCM-31582/.devcontainer`, not created on this host) | `~/ROCM-31582` | `/workspaces/ROCM-31582` | `python3 repro_version_matrix.py` | `gfx950` |
-| `TODO` MI300X host | `TODO` | `TODO` | `TODO` | `TODO` | `gfx942` |
+The facts for this machine are not in the plugin. They are in `~/.cursor/mstack/env.md`, which `/setup-mstack env` writes (**setup-mstack**, Part B). That file has the hosts and their SSH aliases, the user's containers and mounts, each repo's push remote and PR target, the forge, the Jira site to MCP namespace map, and the GPU lock convention.
 
-Sources.
+- The file is missing → stop, and ask the user to run `/setup-mstack env`.
+- A fact you need is `not set` → stop, and ask the user for it or to rerun `/setup-mstack env`. Do not guess a host, a container, or a remote.
+- A fact looks stale (a container that no longer exists, a different arch) → run the **verify-gpu-kernel** doctor, then ask the user to rerun `/setup-mstack env`.
 
-- The host row, the container list, the mounts, and the arch come from `hostname`, `rocm-smi`, `docker ps`, `docker inspect silotiger-1164-mhc`, and `rocminfo` on this host.
-- `TODO`: the SSH name `mi355x-tritoners`. It is not in `~/.ssh/config` here. Confirm it is the host above.
-- `TODO`: the MI300X (`gfx942`) host. `optimize-mla-reduce-flydsl` names a container `anguyenh-mla-reduce` on GPU 5, ROCm 7.2.4, with a worktree at `/home/anguyenh/aiter-worktrees/prod-fold`. None of these exist on this host. Fill the row from the real host.
-- `jdbba-autoresearch` names a container `jdbba-flydsl`. It does not exist on this host either.
+A ticket can override the defaults. `~/<KEY>/.devcontainer/devcontainer.json` names the ticket's container (`--name=` in `runArgs`) and its mount (`workspaceMount`). Prefer it over the env file's default container.
 
 Rules.
 
 - The host has no torch. Run every test and benchmark in the container, never on the bare host.
-- A container sees only its bind mounts. A path outside a mount is invisible to it.
-- Use `HIP_VISIBLE_DEVICES` to pick the GPU, one per run. The container default is GPU 0, which is not necessarily idle.
+- A container sees only its bind mounts. A path outside a mount is invisible to it. Make worktrees inside the mount.
+- Touch only the user's containers, as listed in the env file. Never `docker exec`, stop, or remove anyone else's.
+- Use `HIP_VISIBLE_DEVICES` to pick the GPU, one per run. A container's default GPU is not necessarily idle.
 - Give each worktree and each side of a comparison its own `AITER_JIT_DIR`.
 - Check the arch from inside the container (`rocminfo | grep -m1 gfx`) before you trust a number.
-- A ticket's scripts, artifacts, and notes live in `~/<KEY>/`, mounted at `/workspaces/<KEY>`.
+- A ticket's scripts, artifacts, and notes live in `~/<KEY>/`, mounted in its container.
+- Pick the Jira MCP namespace from the ticket URL's site, per the env file's Jira table. Pick the GitHub path per its Forge table.

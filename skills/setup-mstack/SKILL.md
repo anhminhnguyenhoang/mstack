@@ -1,13 +1,20 @@
 ---
 name: setup-mstack
-description: Configure which models mstack uses per role and at what reasoning budget. Detects your available models and writes an always-applied rule that overrides the skill defaults. Use for /setup-mstack, "configure mstack models", "mstack budget", or changing mstack's model choices.
+description: Configure mstack for this user and this machine. Part A sets the model per role and the reasoning budget. Part B detects the GPU hosts, containers, repos, forge, Jira sites, and GPU lock, asks for what it cannot detect, and writes the machine-local env file every kernel skill reads. Use for /setup-mstack, /setup-mstack models, /setup-mstack env, "configure mstack", "mstack budget", or when a skill reports that ~/.cursor/mstack/env.md is missing or a fact in it is `not set`.
 ---
 
 # Setup mstack
 
-Write `~/.cursor/rules/mstack-models.mdc`, an always-applied rule that sets mstack's model per role.
+Two outputs, both outside the plugin, so a plugin update never overwrites them:
 
-## Steps
+| Part | Writes | Read by |
+|---|---|---|
+| A. Models | `~/.cursor/rules/mstack-models.mdc` | `ateam-mode` and every routed skill that spawns a subagent |
+| B. Environment | `~/.cursor/mstack/env.md` and `~/.cursor/rules/mstack-env.mdc` | `verify-gpu-kernel`, `references/env.md`, Ticket, Deliver, Opening a PR |
+
+`/setup-mstack` runs A, B, then C. `/setup-mstack models` runs A only. `/setup-mstack env` runs B only. A skill that stops on a missing or `not set` env fact sends the user to `/setup-mstack env`.
+
+## Part A. Models
 
 ### 1. Detect available models
 
@@ -69,6 +76,91 @@ interrogate reviewers: claude-opus-5-5-xhigh, grok-4.7-xhigh-fast
 
 Tell the user the rule was written and that it applies to new sessions. Re-running this skill updates it.
 
-### 7. Offer a verification skill (optional)
+## Part B. Environment
 
-Check whether the project has a way to drive the real app for proof (a `verify-*` skill, or an existing harness). If not, offer once: "want a project-local verification skill, so agents can drive the app the way a user does and prove changes work? I can generate one with /create-verification-skill." On yes, invoke `/create-verification-skill` (resolves wherever mstack is installed: workspace, user, or plugin). On no, move on without pushing.
+Machine facts live in `~/.cursor/mstack/env.md`, never in the plugin. The plugin's [`references/env.md`](../ateam-mode/references/env.md) holds only the schema and the rules. Every command in this part is read-only. Never `docker exec`, start, stop, or remove a container here, and never write a token or secret into the file.
+
+### 7. Load current state
+
+If `~/.cursor/mstack/env.md` exists, read it. A fact marked `user` is the user's answer. Keep it unless detection now contradicts it, and then show both values and ask. A fact marked `detected` is refreshed by step 8.
+
+### 8. Detect
+
+Run these and keep the raw output for step 10. A command that fails or is missing is a fact too. Record it as `absent`.
+
+| Fact | Command |
+|---|---|
+| Host name | `hostname` |
+| GPUs and arch | `rocminfo \| grep -o 'gfx[0-9a-f]*' \| sort \| uniq -c`, `rocm-smi --showproductname` |
+| Host ROCm | `readlink -f /opt/rocm` |
+| Host torch | `python3 -c 'import torch'` (expected `absent`: runs go in a container) |
+| The user's containers | `docker ps -a --format '{{.Names}}\t{{.Image}}\t{{.Status}}'`, then `docker inspect --format '{{.Name}} {{range .Mounts}}{{.Source}}:{{.Destination}} {{end}}' <name>`. Keep only containers with a mount under `$HOME`. Every other container belongs to someone else. List it nowhere |
+| Ticket containers | `~/*/.devcontainer/devcontainer.json`: the `--name=` entry in `runArgs`, and `workspaceMount` |
+| Repos | For each of `~/aiter`, `~/FlyDSL`, `~/sglang`, `~/triton` that exists: `git -C <repo> remote -v` and the current branch |
+| Forge | `gh auth status`, `timeout 15 ssh -o BatchMode=yes -T git@github.com`, `command -v origin`, and `get_me` on each GitHub MCP namespace in the session |
+| Jira sites | The `JIRA_URL` of each server in `~/.cursor/mcp.json`, and each remote Atlassian MCP namespace in the session (such as `mcp-amd-hub-atlassian`) |
+| GPU picker | `test -f ~/.claude/skills/validate-kernel-pr/pick-idle-gpu.py` |
+| Knowledge base | `test -f ~/knowledge-base/README.md` |
+
+### 9. Ask what detection cannot settle
+
+Ask once, in one AskQuestion form. Offer the detected values as options, plus `none` or `skip` where it applies. Ask only what is unknown or contradicted:
+
+- The SSH alias or aliases for this host, as other machines reach it.
+- Other GPU hosts, one per arch not present here (for example `gfx942` when this host is `gfx950`). For each: SSH alias, default container, and repo path. `none` is a valid answer.
+- For each repo: the remote to push branches to, and the upstream PRs target.
+- For each repo: the default container and its mount path, when no ticket names one.
+- The GPU lock convention. The default is `flock /tmp/gpu-<id>.lock` with the `validate-kernel-pr` picker. Offer `team convention` as free text.
+- The Jira MCP namespace for each Jira site, when one site matches more than one namespace.
+- The GitHub path for each GitHub host or org, when more than one MCP namespace signs in.
+
+A fact the user skips is written as `not set`. A skill that needs a `not set` fact stops and asks. It never guesses.
+
+### 10. Write the env file
+
+Overwrite `~/.cursor/mstack/env.md` in full, so a rerun stays idempotent. Every row ends with its source: `detected <date>` or `user <date>`. Use this shape:
+
+```
+# mstack environment (machine-local, written by /setup-mstack env)
+
+## Hosts
+| Host | SSH alias | Arch | GPUs | Host ROCm | Host torch | Source |
+
+## Containers
+| Container | Image | Status | Mounts (host:container) | Use | Source |
+
+## Repos
+| Repo | Push remote | PR target | Default container | Path in container | Source |
+
+## Forge
+| Host or org | Push | PR read and write | Source |
+
+## Jira
+| Site | MCP namespace | Source |
+
+## GPU lock
+| Picker | Lock | Source |
+
+## Knowledge base
+| Path | Source |
+```
+
+Then write `~/.cursor/rules/mstack-env.mdc`, overwriting it in full:
+
+```
+---
+description: mstack machine facts
+alwaysApply: true
+---
+mstack machine facts (hosts, containers, repos, forge, Jira sites, GPU lock) are in ~/.cursor/mstack/env.md. Read it before a GPU run, a container exec, a PR, or a Jira read. A missing file or a `not set` fact means: stop and ask the user to run /setup-mstack env.
+```
+
+### 11. Report
+
+Show the env file as a short table per section. List each fact that is `not set`, and which skill stops on it. Show what changed since the last run.
+
+## Part C. Verification
+
+### 12. Offer a verification skill (optional)
+
+GPU kernels already have **verify-gpu-kernel**. Skip this step when the project's surface is a kernel or a kernel script. For any other surface, check whether the project has a way to drive the real app for proof (a `verify-*` skill, or an existing harness). If not, offer once: "want a project-local verification skill, so agents can drive the app the way a user does and prove changes work? I can generate one with /create-verification-skill." On yes, invoke `/create-verification-skill` (resolves wherever mstack is installed: workspace, user, or plugin). On no, move on without pushing.

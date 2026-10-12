@@ -25,6 +25,7 @@ Infer the need from the message and the conversation. A named situation, such as
 Check the state that changes the answer, and mention it only when it does:
 
 - No `~/.cursor/rules/mstack-models.mdc` means `/setup-mstack` hasn't run for this user, so every role uses its default model.
+- No `~/.cursor/mstack/env.md` means the machine is not mapped, so every GPU run, container exec, and PR stops and asks. Give them `/setup-mstack env`.
 - No `verify-*` skill or other app harness in the project means agents have no scripted way to drive the app. Mention `/create-verification-skill` when the question is about proving a change works.
 
 When the model rule is missing and it matters, ask whether the user wants to pick a model for each role and a reasoning budget now. It matters when the user is new, the question is about setup or cost, or the answer depends on which models run. Ask at most once per chat. If the need is also unclear, ask both questions together. Offer two choices:
@@ -35,7 +36,7 @@ When the model rule is missing and it matters, ask whether the user wants to pic
 ## Get set up
 
 1. Install with `/add-plugin mstack` in chat, or from Customize in the sidebar.
-2. Run [`/setup-mstack`](../setup-mstack/SKILL.md). It asks for a reasoning budget, maps a model to each role, and writes a rule. The rule applies to new chats.
+2. Run [`/setup-mstack`](../setup-mstack/SKILL.md). It asks for a reasoning budget, maps a model to each role, and writes a rule. Then it maps the machine (hosts, containers, repos, forge, Jira sites, GPU lock) into `~/.cursor/mstack/env.md` and asks for what it cannot detect. Both apply to new chats.
 3. Start a real task with `/ateam-mode`, a goal, and a check that can pass or fail.
 
 Installing changes nothing until the user invokes a skill. Only `/setup-mstack` loads from the user's words. The [README](../../README.md) and [guide page 1](../../docs/guide/01-setup.md) have the details. Offer to word their first prompt with them, per [`references/prompting.md`](references/prompting.md).
@@ -86,6 +87,7 @@ The default answer is `/ateam-mode`, which runs most of the others when its step
 | Run a large or cross-cutting change, or one to review after stepping away | [`/figure-it-out`](../figure-it-out/SKILL.md) |
 | Keep a decision log during a run, and review it afterward | [`/show-me-your-work`](../show-me-your-work/SKILL.md) |
 | Pick a model for each role and a reasoning budget | [`/setup-mstack`](../setup-mstack/SKILL.md) |
+| Map the GPU hosts, containers, repo remotes, and Jira sites for this machine | `/setup-mstack env` |
 | Turn their own working habits into a personal mode skill | [`/automate-me`](../automate-me/SKILL.md) |
 | Turn what a finished task taught into skill edits | [`/reflect`](../reflect/SKILL.md) |
 | Stop agents from repeating the same mistakes in this repo | [`/correct`](../correct/SKILL.md) |

@@ -18,7 +18,7 @@ It is a fork of [pstack](https://github.com/cursor/plugins/tree/main/pstack) (se
 
 two steps:
 
-1. run [`/setup-mstack`](./skills/setup-mstack/SKILL.md), pick a reasoning budget, and choose which models you want.
+1. run [`/setup-mstack`](./skills/setup-mstack/SKILL.md), pick a reasoning budget, and choose which models you want. it then maps this machine (gpu hosts, your containers, repo remotes, forge, jira sites, gpu lock) into `~/.cursor/mstack/env.md` and asks for what it cannot detect.
 2. use [`/ateam-mode`](./skills/ateam-mode/SKILL.md) whenever you're doing anything that requires rigor.
 
 new here? the [mstack guide](./docs/guide/README.md) walks you through a first real task, from setup and prompting through verification and overnight runs. stuck, or unsure which skill fits? ask [`/ateam-help`](./skills/ateam-help/SKILL.md).
@@ -122,7 +122,7 @@ to keep [`/ateam-mode`](./skills/ateam-mode/SKILL.md) on across turns, pick it f
 | [`/swarm`](./skills/swarm/SKILL.md) | you want N parallel workers across different slices or races, then one aggregated report. |
 | [`/interrogate`](./skills/interrogate/SKILL.md) | you have a diff and want different models to try to break it, including a strict code-quality lens. |
 | [`/automate-me`](./skills/automate-me/SKILL.md) | you want your own `-mode` skill, drafted from how you've actually worked. |
-| [`/setup-mstack`](./skills/setup-mstack/SKILL.md) | you want to pick which models mstack uses per role. detects your models and writes a config rule. |
+| [`/setup-mstack`](./skills/setup-mstack/SKILL.md) | you want to pick which models mstack uses per role, or map this machine for kernel work. `/setup-mstack models` writes the model rule. `/setup-mstack env` writes `~/.cursor/mstack/env.md`. |
 | [`/reflect`](./skills/reflect/SKILL.md) | a long task landed and you want the recipe captured as a skill edit. |
 | [`/correct`](./skills/correct/SKILL.md) | you keep correcting agents for the same mistakes. mines history for mistake classes, fixes each at the highest level that works (architecture, then types, lint, and ci, then tests, with docs last), and keeps a table pairing each rule with what enforces it. |
 | [`/teach`](./skills/teach/SKILL.md) | you want to actually understand a change or subsystem, not just have it summarized. runs how + why and weaves one plain explanation, built up diagram by diagram. |

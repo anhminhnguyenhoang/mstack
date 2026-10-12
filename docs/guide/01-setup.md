@@ -28,6 +28,12 @@ You only override what you care about. A role with no line in the rule keeps the
 
 You might be wondering what happens if you use Auto. Set a role to `inherit-parent` or `auto` and mstack omits the subagent `model` field, so the subagent inherits your parent chat model. Both values mean the same thing, and neither is a model slug. For a panel role the value is a list, and one subagent runs per entry, so the list length sets the panel size. Setup also configures `swarm workers`, the default model for every `/swarm` worker unless a race names a model for each arm.
 
+## Map this machine
+
+After the models, `/setup-mstack` maps the machine for kernel work. It detects the GPU arch, your containers and their mounts, each repo's remotes, the forge you can push and open PRs through, the Jira sites in your MCP config, and the GPU lock picker. Then it asks in one form for what it cannot detect: the SSH alias, hosts for other archs, the push remote per repo, the default container per repo, and the lock convention.
+
+It writes `~/.cursor/mstack/env.md`, outside the plugin, so an update never overwrites it. A fact you skip is `not set`, and a skill that needs it stops and asks rather than guessing. Rerun `/setup-mstack env` when a container or host changes.
+
 ## Accept the verification offer, or don't
 
 At the end of setup, `/setup-mstack` looks for a way to prove app behavior in your project, either a `verify-*` skill or an existing harness. If it finds neither, it offers once to generate one with [`/create-verification-skill`](../../skills/create-verification-skill/SKILL.md).
