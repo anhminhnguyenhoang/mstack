@@ -91,7 +91,7 @@ Read the leaf skill in full for any principle you apply. Each entry names when i
 
 - Posting or editing a Jira comment, or changing a ticket's status or fields. Write the draft (**Deliver**) and let the human approve it.
 - Opening a PR against a public upstream (`ROCm/aiter`, `ROCm/FlyDSL`, `triton-lang/triton`, `sgl-project/sglang`). Prepare the branch, title, and body, ask, and open it only as a draft after the user says yes. Without a yes, stop.
-- Marking any PR ready for review, or merging it, unless the user asked to ship. PRs open as drafts only.
+- Marking any PR ready for review. PRs open as drafts only, and the human marks them ready after review. Merge only when the user asked to ship, and only a PR the human has marked ready.
 - Pushing a shared docker image.
 - Any text that names a customer or an NDA model, in any outbound surface.
 

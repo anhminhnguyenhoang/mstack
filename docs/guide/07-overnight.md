@@ -71,10 +71,10 @@ Before the skill hands back its summary, it spawns a reviewer on a different mod
 
 The contract above drives one task to one finish condition. Some nights hold more, a queue of independent changes or a whole program. Three playbooks scale the same trust up.
 
-[Autopilot-full](../../skills/ateam-mode/playbooks/autopilot-full.md) runs a queue of independent PRs to merged. Each PR gets one owner agent that carries it from build through merge, and no owner merges on its own verdict. A swarm of fresh verifiers starts a round at the owner's code-ready head and again at every later push that changes the patch. Only a clean verdict on the patch that merges authorizes the merge:
+[Autopilot-full](../../skills/ateam-mode/playbooks/autopilot-full.md) runs a queue of independent PRs to merged. PRs open as drafts, and each merges only after you mark it ready. Each PR gets one owner agent that carries it from build through merge, and no owner merges on its own verdict. A swarm of fresh verifiers starts a round at the owner's code-ready head and again at every later push that changes the patch. Only a clean verdict on the patch that merges authorizes the merge:
 
 ```text
-/ateam-mode full autopilot on this queue. each item is independent. i want them merged by morning.
+/ateam-mode full autopilot on this queue. each item is independent. i want them verified and ready for my review by morning.
 ```
 
 [Autopilot-stack](../../skills/ateam-mode/playbooks/autopilot-stack.md) runs the same owner loop but ships nothing. You wake up to one linear base-branch stack with a verifier's verdict on every link, and you review and land it yourself. Pick it over Autopilot-full when the changes are coupled, or when you want your own eyes on the work before anything merges:

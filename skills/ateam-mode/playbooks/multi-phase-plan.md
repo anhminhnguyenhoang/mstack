@@ -54,7 +54,7 @@ Tests alone are not sufficient verification. A PR is verified only when its unit
 ### PR mechanics, for every PR
 
 - [ ] Resolve the forge once per `references/forge.md`: Origin, then `gh` once signed in, then the GitHub MCP namespace. Use that path for every PR operation. Record the path and why. Never require `gt`.
-- [ ] Open the PR as a draft, never ready, per **Opening a PR**. Use the run's built-in PR tool when it has one, else `origin pr create --status draft --base <base-branch>`, `gh pr create --draft --base <base-branch>`, or MCP `create_pull_request` according to the resolved forge. A stack child targets its parent branch.
+- [ ] Open the PR as a draft, never ready, per **Opening a PR**. Use the run's built-in PR tool when it has one, else `origin pr create --status draft --base <base-branch>`, `gh pr create --draft --base <base-branch>`, or MCP `create_pull_request` with `draft: true` according to the resolved forge. A stack child targets its parent branch. On a public upstream, ask first and open it only after the human says yes, per **Opening a PR**.
 - [ ] Run the repo's lint and typecheck once before the PR-facing push. Push with hooks on.
 - [ ] Run the `style.gate` port and the `comment-sicko` agent before each commit and `/no-comments` before review.
 - [ ] Triage every Bugbot and security-reviewer comment per `../references/bugbot-triage.md`.

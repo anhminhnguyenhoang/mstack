@@ -38,7 +38,7 @@ Rules for every MCP call.
 
 | Operation | `gh` | new-remote | older |
 |---|---|---|---|
-| PR create | `gh pr create --base <b>` | `create_pull_request` (`head`, `base`, `draft: true`) | `create_pull_request` (`draft: true`) |
+| PR create | `gh pr create --draft --base <b>` | `create_pull_request` (`head`, `base`, `draft: true`) | `create_pull_request` (`draft: true`) |
 | PR edit, retarget base | `gh pr edit <n> --base <b>` | `update_pull_request` (`base`, `title`, `body`) | none: report |
 | PR ready | `gh pr ready <n>` (human only) | `update_pull_request` (`draft: false`, human only) | none: report |
 | PR view | `gh pr view <n>` | `pull_request_read` (`get`) | `get_pull_request` |

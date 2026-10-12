@@ -160,8 +160,8 @@ prototype:         /ateam-mode build two prototypes of the markdown renderer so 
                    spawn an agent for each.
 multi-phase:       /ateam-mode open source these skills as a plugin. nothing internal leaks, work
                    in a temp dir, show me the dependency graph first.
-overnight run:     /ateam-mode i'm going to bed. land the stack even if ci flakes. i want
-                   everything merged by morning.
+overnight run:     /ateam-mode i'm going to bed. get the stack green even if ci flakes. i want
+                   every pr verified and ready for my review by morning.
 babysit:           /ateam-mode check on pr 123. anything outstanding?
 figure it out:     /ateam-mode i'm stepping away. migrate every caller from the synchronous store
                    to the new async one, keeping behavior identical. i want to trust it was done
