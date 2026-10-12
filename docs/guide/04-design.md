@@ -9,7 +9,7 @@ The two most common design mistakes are taking the agent's first design and poli
 ## Settle the shape with `/architect`
 
 ```text
-/architect design the import pipeline before writing any code. i care most about how callers use it.
+/architect design the shape dispatch for this kernel family before writing any code. i care most about how callers pick a kernel.
 ```
 
 [`/architect`](../../skills/architect/SKILL.md) grounds itself first, running `/how` over the code the design touches and `/why` when it moves ownership or layers. Then it runs `/arena` to produce competing design sketches, with the caller's usage written first in each, followed by types, signatures, and a module map.
@@ -47,13 +47,13 @@ flowchart LR
 The panel comes from your [`/setup-mstack`](../../skills/setup-mstack/SKILL.md) configuration, and you can adjust it per task. Ask for more candidates when the decision matters, fewer when it doesn't:
 
 ```text
-/arena this, 5 candidates. the cache key format is expensive to change later.
+/arena this, 5 candidates. the tuned-config CSV schema is expensive to change later.
 ```
 
 ## Cover slices and races with `/swarm`
 
 ```text
-/swarm check every package under packages/ against its check.sh. one worker per package. one report.
+/swarm check every kernel under aiter/ops/flydsl/ with the isa.diff port. one worker per kernel. one report.
 ```
 
 [`/swarm`](../../skills/swarm/SKILL.md) fans N workers across independent slices, coverage matrices, gauntlet lanes, exploration partitions, or declared race arms. Each worker gets its own scope and check, then reports `PASS`, `ISSUES`, or `BLOCKED`. The parent waits for the workers and returns one compact report with any gaps or dropouts.
@@ -75,15 +75,15 @@ Read the dismissals too. The lead is a pragmatic senior engineer, not an oracle,
 Never take the first design. Ask for a few, and pick from evidence you can see:
 
 ```text
-/ateam-mode prototype a few options for the new dropdown menu. take screenshots or videos for me to compare.
+/ateam-mode prototype a few LDS layouts for this kernel. run the ISA check on each and send me the bank-conflict counts to compare.
 ```
 
-The [Prototype playbook](../../skills/ateam-mode/playbooks/prototype.md) builds throwaway sketches in a scratch directory, puts the variants behind one switcher, drives each one, and captures screenshots or timings. It also works for behavior and algorithms, not just UI. Prototypes are planning with code. They let the agent answer its own open questions by running something instead of asking you, and they leave room for an option you wouldn't have thought of.
+The [Prototype playbook](../../skills/ateam-mode/playbooks/prototype.md) builds throwaway sketches in a scratch directory, puts the variants behind one switch, runs each one, and captures the output or timings. It works for kernel layouts, algorithms, and behavior. Prototypes are planning with code. They let the agent answer its own open questions by running something instead of asking you, and they leave room for an option you wouldn't have thought of.
 
 The same idea scales up to a real design. Pair `/architect` with prototypes and keep a review gate:
 
 ```text
-/ateam-mode we need rate limiting for external webhooks. /architect it first, and answer open questions with prototypes. let me review before proceeding.
+/ateam-mode we need a shape dispatch for the new fp8 GEMM. /architect it first, and answer open questions with prototypes. let me review before proceeding.
 ```
 
 Don't spend reviewers on an abstract plan. `/interrogate` belongs on a diff. Point adversarial review at a plan with no code behind it and the reviewers invent theoretical risks and edge cases that will never happen. Let prototypes settle the questions, then review what got built.
@@ -93,7 +93,7 @@ Don't spend reviewers on an abstract plan. `/interrogate` belongs on a diff. Poi
 For a package or API that other code will use, start with the doc a user would read:
 
 ```text
-/ateam-mode write a tutorial for how i would use the new config package first. then /teach me why it beats the current one.
+/ateam-mode write a tutorial for how i would call the new tuned-config API first. then /teach me why it beats the current one.
 ```
 
 Writing the tutorial first forces the caller's view. You describe the API to a hypothetical user and work back to the implementation. The doc also becomes a concrete target the agent checks its own work against. Name [`/technical-writing`](../../skills/technical-writing/SKILL.md) when the doc itself matters, so a tutorial stays a tutorial instead of drifting into reference and explanation at once.
@@ -111,10 +111,10 @@ The [Multi-phase plan playbook](../../skills/ateam-mode/playbooks/multi-phase-pl
 For a migration, state the bar in the prompt:
 
 ```text
-/ateam-mode plan the migration of our ui library to the new styling system. small verifiable PRs, each with visual regression checks. the result must match the original exactly, bugs included.
+/ateam-mode plan the migration of the aiter GEMM configs to the new CSV schema. small verifiable PRs, each with a check that every shape resolves to the same kernel. the result must match the original exactly, bugs included.
 ```
 
-"bugs included" keeps the migration from quietly fixing things on the way, which would make the old and new output impossible to compare. For a project that spans many days, you can commit the plan to the repo for a while so other agents see the work in progress. Delete it when the work lands.
+"bugs included" keeps the migration from quietly fixing things on the way, which would make the old and new dispatch impossible to compare. For a project that spans many days, you can commit the plan to the repo for a while so other agents see the work in progress. Delete it when the work lands.
 
 ## How much design work does a task deserve?
 

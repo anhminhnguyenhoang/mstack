@@ -6,7 +6,7 @@ A prompt states the intent and the check for done. The playbook supplies the ste
 
 - The goal. Say what is wrong or what the user wants.
 - The done check. It can pass or fail. "Make it better" and a duration are not checks.
-- The proof to show. Ask for the real command output, a video of the flow, the stored value, or a before and after number.
+- The proof to show. Ask for the real command output, the raw benchmark log, the ISA diff, or a before and after number.
 - What the user already knows. A symptom, a repro step, a log, or a link saves the agent a search.
 - The real constraints. "repro first", "don't change any code yet", "zero behavior change", and "let me review before proceeding" each change what the agent does.
 
@@ -25,9 +25,9 @@ A prompt states the intent and the check for done. The playbook supplies the ste
 
 ## Design before the plan
 
-- Never take the first design. Ask for prototypes of a few options, with screenshots or videos for UI, and pick from the evidence.
+- Never take the first design. Ask for prototypes of a few options, with timings or ISA counts for a kernel, and pick from the evidence.
 - Let prototypes answer the open questions. Don't review an abstract plan adversarially, because reviewers invent risks that never happen.
-- For a shared package or API, ask for the README or a tutorial first, then work back to the code. The doc becomes the target the agent checks itself against.
+- For a shared API, such as a tuned-config loader, ask for the README or a tutorial first, then work back to the code. The doc becomes the target the agent checks itself against.
 - Ask for the plan only after the design is settled. Each step of the plan ends in a check.
 
 ## Follow up short

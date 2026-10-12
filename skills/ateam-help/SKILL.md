@@ -26,7 +26,7 @@ Check the state that changes the answer, and mention it only when it does:
 
 - No `~/.cursor/rules/mstack-models.mdc` means `/setup-mstack` hasn't run for this user, so every role uses its default model.
 - No `~/.cursor/mstack/env.md` means the machine is not mapped, so every GPU run, container exec, and PR stops and asks. Give them `/setup-mstack env`. A `not set` optional resource (`kb`, `refs`) only skips cited notes and peaks, and `/setup-mstack env` adds it.
-- No `verify-*` skill or other app harness in the project means agents have no scripted way to drive the app. Mention `/create-verification-skill` when the question is about proving a change works.
+- No `verify-*` skill or other app harness in the project means agents have no scripted way to drive a non-kernel surface. Mention `/create-verification-skill` when the question is about proving such a change works. For a kernel, `/verify-gpu-kernel` is the scripted way.
 
 When the model rule is missing and it matters, ask whether the user wants to pick a model for each role and a reasoning budget now. It matters when the user is new, the question is about setup or cost, or the answer depends on which models run. Ask at most once per chat. If the need is also unclear, ask both questions together. Offer two choices:
 
@@ -79,8 +79,8 @@ The default answer is `/ateam-mode`, which runs most of the others when its step
 | Clean AI tells out of prose | [`/unslop`](../unslop/SKILL.md) |
 | Write docs, an RFC, a README, a PR description, or a commit message to a standard | [`/technical-writing`](../technical-writing/SKILL.md) |
 | Hear the last reply again in plain words | [`/bro`](../bro/SKILL.md) |
-| Give agents a scripted way to drive the app and prove behavior | [`/create-verification-skill`](../create-verification-skill/SKILL.md) |
-| Bring a verification skill and its feature map back in line with the app | [`/maintain-verification-skill`](../maintain-verification-skill/SKILL.md) |
+| Give agents a scripted way to drive a non-kernel surface and prove behavior | [`/create-verification-skill`](../create-verification-skill/SKILL.md) |
+| Bring a verification skill and its feature map back in line with its surface | [`/maintain-verification-skill`](../maintain-verification-skill/SKILL.md) |
 | Start from a Jira ticket key and set up its ticket folder | [`/ticket-init`](../ticket-init/SKILL.md) |
 | Run, reproduce, or benchmark a kernel on the real GPU | [`/verify-gpu-kernel`](../verify-gpu-kernel/SKILL.md) |
 | Vet a performance number before reporting or acting on it | [`/benchmark-checklist`](../benchmark-checklist/SKILL.md) |
@@ -144,7 +144,7 @@ Principles are one-rule skills that `/ateam-mode` reads and cites in its replies
 | Parallel agents overwrote each other | Give each agent its own worktree, or run them as cloud agents, which each get their own machine. |
 | An overnight run moved but finished nothing | `/loop` needs a check that can pass or fail, not a duration. See [guide page 7](../../docs/guide/07-overnight.md). |
 | A kernel step stopped because a port's skill is missing or malformed | Run `/setup-mstack env` and read its Skills table. A renamed or removed skill needs a fix in [`ports.md`](../ateam-mode/references/ports.md). |
-| The reply claims success from a green build | Ask for the real command, flow, stored value, or profile. That's the prove-it-works principle. |
+| The reply claims success from a green build | Ask for the real command, the op test output, or the ISA. That's the prove-it-works principle. |
 
 For a run that drifts, [`references/prompting.md`](references/prompting.md) has one-line steers. [Guide page 10](../../docs/guide/10-recipes-and-pitfalls.md) has more pitfalls and the recipes worth copying.
 

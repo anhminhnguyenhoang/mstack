@@ -11,7 +11,7 @@ mstack gives you four ways in. `/how` explains what the code does now. `/why` di
 When the cause is unclear, ask for findings, not a fix:
 
 ```text
-/ateam-mode investigate why background jobs time out every few hours. give me what we know, what data you used, and your best hypotheses. don't change any code yet.
+/ateam-mode investigate why this GEMM is 1.4x slower than the Triton reference on gfx950 at M=4096. give me what we know, what data you used, and your best hypotheses. don't change any code yet.
 ```
 
 "don't change any code yet" routes this to the [Investigation playbook](../../skills/ateam-mode/playbooks/investigation.md). It runs `/how`, adds `/why` for questions about motivation, and returns a cited explanation. For a choice between options, it returns a recommendation with a trade-offs table. Asking "what data you used" makes the agent separate its evidence from its guesses. When the findings point at a fix, start the fix as a new task.
@@ -19,7 +19,7 @@ When the cause is unclear, ask for findings, not a fix:
 ## Trace behavior with `/how`
 
 ```text
-/how do we dedupe notifications? is there an n+1 when we look up subscribers?
+/how does aiter pick between the HIP and Triton kernels for this GEMM? where does the M threshold live?
 ```
 
 Ask the question you actually have. [`/how`](../../skills/how/SKILL.md) reads the code and answers at the level of a senior engineer onboarding you onto the subsystem, with the runtime flow, the key types, and the non-obvious parts. For a big subsystem it fans out two to four read-only explorers first. For a narrow question it just reads and explains.
@@ -27,17 +27,17 @@ Ask the question you actually have. [`/how`](../../skills/how/SKILL.md) reads th
 ## Dig up history with `/why`
 
 ```text
-/why was the retry limit set to five? does the reason still hold?
+/why does this dispatch threshold route M<=64 to the HIP kernel? does the reason still hold?
 ```
 
-[`/why`](../../skills/why/SKILL.md) works like a detective on a cold case. It starts from source control, then queries whatever evidence categories your MCPs expose, such as the issue tracker, long-form docs, team chat, observability, error tracking, and analytics, all in parallel. The report cites everything, separates direct evidence from inference, and says "appears to" when the record is thin. A null result gets reported too, because "nobody wrote down why" is itself an answer.
+[`/why`](../../skills/why/SKILL.md) works like a detective on a cold case. It reads its sources in parallel: source control and PRs (GitHub), the issue tracker (Jira), long-form docs (Confluence), chat (Slack), code history, and incidents. The report cites everything, separates direct evidence from inference, and says "appears to" when the record is thin. A null result gets reported too, because "nobody wrote down why" is itself an answer.
 
 The two compose naturally. `do why first then how` is a perfectly good prompt when you suspect the history explains the mess.
 
 ## Actually understand it with `/teach`
 
 ```text
-/teach me how this PR changes retries. convince me it fixes the cause and not the symptom.
+/teach me how this PR changes the tile shape of the kernel. convince me it fixes the cause of the LDS bank conflicts and not the symptom.
 ```
 
 [`/teach`](../../skills/teach/SKILL.md) is for when a summary isn't enough. It runs `/how` and `/why`, for a small change maybe just one of them, and weaves the findings into a plain explanation that builds up diagram by diagram. The "convince me" framing is worth stealing. It turns the explanation into an argument you can poke at instead of a tour.
@@ -45,7 +45,7 @@ The two compose naturally. `do why first then how` is a perfectly good prompt wh
 It works on the agent's own choices too:
 
 ```text
-/teach me why you implemented it this way and not with a queue. what did you trade off, and why?
+/teach me why you implemented it this way and not with a split-K reduction. what did you trade off, and why?
 ```
 
 Teaching helps the agent as much as you. An agent that has to explain its work must read the code and back each claim with evidence, instead of stating it confidently and moving on.
@@ -53,13 +53,13 @@ Teaching helps the agent as much as you. An agent that has to explain its work m
 ## Rebuild your own context with `/recall`
 
 ```text
-/recall catch me up on the export work from last week
+/recall catch me up on the RMSNorm hillclimb from last week
 ```
 
-[`/recall`](../../skills/recall/SKILL.md) mines your own recent chats plus the shared record (issues, prior fixes, errors still firing) and hands back a brief on where things stand and what's next. Your old chats hold context that a fresh agent lacks, so start new work on an old topic by loading it first, then hand over the new input:
+[`/recall`](../../skills/recall/SKILL.md) mines your own recent chats plus the shared record (tickets, prior fixes, failing tests) and hands back a brief on where things stand and what's next. Your old chats hold context that a fresh agent lacks, so start new work on an old topic by loading it first, then hand over the new input:
 
 ```text
-/recall my work on the virtualized list from yesterday, then read this bug report.
+/recall my work on the mla_reduce kernel from yesterday, then read PROJ-123.
 ```
 
 If you want to resume one specific chat, that's the Session pickup playbook below, not `/recall`.

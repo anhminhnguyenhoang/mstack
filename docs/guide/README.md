@@ -9,7 +9,7 @@ Here's what you'll learn:
 3. [Understand the code](./03-understand.md). A read-only investigation, then `/how`, `/why`, `/teach`, and `/recall` before you edit anything.
 4. [Design the change](./04-design.md). `/architect`, `/arena`, `/swarm`, `/interrogate`, prototypes, and plans before code locks in a shape.
 5. [Build and clean the change](./05-build-and-clean.md). The build playbooks, `/tdd`, `/unslop`, and `/no-comments`.
-6. [Verify and ship](./06-verify-and-ship.md). Prove behavior on the real app, vet numbers with `/benchmark-checklist`, then open a focused PR and drive it to merged.
+6. [Verify and ship](./06-verify-and-ship.md). Prove behavior on the real GPU, vet numbers with `/benchmark-checklist`, then open a focused PR and drive it to merged.
 7. [Run work while you sleep](./07-overnight.md). Trust before loops, an overnight contract, a decision log you can audit, and Projects and automations that scale past one agent.
 8. [Steer with principle names](./08-principles.md). The 27 names that redirect an agent mid-task.
 9. [Make it yours](./09-make-it-yours.md). Your own mode, `/correct` for repeated mistakes, and how to test a skill change.
@@ -30,7 +30,7 @@ It answers, hands you a prompt to send, and links the skill or guide page the an
 Give the agent a goal and a way to check it, in your own words:
 
 ```text
-/ateam-mode the export writes duplicate rows when a retry lands mid-run. repro first, then fix and verify.
+/ateam-mode this FlyDSL kernel returns NaN at T=4096 on gfx950. repro first, then fix and verify.
 ```
 
 You don't need to name a playbook or list skills. "repro first" and a checkable outcome are all the routing signal `/ateam-mode` needs. It matches the Bug fix playbook, copies the steps into a todo list, and calls the right skills as each step fires.

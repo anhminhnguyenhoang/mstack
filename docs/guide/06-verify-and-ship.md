@@ -1,6 +1,6 @@
 # Verify the result and open a PR
 
-"It compiles" is not evidence. The [Prove It Works principle](../../skills/principle-prove-it-works/SKILL.md) makes the agent check the real artifact before it reports success, and your job is to make "the real artifact" checkable. This page covers stating a finish condition, vetting a measured number, generating a verification skill for your app, opening the PR, and driving it to merged.
+"It compiles" is not evidence. The [Prove It Works principle](../../skills/principle-prove-it-works/SKILL.md) makes the agent check the real artifact before it reports success, and your job is to make "the real artifact" checkable. This page covers stating a finish condition, vetting a measured number, generating a verification skill for a non-kernel surface, opening the PR, and driving it to merged.
 
 Verification is the slowest step in most agent work, because it's the step that usually waits on a human. Make the agent able to do it, and you stop being the bottleneck. Skip it, and running more agents only gets you more unchecked work to review.
 
@@ -11,20 +11,20 @@ Verification is the slowest step in most agent work, because it's the step that 
 Put what done means in the first prompt, in whatever words fit:
 
 ```text
-/ateam-mode add json output to this command. text output stays byte-identical, the json parses, both run against the sample project. show me the evidence.
+/ateam-mode add an fp8 path to this op. the bf16 output stays bit-identical, fp8 matches the torch reference within rtol and atol, and both run in the container on a locked gpu. show me the evidence.
 ```
 
 Now the agent has three checks it can run, not a mood to satisfy. When the reply comes back, it should carry the exact commands and outputs. If a check couldn't run, a good reply says "inconclusive", and you should treat a confident reply without evidence as a red flag.
 
 Match the check to the change:
 
-- A CLI change runs the real command.
-- A UI change walks the changed flow in the running app.
-- A parser or migration replays a saved input.
-- A perf change compares before and after profiles.
-- A storage change reads back the written value.
+- A kernel change runs the op test in the container on a locked GPU.
+- A numerics change compares against the torch reference, with `rtol`, `atol`, and the NaN count.
+- A register, spill, or LDS change compares the ISA before and after.
+- A perf change compares before and after medians on one GPU, then a counter pass for the limiter.
+- A config or dispatch change replays every tuned shape and checks which kernel each one picks.
 
-Ask for the proof as an artifact you can inspect yourself: the failing test and then the passing one, a before-and-after video, the trace, the screenshot. If the fix already merged, ask for the same check again on main. An artifact beats a plausible explanation, because you can challenge it without replaying the whole run.
+Ask for the proof as an artifact you can inspect yourself: the failing test and then the passing one, the raw bench log, the ISA diff, the trace. If the fix already merged, ask for the same check again on main. An artifact beats a plausible explanation, because you can challenge it without replaying the whole run.
 
 For a small diff you don't fully trust, [`/blast-radius`](../../skills/blast-radius/SKILL.md) finds what it could break elsewhere. It picks the one fact the change is safe because of and proves it by running code instead of writing an essay about it.
 
@@ -33,24 +33,24 @@ For a small diff you don't fully trust, [`/blast-radius`](../../skills/blast-rad
 A before-and-after number is the easiest evidence to get wrong by accident. A warm cache, a debug build on one side, or work that never ran inside the timed region can each produce a convincing speedup. Before you report or act on a number, type:
 
 ```text
-/benchmark-checklist vet the export speedup before it goes in the pr
+/benchmark-checklist vet the GEMM speedup on gfx950 before it goes in the pr
 ```
 
 [`/benchmark-checklist`](../../skills/benchmark-checklist/SKILL.md) asks seven questions and wants evidence from a run for each:
 
 1. What limits the number, and why isn't it double?
 2. Did every side run tuned the way production runs?
-3. Does the result break a physical limit, like disk bandwidth or core count?
+3. Does the result break a physical limit, like HBM bandwidth or the MFMA peak?
 4. Did anything error or return wrong output?
 5. Does it reproduce over alternating runs, with a median and a range?
-6. Does it matter end to end, on the path a user waits on?
+6. Does it matter end to end, as a share of the model step?
 7. Did the work actually happen inside the timed region?
 
 The verdict comes back as faster, slower, no measurable difference, or inconclusive, with the run count, range, and limiter. It says inconclusive when it can't name the limiter or a side ran untuned. `/ateam-mode` already runs the checklist inside the Perf issue and Hillclimb playbooks, so you type it yourself when you measured something outside them, or when someone else's number looks too good. It's the working form of the [Explain the Number principle](../../skills/principle-explain-the-number/SKILL.md).
 
 ## Create a project verification skill
 
-The UI bullet above hides a real requirement. The agent needs a scripted way to drive your app. If your project has one, great. If not, run:
+For a kernel, [`/verify-gpu-kernel`](../../skills/verify-gpu-kernel/SKILL.md) is the scripted way. It resolves the host and container, locks one idle GPU, runs the op test, and writes a JSON artifact. For any other surface, such as a CLI, a service, or a UI, the agent needs a scripted way to drive it. If your project has one, great. If not, run:
 
 ```text
 /create-verification-skill
@@ -63,14 +63,14 @@ It writes `.cursor/skills/verify-<app>/`, agent-facing instructions with exact L
 From then on, "verify it in the app" is a step any agent can execute, in this repo, with no setup conversation. Name it in the prompt when you want the proof in a specific form:
 
 ```text
-/ateam-mode build the bulk-archive action. use /verify-<app> to verify your changes and show me a video and screenshots as proof.
+/ateam-mode build the fp8 path for this op. use /verify-gpu-kernel to verify your changes and show me the artifact JSON as proof.
 ```
 
 ```text
-/ateam-mode repro this with /verify-<app>. if it repros on main, fix it and show me a video as proof.
+/ateam-mode repro this kernel failure with /verify-gpu-kernel on gfx950. if it repros on main, fix it and show me the artifact JSON as proof.
 ```
 
-Once the verify skill works, a [`/swarm`](../../skills/swarm/SKILL.md) can split a full pass by feature-map entry and aggregate the results. A swarm of verifiers also confirms a perf win over a big enough sample, or fuzzes the app for regressions before a PR ships.
+Once the verify skill works, a [`/swarm`](../../skills/swarm/SKILL.md) can split a full pass by feature-map entry and aggregate the results. A swarm of verifiers also confirms a perf win over a big enough sample, or fuzzes the surface for regressions before a PR ships.
 
 Treat the verification skill as infrastructure, not a one-off. Commit it, so every person and every agent on the team drives the app the same way. Then [build the lever](../../skills/principle-build-the-lever/SKILL.md). When agents keep writing throwaway scripts to click through the app, ask for a small control CLI that the skill calls instead. Agents spend fewer tokens, and every run becomes repeatable. A CLI that agents use well has these traits:
 

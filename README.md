@@ -34,8 +34,8 @@ use [`/ateam-mode`](./skills/ateam-mode/SKILL.md) at the start of a task. it rea
 this skill is the main shortcut. i use it whenever i need the agent to do rigorous engineering work. it comes with twenty-seven playbooks:
 
 ```
-/ateam-mode this pr has a subtle bug where the scroll drifts every 750ms even when idle. repro
-first, then fix and verify.
+/ateam-mode this flydsl kernel returns nan at T=4096 on gfx950. repro first, then fix and
+verify.
 ```
 
 ```
@@ -55,8 +55,8 @@ morning.
 | [kernel hillclimb](./skills/ateam-mode/playbooks/kernel-hillclimb.md) | hillclimb for a gpu kernel: correctness-gated harness, isa resource pre-check before any benchmark, one benchmark on a locked gpu at a time, levers named from the `lever.menu` port. |
 | [bound probe](./skills/ateam-mode/playbooks/bound-probe.md) | before a redesign, measure the ceiling cheaply (analytic bound, copy roofline, remove-one-piece diagnostic, staged copy, in-model share) and decide go, no-go, or re-target. a probe proves a ceiling, never a speedup. |
 | [repro audit](./skills/ateam-mode/playbooks/repro-audit.md) | verify someone else's claim, number, or bug report on the real gpu: pin the environment, reproduce as stated, vary one axis, and give each claim a verdict. |
-| [runtime forensics](./skills/ateam-mode/playbooks/runtime-forensics.md) | diagnose a live symptom (leak, idle-cpu spin, glitch) from instrumentation. |
-| [trace forensics](./skills/ateam-mode/playbooks/trace-forensics.md) | diagnose a captured profiling artifact (cpuprofile, trace, spindump, heap snapshot). |
+| [runtime forensics](./skills/ateam-mode/playbooks/runtime-forensics.md) | diagnose a live symptom (hang, memory leak, stalled launch) from instrumentation. |
+| [trace forensics](./skills/ateam-mode/playbooks/trace-forensics.md) | diagnose a captured profiling artifact (an att trace, a rocprofv3 trace, a counter table). |
 | [feature](./skills/ateam-mode/playbooks/feature.md) | new or changed behavior, built from a named data shape. |
 | [refactoring](./skills/ateam-mode/playbooks/refactoring.md) | a behavior-preserving change to structure or shape. |
 | [prototype](./skills/ateam-mode/playbooks/prototype.md) | a throwaway sketch to make a design or behavioral decision cheaply, or to settle an empirical fork by observing it. |
@@ -97,7 +97,7 @@ to keep [`/ateam-mode`](./skills/ateam-mode/SKILL.md) on across turns, pick it f
 [`/ateam-mode`](./skills/ateam-mode/SKILL.md) runs most of these for you when a step needs them (`how`, `why`, `architect`, `arena`, `swarm`, `interrogate`, `unslop`, `no-comments`, `technical-writing`, `tdd`, and the principles). the table below is for when you want one directly:
 
 ```
-/how do we cancel runs? do we have an n+1 when we look up every run to cancel?
+/how does aiter pick between the hip and triton kernels for this gemm? where does the M threshold live?
 ```
 
 ```
@@ -114,7 +114,7 @@ to keep [`/ateam-mode`](./skills/ateam-mode/SKILL.md) on across turns, pick it f
 | [`/ticket-init`](./skills/ticket-init/SKILL.md) | you start from a jira key. writes `ticket-raw.md` in the ticket folder, a brief of at most 150 words, and an acceptance predicate. |
 | [`/verify-gpu-kernel`](./skills/verify-gpu-kernel/SKILL.md) | you need to run, reproduce, or benchmark a kernel on the real gpu. resolves the host and container, locks one idle gpu, runs the op_test, and writes a json artifact into the ticket folder. |
 | [`/how`](./skills/how/SKILL.md) | you want a walkthrough of how a subsystem works. |
-| [`/why`](./skills/why/SKILL.md) | you want to know why something was built this way. discovers available MCPs at run time and queries each evidence category in parallel (source control, issue tracker, long-form docs, real-time chat, infra observability, error tracking, analytics warehouse). |
+| [`/why`](./skills/why/SKILL.md) | you want to know why something was built this way. queries its sources in parallel: source control and prs (github), issue tracker (jira), long-form docs (confluence), chat (slack), code history, and incidents. |
 | [`/recall`](./skills/recall/SKILL.md) | you're starting or resuming work and want your recent context on a topic rebuilt from your own chat history and the shared record, handed back as a tight current-state brief. |
 | [`/ketchup`](./skills/ketchup/SKILL.md) | you want everything in this chat since your last message, in plain words, with an executive summary for each action item so you can make the call. |
 | [`/blast-radius`](./skills/blast-radius/SKILL.md) | you have a small-looking change and want to know what else it could break, with the one fact it's safe because of proven by running code, not asserted. |
@@ -151,29 +151,36 @@ mostly i type [`/ateam-mode`](./skills/ateam-mode/SKILL.md) at the start of a ta
 <summary>all the examples</summary>
 
 ```
-bug fix:           /ateam-mode this pr has a subtle bug where the scroll drifts every 750ms even
-                   when idle. repro first, then fix and verify.
-perf:              /ateam-mode a big list takes a second or two to load even though we virtualize.
-                   run a cpu trace and tell me why.
-feature:           /ateam-mode build a small feature behind a feature flag. verify it really works.
-prototype:         /ateam-mode build two prototypes of the markdown renderer so we can compare.
-                   spawn an agent for each.
+bug fix:           /ateam-mode this flydsl kernel returns nan at T=4096 on gfx950. repro first,
+                   then fix and verify.
+perf:              /ateam-mode close the 1.4x gap to the triton reference for this gemm on
+                   gfx950. run a counter pass and tell me what limits it.
+feature:           /ateam-mode add an fp8 path to this aiter op behind a dtype flag. verify it
+                   against the torch reference on a locked gpu.
+prototype:         /ateam-mode build two prototypes of the lds layout for this kernel so we can
+                   compare. spawn an agent for each.
 multi-phase:       /ateam-mode open source these skills as a plugin. nothing internal leaks, work
                    in a temp dir, show me the dependency graph first.
 overnight run:     /ateam-mode i'm going to bed. get the stack green even if ci flakes. i want
                    every pr verified and ready for my review by morning.
 babysit:           /ateam-mode check on pr 123. anything outstanding?
-figure it out:     /ateam-mode i'm stepping away. migrate every caller from the synchronous store
-                   to the new async one, keeping behavior identical. i want to trust it was done
-                   right when i'm back.
-how:               /how do we cancel runs? do we have an n+1 when we look up every run to cancel?
-why:               /why is this feature flag not on yet?
-architect:         design this instrumentation to be high signal with no false positives. /architect
-                   this first.
+figure it out:     /ateam-mode i'm stepping away. migrate every op test from the old timing helper
+                   to run_perftest, keeping the reported numbers identical. i want to trust it
+                   was done right when i'm back.
+how:               /how does aiter pick between the hip and triton kernels for this gemm? where
+                   does the M threshold live?
+why:               /why does this dispatch threshold route M<=64 to the hip kernel?
+architect:         design the shape dispatch for this kernel family so it never routes a shape to
+                   a slower path. /architect this first.
+bound probe:       /ateam-mode bound the ceiling of a fused redesign before we build it.
+repro audit:       /ateam-mode reproduce the numbers claimed in this pr.
+ticket:            /ateam-mode resume PROJ-123.
+trace:             /ateam-mode here is an att trace of the slow kernel. where does the time go?
+refactor:          /ateam-mode clean up this aiter kernel without changing its isa.
 arena:             /arena take my prompt to the arena verbatim. i want to compare their proposals
                    with yours.
-swarm:             /swarm check every package under packages/ against its check.sh. one worker per
-                   package. one report.
+swarm:             /swarm check every kernel under aiter/ops/flydsl/ with the isa.diff port. one
+                   worker per kernel. one report.
 interrogate:       /interrogate review this pr.
 tdd:               /tdd implement
 unslop:            can we unslop and tighten the new changes?

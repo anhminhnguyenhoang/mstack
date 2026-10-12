@@ -7,7 +7,7 @@ Prompts worth copying, then the mistakes everyone makes once. Swap in your own p
 ## Understand an unfamiliar subsystem
 
 ```text
-use /how first to understand how this initialization works. then use /why to figure out why it broke recently.
+use /how first to understand how this dispatch picks a kernel. then use /why to figure out why it started picking the HIP kernel.
 ```
 
 Mechanics first, history second. Each skill's report tells you which sources it searched, so you know what the answer is grounded in.
@@ -15,7 +15,7 @@ Mechanics first, history second. Each skill's report tells you which sources it 
 ## Restate a noisy report before touching code
 
 ```text
-/ateam-mode read this thread. restate the underlying issue in your own words, in plain english. don't change any code yet.
+/ateam-mode read PROJ-123 and its comments. restate the underlying issue in your own words, in plain english. don't change any code yet.
 ```
 
 A misreading shows up in the restatement, where it costs one message to correct. Keep your own theory to yourself until the agent has stated its own.
@@ -23,7 +23,7 @@ A misreading shows up in the restatement, where it costs one message to correct.
 ## Prototype before you pick
 
 ```text
-/ateam-mode prototype a few options for the settings layout. put them behind a switcher and send me screenshots of each.
+/ateam-mode prototype a few LDS layouts for this kernel. put them behind one switch, run the ISA check on each, and send me the bank-conflict counts.
 ```
 
 You pick from things that run, not from descriptions. The agent answers its own layout and timing questions along the way.
@@ -47,10 +47,10 @@ Your current design becomes one candidate among several, and the synthesis tells
 ## Check independent slices in parallel
 
 ```text
-/swarm check every package under packages/ against its check.sh. one worker per package. one report.
+/swarm check every kernel under aiter/ops/flydsl/ with the isa.diff port. one worker per kernel. one report.
 ```
 
-Each worker owns one package. The parent waits for every slice and returns one `PASS`, `ISSUES`, or `BLOCKED` report instead of raw worker dumps.
+Each worker owns one kernel. The parent waits for every slice and returns one `PASS`, `ISSUES`, or `BLOCKED` report instead of raw worker dumps.
 
 ## Review a branch skeptically
 
@@ -63,7 +63,7 @@ The qualifiers do real work. "don't change anything yet" keeps it read-only, and
 ## Fix a bug through a failing test
 
 ```text
-/ateam-mode repro the duplicate write first. if there's a cheap test path, /tdd it. then fix and rerun.
+/ateam-mode repro the NaN at T=4096 first. if there's a cheap test path, /tdd it. then fix and rerun.
 ```
 
 "if there's a cheap test path" matters. Forcing a test through brittle mocks proves less than running the real command, and the playbook is allowed to say so.
@@ -71,15 +71,15 @@ The qualifiers do real work. "don't change anything yet" keeps it read-only, and
 ## Repro and fix a report with proof
 
 ```text
-/ateam-mode repro this with /verify-<app>. if it repros on main, fix it and show me a video as proof.
+/ateam-mode repro this kernel failure with /verify-gpu-kernel on gfx950. if it repros on main, fix it and show me the artifact JSON as proof.
 ```
 
-"if it repros on main" lets the run stop early when the bug is already gone. The video lets you check the fix before you read the diff.
+"if it repros on main" lets the run stop early when the bug is already gone. The artifact lets you check the fix before you read the diff.
 
 ## Vet a number before you post it
 
 ```text
-/benchmark-checklist vet this 40% speedup before it goes in the pr description
+/benchmark-checklist vet this 1.4x speedup on gfx950 before it goes in the pr description
 ```
 
 You get faster, slower, no measurable difference, or inconclusive, with the run count, the range, and what limits the number.
@@ -87,7 +87,7 @@ You get faster, slower, no measurable difference, or inconclusive, with the run 
 ## Stop correcting the same mistake
 
 ```text
-/correct agents keep adding new config flags without registering them in the schema
+/correct agents keep adding compile knobs without proving they reach codegen
 ```
 
 The fix lands in the repo as architecture, a type, a lint, or a test, so the next agent can't make the mistake.
@@ -103,7 +103,7 @@ You get an answer, a prompt to send, and a link to the source. Nothing runs unti
 ## Keep a run honest while you're away
 
 ```text
-im going to bed, keep going autonomously until every fixture passes. do not stop. keep a decision log i can audit in the morning.
+im going to bed, keep going autonomously until every shape in the test matrix passes the correctness gate. do not stop. keep a decision log i can audit in the morning.
 ```
 
 The full contract is on the [overnight page](./07-overnight.md). The short form works once the task and finish condition are already in the conversation.
@@ -148,7 +148,7 @@ That's the whole prompt. [`/bro`](../../skills/bro/SKILL.md) restates the last m
 - **Using `/arena` for coverage.** `/arena` repeats one design or code brief, then picks a base and grafts the best parts. `/swarm` partitions slices or declared race arms and aggregates one report.
 - **Accepting every review comment.** Bots and humans both file real catches and noise in one list. `/interrogate` sorts findings into act-on and dismissed buckets with reasons, and you can override either way.
 - **Treating `auto` as a model slug.** `auto` and `inherit-parent` mean "omit the model field so the subagent inherits the parent chat model." [Setup](./01-setup.md) covers the roles.
-- **Reporting success off a green build.** A build proves it compiles. Ask for the real command, flow, stored value, or profile, and expect the evidence in the reply.
+- **Reporting success off a green build.** A build proves it compiles. Ask for the real command, the op test output, or the ISA, and expect the evidence in the reply.
 - **Writing a `SKILL.md` freehand.** Route it through the [Authoring or modifying a skill playbook](../../skills/ateam-mode/playbooks/authoring-a-skill.md) so validation and review happen.
 
 That's the guide. If you skipped ahead, go back to [setup](./01-setup.md) and run one real task. The habits stick from use, not from reading.

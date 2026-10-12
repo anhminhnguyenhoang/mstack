@@ -62,7 +62,7 @@ mstack spends extra tokens on subagents and review panels. That's the price of t
 Pick something real but small, and describe it the way you'd describe it to a colleague:
 
 ```text
-/ateam-mode add a --json flag to this command. text output stays byte-identical. verify both.
+/ateam-mode add a --shapes-file option to this op test. the default run stays byte-identical. verify both.
 ```
 
 Watch the todo list. Its first items are the matched playbook's steps copied in, the Feature playbook for this prompt. If `/ateam-mode` skips a step, the step stays in the list with `skip: <reason>`, so you can see what it chose not to do.

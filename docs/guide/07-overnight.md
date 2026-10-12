@@ -9,7 +9,7 @@ This is the payoff for everything before it. An agent you can trust to verify it
 A loop you don't trust just produces unchecked work faster, and the mess compounds with every iteration. Before you leave one running, check that it has earned it:
 
 - You've done the task once by hand, or watched an agent do it, so you know what good looks like.
-- The agent has the tools and signals you'd use yourself: the verification skill, the profiler, the logs.
+- The agent has the tools and signals you'd use yourself: `/verify-gpu-kernel`, the profiler, the ATT trace.
 - Every stage proves its work and can stop the line when the work misses the bar.
 - You've read a few transcripts and turned the repeated failures into tools, skills, or checks.
 
@@ -20,8 +20,8 @@ Make the loop autonomous only after all four hold. Until then, run it while you 
 A good handoff has the goal, the finish condition, permissions, and an escape hatch. It doesn't need to be long:
 
 ```text
-/ateam-mode im going to bed. migrate every caller to the new parser in a fresh worktree off <base>.
-done means zero old callers, all parser fixtures pass, old api deleted.
+/ateam-mode im going to bed. get this FlyDSL kernel within 1.1x of the Triton reference on gfx950, in a fresh worktree off <base>.
+done means the correctness gate passes on every shape, the median of 7 runs is within 1.1x, and every retired lever has a root cause.
 keep a decision log. don't ask me before committing.
 /loop until done. if you're truly stuck after a few hours, stop and write up why.
 ```
@@ -86,7 +86,7 @@ The contract above drives one task to one finish condition. Some nights hold mor
 [Orchestrate](../../skills/ateam-mode/playbooks/orchestrate.md) is for a program that outlives any single agent: multi-day, many stacked PRs, fleets of subagents under one standing coordinator chat. The coordinator authors briefs, collects what its subagents finish, keeps the lowest unmerged PR green, and never writes code itself. It's deliberately heavy machinery. If one agent could finish the work in a session, the playbook itself routes you back to the overnight contract above:
 
 ```text
-/ateam-mode orchestrate the store migration. own it until every package is converted and merged. i'll check in twice a day.
+/ateam-mode orchestrate the migration of every aiter op test to run_perftest. own it until every file is converted and merged. i'll check in twice a day.
 ```
 
 ## Run many projects in parallel

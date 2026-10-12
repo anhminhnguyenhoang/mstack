@@ -42,7 +42,7 @@ When you correct agents for the same mistake again and again, the fix belongs in
 Human review isn't on the list. A reviewer who must catch the same mistake on every PR is the problem this fixes. [`/correct`](../../skills/correct/SKILL.md) does the work:
 
 ```text
-/correct agents keep calling the database client directly instead of going through the repository layer
+/correct agents keep timing kernels with a hand-rolled loop instead of run_perftest
 ```
 
 It reads recent commits, reverts, review comments, and comments that explain workarounds, then groups the mistakes into classes. A class counts once it has happened twice. It fixes the most frequent classes one commit each, at the highest level that works, and proves each new check fails on a real past mistake. It also keeps a table in the agent instruction file that pairs each rule with what enforces it, so a rule that nothing enforces shows up as a repeat. The reply lists each class with its evidence, the level chosen, and why a higher level didn't work.
@@ -54,12 +54,12 @@ Run it with no argument and it finds the classes from history on its own. `/refl
 When you already know the workflow you want to capture:
 
 ```text
-/ateam-mode write a skill for verifying database migrations in this repo
+/ateam-mode write a skill for checking the ISA resource budget of every kernel in this repo
 ```
 
 Writing a skill matches the [Authoring or modifying a skill playbook](../../skills/ateam-mode/playbooks/authoring-a-skill.md), which routes through Cursor's built-in `create-skill`, validates the frontmatter and links, and ships the result through the Opening a PR playbook. Agent-facing prose has a higher bar than human prose, because an unhelpful sentence becomes an instruction some future agent follows. Let the playbook hold that bar rather than writing a `SKILL.md` freehand.
 
-One special case has its own generator. A skill that must drive your app and prove behavior is a verification skill, so use [`/create-verification-skill`](../../skills/create-verification-skill/SKILL.md) and [`/maintain-verification-skill`](../../skills/maintain-verification-skill/SKILL.md) instead. [Verify and ship](./06-verify-and-ship.md#create-a-project-verification-skill) covers both.
+One special case has its own generator. A skill that must drive a non-kernel surface and prove behavior is a verification skill, so use [`/create-verification-skill`](../../skills/create-verification-skill/SKILL.md) and [`/maintain-verification-skill`](../../skills/maintain-verification-skill/SKILL.md) instead. For kernels, [`/verify-gpu-kernel`](../../skills/verify-gpu-kernel/SKILL.md) already does it. [Verify and ship](./06-verify-and-ship.md#create-a-project-verification-skill) covers both.
 
 ## Write docs to a standard with `/technical-writing`
 
@@ -82,7 +82,7 @@ A skill edit affects every future session, so test it like the experiment it is.
 When a skill keeps missing and you know what it should do, change and test it in one task:
 
 ```text
-/ateam-mode update the review skill so it flags missing migrations, and eval the change.
+/ateam-mode update the review skill so it flags a kernel change with no correctness gate, and eval the change.
 ```
 
 Asking for the eval up front keeps the edit honest. A fix written from one bad session tends to overfit that session, and over many edits the skill drifts. The eval catches the drift before it ships.

@@ -32,7 +32,7 @@ The diagram shows the common routes. There are also playbooks for hillclimbing a
 You don't write a spec. You say what's wrong or what you want, plus anything you already know that saves the agent time:
 
 ```text
-/ateam-mode users get two notifications after a retry. repro first, then fix and verify.
+/ateam-mode this FlyDSL kernel returns NaN at T=4096 on gfx950. repro first, then fix and verify.
 ```
 
 That's a Bug fix prompt. "repro first" is a real constraint, not politeness, and the playbook honors it. Watch the todo list fill with the Bug fix steps. A skipped step stays visible with `skip: <reason>`.
@@ -43,14 +43,14 @@ A useful prompt carries up to five things, and each one fits in a sentence:
 
 - **The goal.** Say what's wrong, or what you want.
 - **The done check.** It must be able to pass or fail. "Make it better" and "work on it for an hour" aren't checks.
-- **The proof you want to see.** Ask for the real command output, a video of the flow, the stored value, or a before-and-after number.
+- **The proof you want to see.** Ask for the real command output, the raw benchmark log, the ISA diff, or a before-and-after number.
 - **What you already know.** A symptom, a repro step, a log line, or a link saves the agent a search.
 - **The real constraints.** "repro first", "don't change any code yet", "zero behavior change", and "let me review before proceeding" each change what the agent does.
 
 Here's one prompt with all five:
 
 ```text
-/ateam-mode the csv export drops its last row since yesterday's deploy. failing job id is 4812. repro first, then fix. done means the 60k-row fixture exports every row. show me the row counts before and after.
+/ateam-mode this aiter op returns NaN in its last tile since yesterday's merge. the failing test is op_tests/test_rmsnorm2d.py at M=4096 on gfx950. repro first, then fix. done means that test passes with a NaN count of 0. show me the max abs error and the NaN count before and after.
 ```
 
 Two things are worth leaving out:
@@ -58,10 +58,10 @@ Two things are worth leaving out:
 - **The how.** Say what to achieve, and leave the agent room to find a better path than the one you'd pick. The same goes for a list of skills, covered in the pitfall below.
 - **Your theory of the cause, at first.** A stated guess narrows the search to wherever you pointed. Let the agent restate the problem before you share your hunch.
 
-For a noisy report, such as a long thread or a vague bug, make the restatement the first step:
+For a noisy report, such as a long ticket thread or a vague bug, make the restatement the first step:
 
 ```text
-/ateam-mode read this thread. restate the underlying issue in your own words, in plain english. don't change any code yet.
+/ateam-mode read PROJ-123 and its comments. restate the underlying issue in your own words, in plain english. don't change any code yet.
 ```
 
 A misreading shows up in the restatement, before any code exists. Correct it there, and it costs you one message instead of one wrong fix.
@@ -89,19 +89,19 @@ Short works because the playbook holds the structure, and a Custom Mode keeps `/
 A long chat accumulates context from the last task. When you change subjects, say so:
 
 ```text
-/ateam-mode new task. figure out why the cache entry survives logout. don't change any code yet.
+/ateam-mode new task. figure out why this dispatch picks the HIP kernel for M<=64. don't change any code yet.
 ```
 
 "new task" tells `/ateam-mode` to re-match rather than continue the prior playbook. "don't change any code yet" pins this one to Investigation. Without those two phrases, a mode mid-Feature tends to treat your question as the next feature step.
 
 ## Give parallel work its own machine
 
-If you run several agents against one repository on one computer, they will fight over the working tree, the ports, and the build output. The cleanest isolation is a [cloud subagent](https://cursor.com/docs/subagents#cloud-subagents). Each one gets its own VM and branch, so it can install dependencies, run your app, and record video of the result without touching your machine. Type `/in-cloud` before the task, or ask the parent chat to hand work to cloud subagents.
+If you run several agents against one repository on one computer, they will fight over the working tree, the ports, and the build output. The cleanest isolation is a [cloud subagent](https://cursor.com/docs/subagents#cloud-subagents). Each one gets its own VM and branch, so it can install dependencies and build without touching your machine. A cloud VM has no AMD GPU, so use it for compile-only work such as ISA checks and cleanups, not for benchmarks. Type `/in-cloud` before the task, or ask the parent chat to hand work to cloud subagents.
 
 When the work has to stay local, ask for a worktree up front:
 
 ```text
-/ateam-mode new task. branch off <base> in a fresh worktree, then port the parser change there.
+/ateam-mode new task. branch off <base> in a fresh worktree, then port the FlyDSL fix there.
 ```
 
 Each task in its own branch and worktree means no agent stomps another's files. Worktrees cost disk and machine resources, so a laptop runs only a handful at once. The [Opening a PR playbook](../../skills/ateam-mode/playbooks/opening-a-pr.md) already works from a worktree for code changes, so mostly you only say this when a specific base or location matters.
@@ -119,7 +119,7 @@ The [Worktree cleanup playbook](../../skills/ateam-mode/playbooks/worktree-clean
 When you step away, say what done means and go:
 
 ```text
-/ateam-mode im stepping away. keep going until the migration check reports zero old callers. log your decisions.
+/ateam-mode im stepping away. keep going until the grep for the old timing helper reports zero callers. log your decisions.
 ```
 
 Work you'll review later routes through [`/figure-it-out`](../../skills/figure-it-out/SKILL.md), which designs the run's phases and keeps a [`/show-me-your-work`](../../skills/show-me-your-work/SKILL.md) decision log. [Run work while you sleep](./07-overnight.md) covers the full overnight contract.

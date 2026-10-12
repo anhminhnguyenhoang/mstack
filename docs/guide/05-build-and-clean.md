@@ -7,25 +7,25 @@ The build playbooks share one discipline. Say what you observed, let the playboo
 A bug prompt states the symptom and asks for a reproduction first:
 
 ```text
-/ateam-mode this command emits two records after a retry. repro first, then fix and verify.
+/ateam-mode this FlyDSL kernel returns NaN at T=4096 on gfx950. repro first, then fix and verify.
 ```
 
 A feature prompt states the behavior and what must not change:
 
 ```text
-/ateam-mode add a --json flag. text output stays byte-identical. verify both forms.
+/ateam-mode add an fp8 path to this aiter op behind a dtype flag. the bf16 output stays bit-identical. verify both dtypes against the torch reference.
 ```
 
 A refactoring prompt pins behavior before structure moves:
 
 ```text
-/ateam-mode move parsing into one module, zero behavior change. record the current output first and prove it's unchanged after.
+/ateam-mode clean up this aiter kernel without changing its ISA. save the current ISA first and prove it's byte-identical after.
 ```
 
 A perf prompt states the measurement, not a vibe:
 
 ```text
-/ateam-mode startup takes 1.8s on this fixture. trace it, fix the measured cause, show me before and after.
+/ateam-mode close the 1.4x gap to the Triton reference for this GEMM on gfx950. trace it, fix the measured cause, show me before and after.
 ```
 
 Each of these routes to its playbook ([Bug fix](../../skills/ateam-mode/playbooks/bug-fix.md), [Feature](../../skills/ateam-mode/playbooks/feature.md), [Refactoring](../../skills/ateam-mode/playbooks/refactoring.md), [Perf issue](../../skills/ateam-mode/playbooks/perf-issue.md)), and the playbook supplies the steps you didn't type: reproduce before fixing, name the data shape before implementing, pin behavior before restructuring, profile before optimizing.
@@ -34,10 +34,10 @@ For sustained improvement of one number, there's the [Hillclimb playbook](../../
 
 Both perf playbooks run [`/benchmark-checklist`](../../skills/benchmark-checklist/SKILL.md) on their numbers. Perf issue vets its baseline and every number after it, and Hillclimb vets its harness before freezing it. [Verify and ship](./06-verify-and-ship.md#vet-a-measured-number-with-benchmark-checklist) shows when to type it yourself.
 
-Sometimes you want the cause before any fix. For a live symptom, such as a leak, an idle CPU spin, or a visual glitch, the [Runtime forensics playbook](../../skills/ateam-mode/playbooks/runtime-forensics.md) instruments the running process. For a profile you already captured, the [Trace forensics playbook](../../skills/ateam-mode/playbooks/trace-forensics.md) reads the artifact and maps the hot frame to source. Both return a diagnosis, not a fix:
+Sometimes you want the cause before any fix. For a live symptom, such as a hang, a memory leak, or a stalled launch, the [Runtime forensics playbook](../../skills/ateam-mode/playbooks/runtime-forensics.md) instruments the running process. For a profile you already captured, the [Trace forensics playbook](../../skills/ateam-mode/playbooks/trace-forensics.md) reads the artifact and maps the hot frame to source. Both return a diagnosis, not a fix:
 
 ```text
-/ateam-mode here's a cpuprofile from the slow startup. tell me where the time goes and which source lines own it. no fix yet.
+/ateam-mode here's an ATT trace of the slow kernel. tell me where the time goes and which source lines own it. no fix yet.
 ```
 
 ## Write the failing test first with `/tdd`

@@ -6,16 +6,16 @@ You don't invoke principles. You use their names to steer. Each name points at a
 
 ## Steering in practice
 
-Say the agent is about to bolt a new adapter onto three existing ones:
+Say the agent is about to add a fourth tile-shape variant next to three existing ones:
 
 ```text
-use subtract before you add. delete the obsolete adapters first, then design what's left.
+use subtract before you add. delete the dead variants first, then design what's left.
 ```
 
 Say it claims success because the build passed:
 
 ```text
-apply prove it works. run the real import flow and show me the written records.
+apply prove it works. run the op test on a locked gpu and show me the correctness table.
 ```
 
 Say two parallel attempts are about to write to the same branch:
@@ -55,7 +55,7 @@ The verification principles define what counts as proof:
 - [Prove It Works](../../skills/principle-prove-it-works/SKILL.md) verifies the real artifact, not a proxy.
 - [Fix Root Causes](../../skills/principle-fix-root-causes/SKILL.md) reproduces and traces to the cause before changing code.
 - [Sequence Work into Verifiable Units](../../skills/principle-sequence-verifiable-units/SKILL.md) ends each small unit in a check before starting the next.
-- [Test Behavior, Not Implementation](../../skills/principle-test-behavior-not-implementation/SKILL.md) calls the code the way its users do and asserts a literal expected value, and deletes a test that would still pass if every imported function returned `undefined`.
+- [Test Behavior, Not Implementation](../../skills/principle-test-behavior-not-implementation/SKILL.md) calls the code the way its users do and asserts a literal expected value, and deletes a test that would still pass if every imported function returned nothing.
 - [Explain the Number](../../skills/principle-explain-the-number/SKILL.md) names what limits a measured number and rules out that it measured something else, before anyone trusts or reports it. [`/benchmark-checklist`](../../skills/benchmark-checklist/SKILL.md) turns it into seven questions you answer from real runs.
 - [Respect the Roofline](../../skills/principle-respect-the-roofline/SKILL.md) states every GPU kernel perf claim as a percent of the HBM or MFMA peak, with the peak's source.
 - [Prove It Reached Codegen](../../skills/principle-prove-it-reached-codegen/SKILL.md) counts a compile knob as real only when the ISA or IR changed.
