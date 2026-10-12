@@ -10,7 +10,7 @@ Answer the user's question about mstack, hand them a prompt they can send, and l
 
 A message that asks for work, such as "use mstack to fix this bug", is not a help question. Read [`ateam-mode`](../ateam-mode/SKILL.md), do the work under it, and mention once that a Custom Mode keeps it on.
 
-This file maps questions to the skills and guide pages that hold the answers. Those files own the details. Read the file you route to before you quote it, and trust it when it disagrees with this map. The links here point into the installed plugin, which the user may not be able to open, so give the user the file's public copy: `https://github.com/anhminhnguyenhoang/mstack/blob/main/` followed by its path.
+This file maps questions to the skills and guide pages that hold the answers. Those files own the details. Read the file you route to before you quote it, and trust it when it disagrees with this map. The links here point into the installed plugin, which the user may not be able to open, so give the user the file's repo copy: the `homepage` field of the plugin's `plugin.json`, then `/blob/main/`, then the file's path.
 
 ## Find out what they need
 
