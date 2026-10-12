@@ -1,11 +1,21 @@
 ---
 name: verify-gpu-kernel
-description: "Drive a GPU kernel the way CI does: resolve the host and container, lock one idle AMD GPU, run an aiter op_test or a FlyDSL pytest target, and write a correctness-and-perf JSON artifact into ~/<KEY>/. Use for /verify-gpu-kernel, whenever a playbook says to verify, reproduce, or benchmark on the real surface for aiter, FlyDSL, or Triton kernels on MI300X or MI355X."
+description: "Run one command on one locked AMD GPU in the right container, and write a correctness-and-perf JSON artifact into ~/<KEY>/. The command is an aiter op_test, a FlyDSL pytest target, or a bench harness, which may interleave A and B itself. Use for /verify-gpu-kernel, whenever a playbook says to verify, reproduce, or benchmark on the real surface for aiter, FlyDSL, or Triton kernels on MI300X or MI355X. Comparing two git revisions is the pr.validate port, not this skill."
 ---
 
 # Verify GPU kernel
 
-The control skill for kernel work. The surface is a GPU in a container on a shared host. Kernels run in a container. The host has no torch.
+The control skill for kernel work, bound to the `bench.run` port. The surface is a GPU in a container on a shared host. Kernels run in a container. The host has no torch.
+
+## Scope
+
+```
+host ──► container ──► one locked GPU ──► one command ──► one artifact
+```
+
+- One command, on one GPU, under one lock, with one artifact.
+- The command may interleave A and B itself, as a frozen hillclimb harness does. This skill runs it once and records what it prints.
+- Comparing two git revisions, such as the base and the head of a PR, is the `pr.validate` port. Do not rebuild that comparison here. Ports resolve in [`ports.md`](../ateam-mode/references/ports.md).
 
 ## Resolve the host
 
@@ -56,16 +66,15 @@ A GPU is usable when `rocm-smi` shows near-zero use and VRAM, and `--showpids` l
 
 ## Lock one idle GPU
 
-Pick over a sampling window, not one reading, then hold a lock for the whole run. Use the picker and lock in the GPU lock table of `~/.cursor/mstack/env.md`. When it is `not set`, ask. The default convention, from **validate-kernel-pr**, is:
+Pick over a sampling window, not one reading, then hold a lock for the whole run. Read the picker command and the lock from the GPU lock table of `~/.cursor/mstack/env.md`. The Picker cell prints one HIP index. The Lock cell is the lock prefix, with `<id>` for that index. When either cell is `not set`, stop and ask. Never fall back to a path from memory.
 
 ```bash
-PICK=$(python3 ~/.claude/skills/validate-kernel-pr/pick-idle-gpu.py --samples 10 --interval 1 --quiet)
-flock /tmp/gpu-$PICK.lock docker exec -e HIP_VISIBLE_DEVICES=$PICK <container> <command>
+PICK=$(<Picker cell>)
+<Lock cell, with $PICK for <id>> docker exec -e HIP_VISIBLE_DEVICES=$PICK <container> <command>
 ```
 
-- Use one GPU id for both sides of a comparison.
-- Run one benchmark per GPU at a time. Parallel worktrees may build and check ISA together. They queue for the GPU.
-- Use a distinct `AITER_JIT_DIR` per side or per worktree. Never share one between a baseline and a candidate.
+- Run one command per GPU at a time. Parallel worktrees may build and check ISA together. They queue for the GPU.
+- Give the run its own `AITER_JIT_DIR`, and each worktree its own. A command that interleaves A and B gives each side its own.
 - The host is shared. A lock file coordinates only runs that use the same convention. Treat a busy GPU as taken, lock or no lock.
 - If no GPU stays idle, stop and report `NO_GPU`. Do not benchmark on a busy GPU. A compile-only check (the `isa.diff` port) still works.
 
@@ -78,9 +87,9 @@ Run the repo's own test target. Do not rewrite it.
 | aiter | `python3 op_tests/test_<op>.py` with the test's own `-d`, `-b`, `-s` flags. It prints a correctness-and-perf markdown table per the `test.author` port |
 | FlyDSL | `python3 -m pytest tests/kernels/<test>.py -q` |
 | Triton kernel in aiter | The same `op_tests` script. Set `AITER_USE_SYSTEM_TRITON` as the container env sets it |
-| One-off bench script | `python3 <script>`, with the interleaved-median pattern of `~/SILOTIGER-1164/bench_hip_triton_flydsl_graph.py` |
+| Bench harness or one-off script | `python3 <script>`. It may interleave A and B itself, as `~/SILOTIGER-1164/bench_hip_triton_flydsl_graph.py` does |
 
-Set `GPU_ARCHS` (for example `gfx950`) when `aiter` import would otherwise call `rocminfo`. Clear JIT caches for a cold-compile comparison, per **benchmark-checklist**. For a tuned-config shape, follow the `config.tune` port. Ports resolve in [`ports.md`](../ateam-mode/references/ports.md).
+Set `GPU_ARCHS` (for example `gfx950`) when `aiter` import would otherwise call `rocminfo`. Clear JIT caches for a cold-compile run, per **benchmark-checklist**. For a tuned-config shape, follow the `config.tune` port.
 
 Read the tables the test prints. Copy numbers from the output, not from memory.
 
@@ -105,7 +114,7 @@ Write `~/<KEY>/bench_<topic>.json` for ticket work, and `./bench_<topic>.json` o
 }
 ```
 
-Save the full stdout beside it. The JSON must come from the run, never typed by hand.
+An A/B command adds a `side` field to each `perf` row. Save the full stdout beside it. The JSON must come from the run, never typed by hand.
 
 ## Proof standards
 
