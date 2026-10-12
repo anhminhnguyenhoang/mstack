@@ -1,6 +1,6 @@
 # Lever doc
 
-The record of a three-phase lever search (**Kernel hillclimb**, `playbooks/kernel-hillclimb.md`). It lives at `~/<KEY>/<topic>-opt.md`. Outside a ticket, keep it in the work dir. The worked example is `~/SILOTIGER-1164/mega-mhc-opt.md`.
+The record of a three-phase lever search (**Kernel hillclimb**, `playbooks/kernel-hillclimb.md`). It lives at `<tickets>/<KEY>/<topic>-opt.md`. Outside a ticket, keep it in the work dir.
 
 Update the doc in place as levers change status. The decision log is the append-only history. The doc is the current state.
 
@@ -14,7 +14,7 @@ Update the doc in place as levers change status. The decision log is the append-
 
 ## Lever table
 
-One row per lever. IDs are `L1`, `L2`, and so on, or the owner's own scheme (P1 to P5, D1 to D5, G1).
+One row per lever. IDs are `L1`, `L2`, and so on, or the owner's own scheme.
 
 ```
 | ID | Lever | Screen Δ vs B | Class | In S* | Marginal Δ in S* | Why it failed | Retry if | Evidence |
@@ -30,15 +30,15 @@ One row per lever. IDs are `L1`, `L2`, and so on, or the owner's own scheme (P1 
 - **Retry if.** The condition that makes a retry worth it, or `no`.
 - **Evidence.** A path or SHA to the trace, ISA diff, counter table, or bench log, or a WaveScope note id. Never prose.
 
-Example rows, from the mega-mHC record.
+Example rows, from a past lever search.
 
 ```
-| P2 | MFMA-layout loads (`MFMA_DIRECT_LOADS`) | +9 to +13% slower at T >= 4096 | premise-wrong | no | - | 0 `s_barrier` in the main loop; 4 lanes of a row touch 4 cache lines; 81 spills at T = 16384 | no | sweep/p2_mfma_direct_loads.md |
-| P5 | `FN_EARLY` (fn stream order, FP8) | -2 to -5% FP8 | premise-removed | no | - | U1 removed the FP8 amax/448 output it tuned | the FP8 output returns | sweep/p5_register_pressure.md, U1 |
-| D1 | `NT_STREAMS` below the prefill threshold | 0%, fast/slow pairs | noise | no | - | NT-on reads come in fast/slow pairs; the gain depends on which config runs first | re-measure once with more runs, then reclassify | sweep/d1_nt_streams_decode.md |
+| L2 | Direct MFMA-layout loads (`DIRECT_LOADS`) | slower past noise at large T | premise-wrong | no | - | 0 `s_barrier` in the main loop; the lanes of one row touch several cache lines; spills at the largest shape | no | sweep/l2_direct_loads.md |
+| L5 | `EARLY_STREAM` (operand stream order, FP8) | slower past noise on FP8 | premise-removed | no | - | L7 removed the FP8 output it tuned | the FP8 output returns | sweep/l5_register_pressure.md, L7 |
+| L6 | `NT_STREAMS` below the prefill threshold | 0%, fast/slow pairs | noise | no | - | NT-on reads come in fast/slow pairs; the gain depends on which config runs first | re-measure once with more runs, then reclassify | sweep/l6_nt_streams_decode.md |
 ```
 
-Several levers can fail for one root cause. Name the cause in each row, so a reader sees the overlap (P1, P2, and P4 overlapped, and their gains did not add).
+Several levers can fail for one root cause. Name the cause in each row, so a reader sees the overlap (three load-path levers overlapped in a past search, and their gains did not add).
 
 ## Status and class vocabulary
 
@@ -49,16 +49,16 @@ Status, for a lever. Use it in the `result` cell of `decision.tsv`.
 - `loser`. Did not. It has a class.
 - `kept`. In S*.
 - `dropped`. Was in S*, and the ablation showed a marginal gain inside noise.
-- `retired`. A loser with a root cause, evidence, and a `Retry if` condition that does not hold now. A lever that the KB `kernel-optimization/` area records as a dead end for the same mechanism starts here, before any screen. Its root cause is the one the KB note states, its Evidence is the KB note (cite the note file), and its `Retry if` is the KB's stated condition, or "new evidence that the premise holds here". Screen it only when that condition holds now.
+- `retired`. A loser with a root cause, evidence, and a `Retry if` condition that does not hold now. A lever that the `kernel-optimization/` area of the `kb` resource records as a dead end for the same mechanism starts here, before any screen. Its root cause is the one the note states, its Evidence is the note (cite the note file), and its `Retry if` is the note's stated condition, or "new evidence that the premise holds here". Screen it only when that condition holds now.
 
 Class, for a loser. Each class has a retry rule.
 
 | Class | Meaning | Retry |
 | --- | --- | --- |
-| `premise-wrong` | The thing it targets is not there. P2: 0 `s_barrier` in the main loop. | No. |
-| `premise-removed` | It depends on something that was removed. P5 after U1. | Only if the premise returns. |
+| `premise-wrong` | The thing it targets is not there. A barrier lever on a main loop with 0 `s_barrier`. | No. |
+| `premise-removed` | It depends on something that was removed. A lever that tunes an output a later change dropped. | Only if the premise returns. |
 | `masked` | Real mechanism, but another bottleneck dominates (VMEM-issue-bound). | Yes, on S*. Or when a trace shows the bottleneck moved. |
-| `cost-exceeds` | Real gain, and a side cost wins. P2's 81 spills. | If S* frees registers, LDS, or the other resource. |
+| `cost-exceeds` | Real gain, and a side cost wins. A gain that comes with new spills. | If S* frees registers, LDS, or the other resource. |
 | `broken` | The implementation or correctness failed. | After the fix. |
 | `noise` | Inside run-to-run noise. NT on and off. | Re-measure once with more runs, then reclassify by root cause. |
 
@@ -115,7 +115,7 @@ Each open note maps to one change in this doc.
 | --- | --- |
 | `rejected` | Retire the lever it names, and add its row if none exists. Choose the class and the root cause from the note's evidence. The Evidence cell is the note id. `Retry if` is new evidence that answers the note. Never re-propose the lever without that evidence. |
 | `constraint` | Add a line to `Hard limits` in the header. Every lever respects it, in every phase. A lever that would break it is not built. |
-| `question` | Add it to "For the human" in `~/<KEY>/STATUS.md`. Answer it with an annotation through the `trace.annotate` port. |
+| `question` | Add it to "For the human" in `<tickets>/<KEY>/STATUS.md`. Answer it with an annotation through the `trace.annotate` port. |
 | `problem`, `hypothesis` | Queue a lever or open an investigation. Verify it against the trace before you write its premise. |
 
 Other kinds, and notes that are not open, follow the `trace.annotate` skill.
