@@ -23,4 +23,4 @@ Rules.
 - Give each worktree and each side of a comparison its own `AITER_JIT_DIR`.
 - Check the arch from inside the container (`rocminfo | grep -m1 gfx`) before you trust a number.
 - A ticket's scripts, artifacts, and notes live in `~/<KEY>/`, mounted in its container.
-- Pick the Jira MCP namespace from the ticket URL's site, per the env file's Jira table. Pick the GitHub path per its Forge table.
+- Pick the Jira MCP namespace from the ticket URL's site, or from the project-prefix map for a bare key, per the env file's Jira table. Pick the GitHub path per its Forge table.

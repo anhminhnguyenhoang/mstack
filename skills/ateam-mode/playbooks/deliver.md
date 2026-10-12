@@ -11,6 +11,6 @@
    - `### Evidence`. Setup (GPU, image, ROCm, torch, repo SHAs), the command that reproduces it, artifact paths, and an evidence label (measured, inferred, guess) on each claim. Caveats go here.
    - `### Next`. The action you recommend, and what stays open.
 4. `both` → open the PR first. Link it in the draft's `### Evidence`.
-5. Stop at the draft. The human reads and approves it. Post to Jira only after that, per the Autonomy pause list. Never post, edit, or transition a ticket on your own.
+5. Stop at the draft. The human reads and approves it. Post to Jira only after that, per the Autonomy pause list. Post only through the namespace in the `**MCP:**` line of `~/<KEY>/ticket-raw.md`. Never post, edit, or transition a ticket on your own.
 
 **Reply:** the channel you chose and why, the PR link or the draft path, and the open decision for the human.

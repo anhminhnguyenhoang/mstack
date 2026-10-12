@@ -8,15 +8,21 @@ disable-model-invocation: true
 
 Turn a Jira key into a working folder and a checkable goal. This skill reads Jira. It never writes to Jira.
 
-## 1. Resolve the key
+## 1. Resolve the key and the site
 
-Take the key from the argument or the user's message, such as `ROCM-31582`. Accept a browse URL and extract the key. With no key, ask for it.
+Take the key from the argument or the user's message, such as `ROCM-31582`. With no key, ask for it. The key alone does not name the Jira site. Resolve the site before any Jira call:
+
+- A browse URL names the site. Extract the key from it.
+- A bare key uses the project-prefix map in the Jira table of `~/.cursor/mstack/env.md` (written by `/setup-mstack env`).
+- An unknown prefix, or a missing file, means stop. Ask the user for the browse URL, or to run `/setup-mstack env`. Do not try namespaces at random.
 
 ## 2. Load the ticket
 
-Use the Atlassian Jira MCP. The default is the `mcp-amd-hub-atlassian` namespace and its `jira_get_issue_clean` tool, with `comment_limit` set high enough to read every comment. Inspect the tool schema before the call. If the key is not found there, try the other Jira namespaces from `~/.cursor/mcp.json` (`JIRA_Cloud`, `SCET`, `PLAT`). Use `jira_download_attachments` or `jira_get_issue_images` only when the description points at an attachment you need.
+Use the MCP namespace the Jira table maps to the site. Inspect the tool schema before the call. Use `jira_get_issue_clean` where that namespace has it, with `comment_limit` set high enough to read every comment. Elsewhere use `jira_get_issue` and read every comment. Use `jira_download_attachments` or `jira_get_issue_images` only when the description points at an attachment you need.
 
-If every namespace fails on auth, say which one and stop. Do not invent ticket content.
+If the mapped namespace returns not-found, say so and ask the user. Try one other namespace only when the user agrees.
+
+If the mapped namespace fails on auth, say which one and stop. Do not invent ticket content.
 
 ## 3. Write `~/<KEY>/ticket-raw.md`
 
@@ -26,6 +32,8 @@ Create `~/<KEY>/` if missing. Keep the raw text, with no summary and no edits, i
 # <KEY>
 
 **URL:** <browse URL>
+**Site:** <site base URL>
+**MCP:** <namespace used for the load>
 **ID:** <id>
 **Key:** <KEY>
 **Summary:** <summary>
@@ -39,6 +47,8 @@ Create `~/<KEY>/` if missing. Keep the raw text, with no summary and no edits, i
 
 <author, date, body, one block per comment>
 ```
+
+Later steps that touch Jira, such as Deliver, use the `**MCP:**` namespace.
 
 Add each custom field that carries content (such as an AI insight) under its own `##` heading. Never overwrite an existing `ticket-raw.md`. Save the new load as `ticket-raw.<date>.md` and diff the two.
 

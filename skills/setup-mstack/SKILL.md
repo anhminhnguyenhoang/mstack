@@ -98,7 +98,7 @@ Run these and keep the raw output for step 10. A command that fails or is missin
 | Ticket containers | `~/*/.devcontainer/devcontainer.json`: the `--name=` entry in `runArgs`, and `workspaceMount` |
 | Repos | For each of `~/aiter`, `~/FlyDSL`, `~/sglang`, `~/triton` that exists: `git -C <repo> remote -v` and the current branch |
 | Forge | `gh auth status`, `timeout 15 ssh -o BatchMode=yes -T git@github.com`, `command -v origin`, and `get_me` on each GitHub MCP namespace in the session |
-| Jira sites | The `JIRA_URL` of each server in `~/.cursor/mcp.json`, and each remote Atlassian MCP namespace in the session (such as `mcp-amd-hub-atlassian`) |
+| Jira sites | The `JIRA_URL` of each server in `~/.cursor/mcp.json`, and each remote Atlassian MCP namespace in the session (such as `mcp-amd-hub-atlassian`). Seed project prefixes from the URL and `**Site:**` lines in `~/*/ticket-raw.md`: the key prefix maps to that site |
 | GPU picker | `test -f ~/.claude/skills/validate-kernel-pr/pick-idle-gpu.py` |
 | Knowledge base | `test -f ~/knowledge-base/README.md` |
 
@@ -111,7 +111,7 @@ Ask once, in one AskQuestion form. Offer the detected values as options, plus `n
 - For each repo: the remote to push branches to, and the upstream PRs target.
 - For each repo: the default container and its mount path, when no ticket names one.
 - The GPU lock convention. The default is `flock /tmp/gpu-<id>.lock` with the `validate-kernel-pr` picker. Offer `team convention` as free text.
-- The Jira MCP namespace for each Jira site, when one site matches more than one namespace.
+- The Jira MCP namespace for each site it cannot map, and the project prefixes for each site it has no ticket for. A prefix maps to exactly one site.
 - The GitHub path for each GitHub host or org, when more than one MCP namespace signs in.
 
 A fact the user skips is written as `not set`. A skill that needs a `not set` fact stops and asks. It never guesses.
@@ -136,7 +136,7 @@ Overwrite `~/.cursor/mstack/env.md` in full, so a rerun stays idempotent. Every 
 | Host or org | Push | PR read and write | Source |
 
 ## Jira
-| Site | MCP namespace | Source |
+| Site | MCP namespace | Project prefixes | Source |
 
 ## GPU lock
 | Picker | Lock | Source |
