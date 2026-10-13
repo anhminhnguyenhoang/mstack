@@ -15,6 +15,15 @@ REMOVED = [
     "jdbba-frontier-search",
     "kernel-walkthrough",
 ]
+RETIRED_PRINCIPLES = [
+    "experience-first",
+    "type-system-discipline",
+    "boundary-discipline",
+    "make-operations-idempotent",
+    "respect-the-roofline",
+    "laziness-protocol",
+    "foundational-thinking",
+]
 PORTS = "skills/ateam-mode/references/ports.md"
 NAME_EXEMPT = {PORTS, "skills/setup-mstack/SKILL.md", "scripts/check.py"}
 NAME_EXEMPT_DIRS = ("archive/",)
@@ -269,6 +278,23 @@ if not args.skills_only:
                 print(f"SKILL NAME OUTSIDE PORTS {path}:{n}: {m.group(1)}")
     fail += leaks
     summary.append(f"name leaks {leaks}")
+
+    principles = {os.path.basename(d)[len("principle-"):] for d in glob.glob("skills/principle-*")}
+    retired = sorted({n for r in RETIRED_PRINCIPLES for n in (r, r.replace("-", " "))}, key=len, reverse=True)
+    retired_pat = re.compile(r"(?<![\w-])(?:principle-)?(" + "|".join(map(re.escape, retired)) + r")(?![\w-])", re.I)
+    principle_ref = re.compile(r"(?<![\w-])principle-([a-z0-9-]+)")
+    stale_principles = 0
+    for path, text in walk(hidden=True):
+        if path == "scripts/check.py" or path.startswith(NAME_EXEMPT_DIRS):
+            continue
+        for n, line in enumerate(text.splitlines(), 1):
+            hits = {m.group(1).lower() for m in retired_pat.finditer(line)}
+            hits |= {m.group(1) for m in principle_ref.finditer(line) if m.group(1).rstrip("-") not in principles and m.group(1) not in ("title", "x")}
+            for h in sorted(hits):
+                stale_principles += 1
+                print(f"STALE PRINCIPLE {path}:{n}: {h}")
+    fail += stale_principles
+    summary.append(f"stale principles {stale_principles}")
 
     deep = 0
     for path, text in walk(hidden=True):

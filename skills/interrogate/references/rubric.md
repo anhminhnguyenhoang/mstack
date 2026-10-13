@@ -33,7 +33,7 @@ Answering this often requires looking beyond the changed files. Read the surroun
 
 Does the code fit well into the system it's part of?
 
-- Boundary discipline: is validation at system boundaries, or scattered through business logic? Validate data once where it enters the system, then trust it internally.
+- Input checks: are shapes, strides, dtypes, and arch preconditions checked once at the op entry point, or scattered through the kernel and its launcher?
 - Abstraction level: is the code mixing high-level orchestration with low-level detail?
 - Coupling: does this change introduce dependencies that will make future changes harder?
 - Data model fit: do the data structures match the actual access patterns?
