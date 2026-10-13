@@ -32,8 +32,11 @@ STALE = re.compile(
     re.I,
 )
 TODO = re.compile(r"`TODO`|TODO:")
-KB_AREAS = ("hardware", "kernel-optimization", "papers", "dsl")
-KB_AREA_PATH = re.compile(r"(?<![\w./-])(" + "|".join(KB_AREAS) + r")/([^\s`'\")\]>]*)")
+LEGACY_KB_FOLDERS = ("hardware", "kernel-optimization", "papers", "dsl")
+LEGACY_KB_PATH = re.compile(r"(?<![\w./-])(" + "|".join(LEGACY_KB_FOLDERS) + r")/")
+KB_SENTENCE = re.compile(r"`kb` resource")
+SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
+CODE_SPAN = re.compile(r"`([^`\n]+)`")
 HOME_PATH = re.compile(r"(?<!\w)~/([^\s`'\")\]>,;|]*)|/home/[A-Za-z0-9_.-]+/")
 LOCAL_NAMES = re.compile(r"knowledge-base|KernelForge")
 HOME_OK = (".cursor",)
@@ -83,10 +86,37 @@ def cells(line):
     return [c.strip() for c in re.split(r"(?<!\\)\|", line.strip())[1:-1]]
 
 
-def env_skills_dir():
+def env_text():
     try:
-        text = open(os.path.expanduser(ENV_FILE), encoding="utf-8").read()
+        return open(os.path.expanduser(os.environ.get("MSTACK_ENV") or ENV_FILE), encoding="utf-8").read()
     except OSError:
+        return None
+
+
+def env_kb_paths():
+    text = env_text()
+    m = re.search(r"^## KB[ \t]*\n(.*?)(?=^## |\Z)", text or "", re.M | re.S)
+    if not m:
+        return []
+    lines = m.group(1).splitlines()
+    paths = []
+    for i, line in enumerate(lines):
+        header = cells(line) if line.startswith("|") else []
+        if "Role" in header and "Path inside the KB" in header:
+            col = header.index("Path inside the KB")
+            for row in lines[i + 2:]:
+                if not row.startswith("|"):
+                    break
+                value = cells(row)[col].strip("`").strip() if len(cells(row)) > col else ""
+                value = re.sub(r"^(\./)+", "", value).rstrip("/")
+                if value and value not in ("not set", ".", "-"):
+                    paths.append(value)
+    return sorted(set(paths))
+
+
+def env_skills_dir():
+    text = env_text()
+    if text is None:
         return None
     m = re.search(r"^## Skills[ \t]*\n(.*?)(?=^## |\Z)", text, re.M | re.S)
     if not m:
@@ -296,17 +326,48 @@ if not args.skills_only:
     fail += stale_principles
     summary.append(f"stale principles {stale_principles}")
 
-    deep = 0
+    kb_paths = 0
+    repo_suffixes = set()
+    for dirpath, dirnames, filenames in os.walk("."):
+        dirnames[:] = [d for d in dirnames if d != ".git"]
+        for name in dirnames + filenames:
+            parts = os.path.relpath(os.path.join(dirpath, name)).split(os.sep)
+            for i in range(len(parts)):
+                repo_suffixes.add("/".join(parts[i:]))
+                repo_suffixes.add("/".join(parts[i:]) + "/")
+
+    def is_repo_path(token):
+        return re.sub(r"^(\.{1,2}/)+", "", token) in repo_suffixes
+
+    env_paths = env_kb_paths()
+    env_pats = [(p, re.compile(r"(?<![\w./-])" + re.escape(p) + r"/" + (r"" if "/" not in p else r"|(?<![\w./-])" + re.escape(p) + r"(?![\w/-])"))) for p in env_paths]
     for path, text in walk(hidden=True):
         if path == "scripts/check.py" or path.startswith(NAME_EXEMPT_DIRS):
             continue
         for n, line in enumerate(text.splitlines(), 1):
-            for m in KB_AREA_PATH.finditer(line):
-                rest = m.group(2).rstrip(".,;:")
-                if rest not in ("", "README.md"):
-                    deep += 1
-                    print(f"KB DEEP PATH {path}:{n}: {m.group(1)}/{rest}")
-    fail += deep
+            for m in LEGACY_KB_PATH.finditer(line):
+                kb_paths += 1
+                print(f"KB FOLDER NAME {path}:{n}: {m.group(1)}/")
+            for p, pat in env_pats:
+                for m in pat.finditer(line):
+                    if is_repo_path(p):
+                        continue
+                    kb_paths += 1
+                    print(f"KB PATH FROM ENV {path}:{n}: {p}")
+            for sentence in SENTENCE_END.split(line):
+                if not KB_SENTENCE.search(sentence):
+                    continue
+                for span in CODE_SPAN.findall(sentence):
+                    token = span.strip()
+                    if not (("/" in token or token.endswith(".md")) and " " not in token):
+                        continue
+                    if token.startswith(("~/.cursor", "$MSTACK")):
+                        continue
+                    if is_repo_path(token) or LEGACY_KB_PATH.match(token):
+                        continue
+                    kb_paths += 1
+                    print(f"KB PATH NEAR kb RESOURCE {path}:{n}: {token}")
+    fail += kb_paths
 
     local = 0
     for path, text in walk(hidden=True):
@@ -331,7 +392,7 @@ if not args.skills_only:
                 keys += 1
                 print(f"TICKET ID {path}:{n}: {m.group(0)}")
     fail += keys
-    summary.append(f"kb deep paths {deep} | local paths {local} | ticket ids {keys}")
+    summary.append(f"kb paths {kb_paths} | local paths {local} | ticket ids {keys}")
 
 print(" | ".join(summary))
 print("RESULT", "PASS" if fail == 0 else f"FAIL ({fail})")
