@@ -46,7 +46,7 @@ if [ $# -eq 0 ] && ! git rev-parse --show-toplevel >/dev/null 2>&1; then
 	paths=$(env_repos "$env_file")
 	if [ -z "$paths" ]; then
 		echo "not in a git repo; pass a repo path" >&2
-		echo "hint: run /setup-mstack env to record your repos in $env_file" >&2
+		echo "hint: run /setup-mstack env and give it your repo paths, to record them in $env_file" >&2
 		exit 1
 	fi
 	rc=0
