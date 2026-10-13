@@ -1,44 +1,89 @@
 ---
 name: create-verification-skill
-description: "Generate a project-local verification skill that runs your project the way a user does: a kernel library, a CLI, or a service, in any language. Use for /create-verification-skill, \"make a control skill for this repo\", or when a project has no scripted way to prove kernel, CLI, or service behavior."
+description: "Generate a repo-local verification skill for a GPU kernel library such as an aiter or FlyDSL checkout: one feature file per op family for the correctness gate, the frozen perf harness, and the ISA resource check, all driven on one locked GPU. Use for /create-verification-skill, 'make a verify skill for aiter or FlyDSL', 'map the op tests of this repo', or when a kernel library has no scripted way to prove correctness, perf, and resources."
 disable-model-invocation: true
 ---
 
 # Create a verification skill
 
-Every serious project needs a scripted way to drive the real target and prove behavior: launch it, exercise a feature the way a user would, and capture evidence. This skill generates that as a project-local skill (`.cursor/skills/verify-<app>/`) tailored to the repo. You write the generator's output for the next agent, not for a human: it will be read cold, mid-task, by an agent that has never seen the project.
+A kernel library needs a scripted way to prove its ops: a correctness gate, a perf number, and a resource check. This skill generates that as a repo-local skill, `.cursor/skills/verify-<lib>/`. The next agent reads the output cold, mid-task, and has never seen the repo.
 
-## 1. Interview the repo, not the user
+Non-kernel surfaces, such as a CLI, a service, or a browser app, are out of scope.
 
-Answer these from the codebase and only ask the user what you cannot observe:
+```
+repos resource ──► inventory op families ──► feature map ──► verify-<lib> skill
+                       │                          │                │
+                  op tests, pytest         correctness / perf / ISA │
+                                                                    ▼
+                                              prove once on one locked GPU (bench.run)
+```
 
-- **Surface:** what does a user actually touch? A kernel or an op test, a CLI/TUI, an API or service, a library? A repo can have several; pick the primary one and note the rest.
-- **Run:** how does the project start locally? Prefer the repo's own documented dev command (package scripts, Makefile, README quickstart). Note ports, env vars, seed data, auth.
-- **Drive:** how can an agent interact with it programmatically? Existing harnesses first — op tests, pytest targets, expect scripts, PTY helpers, curl-able endpoints, a debug port. Only then pick a generic recipe: a tmux/PTY harness for CLI/TUI, plain HTTP for services. A GPU kernel is driven through the `bench.run` port.
-- **Observe:** what evidence can be captured? Terminal transcripts, JSON artifacts, response bodies, logs, exit codes, DB state.
-- **Isolate:** can two instances run side by side (ports, data dirs, GPUs, caches)? If not, say so in the generated skill: refusing to double-drive a shared instance beats corrupting the user's session.
+## 1. Interview the repo
 
-If the checkout doesn't build or start as-is, fix that first (or report it precisely) before generating; a skill written against a broken base teaches wrong steps. When an irrelevant missing asset blocks startup (a static dir the API never serves, a sample config), the generated skill may create it, clearly marked as verification scaffolding, and remove it in cleanup.
+Answer from the checkout. Ask the user only for what you cannot observe.
+
+- **Library.** Read the path, the container, and the path in the container from the `repos` resource. Never write them into the generated skill. When `repos` is not set, stop and ask for `/setup-mstack env`.
+- **Arch.** Read the target arch (`gfx942` or `gfx950`) from inside the container. Note each op that has an arch gate.
+- **Op families.** List the families, such as GEMM, attention, MoE, norm, and quant. For each, find the entry points:
+  - aiter: `op_tests/test_*.py` and its flags (`-d`, `-b`, `-s`, shapes).
+  - FlyDSL: the pytest targets under `tests/kernels/`.
+  - Triton kernels in aiter: the same `op_tests` scripts.
+- **Correctness gate.** Per family: the torch reference and its dtype, the `rtol` and `atol`, the shapes, the edge cases (small M, partial tiles, dtypes), and how the test counts NaN.
+- **Perf.** Per family: the frozen harness or the perf table of the op test, the reference side (torch, Triton, or a vendor library), the regime (cold-L2, warm, `hipGraph`), and the run count.
+- **Resources.** Per family: the test command that dumps ISA, for the `isa.diff` port.
+- **Gaps.** An op with no test is a gap. Write the test through the `test.author` port, or list the gap in the map.
+
+If the checkout does not build or import as it is, fix that first or report it exactly. A skill written against a broken base teaches wrong steps.
 
 ## 2. Generate the skill
 
-Write `.cursor/skills/verify-<app>/SKILL.md` with YAML frontmatter (`name: verify-<app>` and a `description` that names the app, the surface, and when to reach for it — without frontmatter the skill never registers) and these sections, each grounded in what the interview actually found (no placeholders left):
+Write `.cursor/skills/verify-<lib>/SKILL.md`. The frontmatter has `name: verify-<lib>` and a `description` that names the library, the op families, and when to use it. Without frontmatter the skill never registers. Each section below comes from what the interview found. Leave no placeholder.
 
-- **Launch:** the exact command that starts the app for verification, and how to tell it's ready (a log line, a prompt). Launch must reach a usable state from an empty data dir, including any migrations and seed data. Ready means usable, not just that a process answers. A database health check can pass while its init scripts are still running. Include teardown. For a short-lived CLI or TUI there is no server to keep alive: launch means build the binary (or install deps) once, then start each drive in its own isolated PTY or tmux session. For a kernel library there is no server either: launch means take one GPU lock and build the kernel once inside its container, per the `bench.run` port.
-- **Doctor:** one read-only check that answers "is this instance worth driving?" — process up, right version/build, port owned by us, auth valid. An agent runs this first whenever anything looks off.
-- **Drive:** the harness recipe with real selectors/commands from this repo, not examples. Prefer stable handles (flags, test IDs, prompt strings, route paths) over positions and fixed sleeps.
-- **Evidence:** what to capture for a proof and where it goes. State the proof standards: exercise the real user path, not internal setters or test-only endpoints; capture the action and the resulting state, not just the last line of output; verify side effects (files written, rows inserted, messages sent) alongside what's visible; mocks only where a production boundary already isolates the external system. When the safe path is a dry-run or test mode, verify what it actually skips by observing (files, network, git refs) rather than trusting its name: some dry-runs still touch the network or write to a shared cache.
-- **Cleanup:** how to tear down instances the run created. Never kill by process name; kill what you started. Cleanup removes instances and scratch state, never the evidence: proof artifacts survive the teardown, in a location the skill names.
-- **Helpers:** any script the skill ships is executable and its invocation is shown in the skill body. A helper the reader has to reverse-engineer is not a helper.
+- **Launch.** There is no server. Launch means take one GPU lock and build the kernel once inside its container, through the `bench.run` port. Cite the port. Do not restate its lock rule.
+- **Doctor.** Cite the `bench.run` doctor. Add the checks that belong to the library: the repo SHA, the build is present, and the arch matches the gate of each op.
+- **Drive.** Real commands from this repo for each family: test paths, flags, shapes. Prefer stable handles (flags, test IDs, shape lists) over positions.
+- **Evidence.** Each run writes its artifact through `bench.run`. Write it to the ticket folder when the `tickets` resource is set and the work has a ticket. Write it to the work dir otherwise. State the proof standards:
+  - Correctness comes before perf. A perf row without a passing correctness row on the same run is not a result.
+  - Copy every number from the saved stdout.
+  - State the perf regime on every row.
+  - State a speedup or a percent of peak with its source (**principle-respect-the-roofline**, **principle-explain-the-number**).
+- **Cleanup.** Remove only what the run created: scratch files, its own JIT directory, its own worktrees. Never remove the artifacts. Never kill by process name.
+- **Helpers.** Any script that the skill ships is executable. Its invocation is shown in the skill body.
 
 ## 3. Seed the feature map
 
-Create `.cursor/skills/verify-<app>/features/README.md` plus one file per user-facing feature you can identify (aim for the top 3-5 to start, from routes, commands, op tests, or docs). Follow the shape in [`references/feature-map-example/`](references/feature-map-example/), with a README index and one file per feature, such as `gemm-correctness.md` and `gemm-perf.md`. Each file answers, from the user's point of view: what the feature is, how to reach it, how to drive it with the harness, and what observable end state proves it works. The four H2s are `Sub-features`, `How to get to it (user POV)`, `Driving it with <harness>`, and `Gotchas`. If the seed data lacks a precondition that a journey needs, the journey reports a failure and the reason goes in that feature's `Gotchas`. Never weaken the journey to make it pass. The map is the repo's maintained verification source; a proof that drives one convenient entry point is incomplete when the map lists others.
+Create `.cursor/skills/verify-<lib>/features/README.md` and one file per feature. Follow [`references/feature-map-example/`](references/feature-map-example/).
 
-## 4. Prove the generated skill before handing it over
+```
+op family ──┬─► <family>-correctness.md   allclose gate, edge cases, NaN, negative control
+            ├─► <family>-perf.md          frozen harness, reference side, percent of peak, artifact
+            └─► <family>-isa.md           VGPR, SGPR, spills, scratch, LDS, base vs head
+```
 
-Run its own instructions end to end once: launch, doctor, drive ONE mapped feature (one is enough; the map exists so later runs can cover the rest), capture evidence, clean up. After cleanup, confirm the evidence still exists at the named location — a cleanup that eats the proof fails this step. Fix what fails, and run the generated cleanup after every failed iteration too, so broken attempts don't strand processes and ports. A generated skill that was never executed is a draft, not a deliverable. If you proved it in a stand-in for the real target (a container in place of a fresh VM, a local stack in place of a remote one, a different arch in place of the shipped one), list every setup step the stand-in did that the target will not. Those steps stay unverified until a run on the real target covers them.
+- Cover the top 3 to 5 op families first. Skip a feature file only when the family has no entry point, and list the gap in the README.
+- Each file has the four H2s of the example: `Sub-features`, `How to get to it (user POV)`, `Driving it with <harness>`, and `Gotchas`.
+- A correctness file keeps a negative control that must fail. A gate that cannot fail tests nothing.
+- A perf file keeps the reference side in the same run, and freezes the harness with its hash.
+- An ISA file runs the `isa.diff` port. It compiles only and needs no GPU. A GPU run still goes through `bench.run`.
+- If the seed lacks a precondition, the journey reports a failure, and the reason goes in that file's `Gotchas`. Never weaken a journey to make it pass.
+
+The map is the maintained source. A proof that drives one entry point is incomplete when the map lists others.
+
+## 4. Prove the generated skill once
+
+Run its own instructions end to end:
+
+```
+bench.run lock ──► doctor ──► drive ONE correctness feature ──► artifact ──► cleanup ──► artifact still there
+```
+
+- Drive one mapped feature. One is enough. The map lets later runs cover the rest.
+- After cleanup, confirm the artifact exists at its named location. A cleanup that removes the proof fails this step.
+- Fix what fails. Run the cleanup after each failed attempt.
+- A skill that was never run is a draft, not a deliverable.
+- If you proved it on a stand-in, list each setup step the stand-in did that the target will not. Examples: a container for a fresh host, `gfx942` for `gfx950`, a smaller GPU count. Those steps stay unverified.
+- A run with no idle GPU, no container, or an unreadable output is `INCONCLUSIVE`. Report it. Do not mark the skill proved.
 
 ## 5. Offer the maintenance loop
 
-Point the user at `/maintain-verification-skill` for keeping the map honest as the app changes. Suggest a cadence only if they ask.
+Point the user at `/maintain-verification-skill`. Suggest a cadence only when they ask.

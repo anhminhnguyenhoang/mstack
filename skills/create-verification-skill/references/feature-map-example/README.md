@@ -49,3 +49,4 @@ Keep implementation details out of the map. Name only user paths, stable handles
 
 - [GEMM correctness](./gemm-correctness.md) covers the `allclose` gate over aligned shapes, small M, partial tiles, dtypes, and NaN handling, with a negative control.
 - [GEMM perf](./gemm-perf.md) covers one locked GPU, the frozen harness, the JSON artifact, the reference side, and the base-to-head comparison.
+- [GEMM ISA resources](./gemm-isa.md) covers the compile-only resource diff of VGPR, SGPR, spills, scratch, and LDS, with a gate on spills.
