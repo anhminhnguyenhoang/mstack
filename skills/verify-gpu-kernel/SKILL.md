@@ -124,13 +124,13 @@ Write `<tickets>/<KEY>/bench_<topic>.json` for ticket work, and `./bench_<topic>
   "repos": [{"path": "<repo path>", "sha": "", "dirty": false}],
   "command": "<exact command>",
   "imports": {"<aiter or flydsl>": "<find_spec origin>"},
-  "correctness": {"passed": true, "rtol": 0, "atol": 0, "nan_count": 0, "shapes_checked": 0},
+  "correctness": {"passed": true, "rtol": 0, "atol": 0, "nan_count": 0, "snr_db": null, "shapes_checked": 0},
   "perf": [{"shape": "", "us_median": 0, "runs": 0, "min_us": 0, "max_us": 0, "regime": "cold-L2 | warm | hipGraph"}],
   "raw_output": "<path to the saved stdout>"
 }
 ```
 
-An A/B command adds a `side` field to each `perf` row. Save the full stdout beside it. The JSON must come from the run, never typed by hand.
+`snr_db` is the lowest SNR over the shapes checked. It is required for an fp8, fp4, or mxfp4 output, per **principle-correctness-before-speed**, and `null` otherwise. An A/B command adds a `side` field to each `perf` row. Save the full stdout beside it. The JSON must come from the run, never typed by hand.
 
 ## Proof standards
 
