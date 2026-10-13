@@ -53,10 +53,12 @@ else
 fi
 echo "reviewing $repo#$pr in $root" >&2
 
-read -r fork owner author < <("$GH" pr view "$pr" --repo "$repo" --json isCrossRepository,headRepositoryOwner,author \
-  --jq '"\(.isCrossRepository) \(.headRepositoryOwner.login) \(.author.login)"')
-if [ "$fork" = true ] && [ "${ALLOW_FORK_CODE:-0}" != 1 ]; then
-  echo "fork PR from $owner by $author: its code will not run. Ask the human, then rerun with ALLOW_FORK_CODE=1." >&2
+info=$("$GH" pr view "$pr" --repo "$repo" --json isCrossRepository,headRepositoryOwner,author \
+  --jq '"\(.isCrossRepository) \(.headRepositoryOwner.login) \(.author.login)"') || { echo "cannot read $repo#$pr from gh" >&2; exit 1; }
+read -r fork owner author <<<"$info"
+# Anything but an explicit `false` counts as a fork, so an odd gh answer never runs the PR's code.
+if [ "$fork" != false ] && [ "${ALLOW_FORK_CODE:-0}" != 1 ]; then
+  echo "fork PR from ${owner:-?} by ${author:-?} (isCrossRepository: ${fork:-unknown}): its code will not run. Ask the human, then rerun with ALLOW_FORK_CODE=1." >&2
   export REVIEW_AUTO_VALIDATE=0
 fi
 

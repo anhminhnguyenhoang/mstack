@@ -14,7 +14,8 @@ script wrote, so a reviewer that never received that prompt cannot be recorded. 
 refute prompt is written only after that reviewer's blind findings are recorded. merge
 requires each panel finding on the draft or dropped with a reason, a source tag on each
 draft finding, the card's Validation and Perf lines unchanged, and the pr.review skill's
-own independent gate green. post-review.py posts only a draft whose stamp matches it.
+own Step 8 gates green, run from the snapshot that produced $WORK. post-review.py posts
+only a draft whose stamp matches it.
 """
 import hashlib
 import json
@@ -27,8 +28,9 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INTERROGATE = os.path.join(ROOT, "skills", "interrogate", "references")
 PORTS = os.path.join(ROOT, "skills", "ateam-mode", "references", "ports.md")
-SKILLS = os.environ.get("MSTACK_SKILLS_DIR") or os.path.join(os.path.expanduser("~"), ".claude", "skills")
-FINDING = re.compile(r"^(🔴|⚠️|📝)")
+FINDING = re.compile(r"^\s*(?:[-*+]\s+)?(🔴|⚠|📝)")
+HEADING = re.compile(r"^#{2,4}\s*\d+[.)]", re.M)
+PARSED = re.compile(r"^#{2,4}\s*(\d+)[.)]\s*\**\[?(critical|warning|nit)\]?\**\s*[:\-\u2013\u2014]?\s*(.+)$", re.M | re.I)
 SOURCE = re.compile(r"\[src: ([^\]]+)\]")
 LABEL = re.compile(r"[A-Z]")
 
@@ -55,16 +57,15 @@ def nonce_of(work, name):
 
 
 def check_nonce(work, name, reply):
-    first = next((l for l in reply.splitlines() if l.strip()), "")
-    if first.strip() != f"nonce: {nonce_of(work, name)}":
-        red(f"reply's first line is not the nonce of {name}.prompt: the reviewer did not get the script's prompt")
+    if not re.search(rf"^\W*nonce:\s*`?{nonce_of(work, name)}`?\W*$", reply, re.M):
+        red(f"the reply has no `nonce:` line for {name}.prompt: the reviewer did not get the script's prompt")
 
 
 def write_prompt(work, name, text):
     nonce = secrets.token_hex(8)
     open(panel(work, name + ".nonce"), "w").write(nonce + "\n")
     path = panel(work, name + ".prompt")
-    open(path, "w", encoding="utf-8").write(text + f"\n\nStart your reply with the line `nonce: {nonce}`.\n")
+    open(path, "w", encoding="utf-8").write(text + f"\n\nPut the line `nonce: {nonce}` at the top of your reply.\n")
     print(path)
 
 
@@ -89,9 +90,13 @@ def blind_prompt(work, label):
 def record(work, label):
     reply = sys.stdin.read()
     check_nonce(work, label, reply)
-    found = re.findall(r"^### (\d+)\. \[(critical|warning|nit)\] (.+)$", reply, re.M | re.I)
-    if not found and "no findings" not in reply.lower():
-        red("no `### <n>. [severity] title` findings and no `no findings`")
+    found = PARSED.findall(reply)
+    if len(found) != len(HEADING.findall(reply)):
+        red(f"{len(HEADING.findall(reply))} numbered finding heading(s), {len(found)} with a severity: "
+            "ask the reviewer for `### <n>. [critical|warning|nit] <title>` headings")
+    rest = re.sub(r"(?im)^\W*nonce:.*$|^#+\s*findings\s*$", "", reply)
+    if not found and re.sub(r"[^a-z]+", " ", rest.lower()).strip() != "no findings":
+        red("no `### <n>. [severity] title` findings, and the reply is not just `no findings`")
     open(panel(work, label + ".md"), "w", encoding="utf-8").write(reply)
     open(panel(work, label + ".ids"), "w").write("".join(f"{label}{n}\t{sev}\t{title}\n" for n, sev, title in found))
     print(f"recorded {len(found)} finding(s) from reviewer {label}")
@@ -102,7 +107,10 @@ def refute_prompt(work, label):
         red(f"reviewer {label} has no recorded blind findings: run its blind review first, so the card cannot anchor it")
     findings = card_findings(work)
     if not findings:
-        red("card.md has no findings to refute")
+        open(os.path.join(work, "independent.txt"), "w").write("NONE AVAILABLE -- no findings on the card to refute\n")
+        open(panel(work, "reader"), "w").write(label + "\n")
+        print("card.md has no findings: independent.txt says so, and no refute prompt is needed")
+        return
     target = open(os.path.join(work, "merge_target.txt"), encoding="utf-8").read() if os.path.isfile(os.path.join(work, "merge_target.txt")) else "unavailable"
     lines = "\n".join(f"{i}. {f}" for i, f in enumerate(findings, 1))
     write_prompt(work, label + ".refute", f"""You are the independent reader of a PR review card. Every finding below is false until you defend it from the code. Open the files it names on the base tree and the PR head, and try to kill it.
@@ -185,12 +193,17 @@ def merge(work, draft, no_panel):
             errs.append(f"the draft's `{key}...` line differs from the card's; the panel adds judgment, never evidence")
 
     skill = re.search(r"^\| `pr\.review` \|[^|]*\| `([^`]*)`", read(PORTS), re.M).group(1)
-    gate = os.path.join(SKILLS, skill, "triage.py")
-    r = subprocess.run([gate, "independent", os.path.join(work, "independent.txt"), os.path.join(work, "card.md")], capture_output=True, text=True) if os.path.isfile(gate) else None
-    if r is None:
-        errs.append(f"cannot run the pr.review skill's independent gate: no {gate}")
-    elif r.returncode:
-        errs.append("the pr.review skill's independent gate is red:\n" + (r.stdout + r.stderr).strip())
+    m = re.search(r"git -C (\S+) show", open(os.path.join(work, "merge_target.txt"), encoding="utf-8").read()) if os.path.isfile(os.path.join(work, "merge_target.txt")) else None
+    root = m and m.group(1)
+    doc = os.path.join(root or "", ".claude", "skills", skill, "SKILL.md")
+    block = re.search(r"^## Step 8\b.*?^```bash\n(.*?)^```", open(doc, encoding="utf-8").read(), re.M | re.S) if root and os.path.isfile(doc) else None
+    if not block:
+        errs.append(f"cannot find the pr.review skill's Step 8 gates: no review root in merge_target.txt, or no Step 8 bash block in {doc}")
+    else:
+        env = dict(os.environ, WORK=work, PROJECT_ROOT=root, SKILLS_ROOT=os.path.join(root, ".claude", "skills"))
+        r = subprocess.run(["bash", "-c", block.group(1)], cwd=root, env=env, capture_output=True, text=True)
+        if r.returncode:
+            errs.append("the pr.review skill's Step 8 gates are red:\n" + (r.stdout + r.stderr).strip()[-2000:])
 
     if errs:
         red(*errs)

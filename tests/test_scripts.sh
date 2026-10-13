@@ -35,7 +35,8 @@ skill() { mkdir -p "$1/.claude/skills/$2"; printf -- '---\nname: %s\ndescription
 for r in r k; do g init -q --bare "$T/remotes/o/$r.git"; g clone -q "$T/remotes/o/$r.git" "$T/seed-$r" 2>/dev/null; done
 skill "$T/seed-r" "$S"; skill "$T/seed-r" "$V"; skill "$T/seed-r" other; skill "$T/seed-k" kskill
 printf '#!/usr/bin/env bash\necho "pwd=$(pwd) validate=${REVIEW_AUTO_VALIDATE:-unset} args=$*"\n' > "$T/seed-r/.claude/skills/$S/fetch.sh"
-printf '#!/usr/bin/env bash\n[ "${FAIL_INDEP:-0}" != 1 ]\n' > "$T/seed-r/.claude/skills/$S/triage.py"
+printf '#!/usr/bin/env bash\n[ "${FAIL_GATE:-}" != "$1" ]\n' > "$T/seed-r/.claude/skills/$S/triage.py"
+printf '\n## Step 8 — Verdict\n\n```bash\n"$SKILLS_ROOT/%s/triage.py" card "$WORK/card.md" || exit 1\n"$SKILLS_ROOT/%s/triage.py" independent "$WORK/independent.txt" "$WORK/card.md" || exit 1\n```\n' "$S" "$S" >> "$T/seed-r/.claude/skills/$S/SKILL.md"
 chmod +x "$T/seed-r/.claude/skills/$S/fetch.sh" "$T/seed-r/.claude/skills/$S/triage.py"
 for r in r k; do g -C "$T/seed-$r" add -A && g -C "$T/seed-$r" commit -qm v1 && g -C "$T/seed-$r" push -q origin main; done
 push() { sed -i "s/description: .*/description: $1/" "$T/seed-r/.claude/skills/$S/SKILL.md"; g -C "$T/seed-r" commit -qam "$1"; g -C "$T/seed-r" push -q origin main; }
@@ -66,6 +67,16 @@ touch -d '2 days ago' "$snap1/.superseded"
 "$ROOT/scripts/sync-upstream-skills.sh" --review-ports >/dev/null
 [ ! -d "$snap1" ] || fail "day-old superseded snapshot not pruned"
 [ "$(readlink "$T/skills/kskill")" = "$H/kcheckout/.claude/skills/kskill" ] || fail "--review-ports moved a link of another repo"
+snap3=$(snap_of "$S")
+echo unrelated > "$T/seed-r/README"; g -C "$T/seed-r" add README; g -C "$T/seed-r" commit -qm unrelated; g -C "$T/seed-r" push -q origin main
+"$ROOT/scripts/sync-upstream-skills.sh" --review-ports >/dev/null
+[ "$(snap_of "$S")" = "$snap3" ] || fail "new snapshot although the skills did not change"
+mkdir -p "$H/other"; g clone -q "$T/remotes/o/k.git" "$H/other/checkout"
+osnap=$("$ROOT/scripts/sync-upstream-skills.sh" --no-links "$H/other/checkout" | tail -1); osnap=${osnap##*: }
+push v4
+"$ROOT/scripts/sync-upstream-skills.sh" --review-ports >/dev/null
+grep -q v4 "$T/skills/$S/SKILL.md" || fail "skills change did not make a new snapshot"
+[ -d "$osnap" ] && [ ! -e "$osnap/.superseded" ] || fail "prune touched a snapshot of another repo with the same name"
 
 mkdir "$T/empty"
 out=$(MSTACK_SKILLS_DIR="$T/empty" "$ROOT/scripts/sync-upstream-skills.sh" --review-ports)
@@ -83,9 +94,12 @@ for how in var cwd; do
 done
 echo "ok hook"
 
-# --- check.py: a snapshot at origin/HEAD is not a branch warning; a stale one is
+# --- check.py: a snapshot whose skill matches origin/HEAD is not a branch warning; a stale one is
+echo unrelated2 > "$T/seed-r/README"; g -C "$T/seed-r" commit -qam unrelated2; g -C "$T/seed-r" push -q origin main
+"$ROOT/scripts/sync-upstream-skills.sh" --review-ports >/dev/null
+[ "$(git -C "$(snap_of "$S")" rev-parse HEAD)" != "$(git -C "$H/checkout" rev-parse origin/main)" ] || fail "fixture: snapshot should trail origin"
 out=$(cd "$ROOT" && python3 scripts/check.py --no-tests 2>&1 || true)
-echo "$out" | grep -q "^WARN $S:" && fail "check.py warns on a snapshot at origin/HEAD"
+echo "$out" | grep -q "^WARN $S:" && fail "check.py warns on a snapshot whose skill matches origin/HEAD"
 snap=$(snap_of "$S")
 g -C "$snap" checkout -q --detach HEAD~1
 out=$(cd "$ROOT" && python3 scripts/check.py --no-tests 2>&1 || true)
@@ -105,6 +119,8 @@ case "$kroot" in "$C/kcheckout-"*) ;; *) fail "o/k not reviewed in its own snaps
 [ "$(readlink "$T/skills/kskill")" = "$H/kcheckout/.claude/skills/kskill" ] || fail "reviewing o/k moved its skill links"
 out=$(FORK=true "$ROOT/scripts/pr-review.sh" 7 o/r 2>/dev/null)
 [ "$out" = "pwd=$snap validate=0 args=7 o/r" ] || fail "fork PR code not gated: $out"
+out=$(FORK=null "$ROOT/scripts/pr-review.sh" o/r#7 2>/dev/null)
+[ "$out" = "pwd=$snap validate=0 args=o/r#7" ] || fail "an odd isCrossRepository ran the PR's code: $out"
 out=$(FORK=true ALLOW_FORK_CODE=1 "$ROOT/scripts/pr-review.sh" o/r#7 2>/dev/null)
 [ "$out" = "pwd=$snap validate=unset args=o/r#7" ] || fail "ALLOW_FORK_CODE ignored: $out"
 g clone -q "$T/remotes/o/k.git" "$H/kcopy"
@@ -130,7 +146,7 @@ work() {
   printf 'diff --git a/src/a.py b/src/a.py\n+new1\n' > "$1/pr.diff"
   printf '{"title": "Fix the a.py bound", "body": "Because b"}' > "$1/pr_meta.json"
   printf 'Review (advisory): ⚠️ NEEDS WORK\nValidation (deterministic): N/A — no runtime surface changed\nPerf (advisory): N/A — no runtime surface changed\n\n⚠️ first card finding\n📝 second card finding\n' > "$1/card.md"
-  echo "MERGE TARGET: base" > "$1/merge_target.txt"
+  printf 'MERGE TARGET: base\n  read base files from there, or: git -C %s show base:<path>\n' "$(snap_of "$S")" > "$1/merge_target.txt"
 }
 W="$T/work"; work "$W"
 pa=$("$G" prompt "$W" A)
@@ -138,7 +154,11 @@ grep -q "Fix the a.py bound" "$pa" && grep -q "+new1" "$pa" || fail "blind promp
 ! grep -q "card finding" "$pa" || fail "blind prompt leaks the card"
 red "$G" refute-prompt "$W" A
 printf 'nonce: wrong\n### 1. [warning] x\n' | red "$G" record "$W" A
-printf 'nonce: %s\n## Findings\n### 1. [warning] Off by one in a.py\n### 2. [nit] Naming\n' "$(cat "$W/panel/A.nonce")" | "$G" record "$W" A >/dev/null
+nA=$(cat "$W/panel/A.nonce")
+printf 'nonce: %s\n### 1. **[critical]** Overflow in a.py\nThere are no findings beyond this.\n### 2. Unlabeled finding\n' "$nA" | red "$G" record "$W" A
+printf 'nonce: %s\n- Overflow in a.py (critical)\nOtherwise no findings.\n' "$nA" | red "$G" record "$W" A
+printf 'Here is my review.\n\n`nonce: %s`\n## Findings\n### 1. **[Warning]**: Off by one in a.py\n### 2. [nit] Naming\n' "$nA" | "$G" record "$W" A >/dev/null || fail "a preamble before the nonce, or a bold heading, was refused"
+[ "$(cut -f1,2 "$W/panel/A.ids" | tr '\t\n' ' ;')" = "A1 Warning;A2 nit;" ] || fail "loose headings not parsed: $(cat "$W/panel/A.ids")"
 pr=$("$G" refute-prompt "$W" A)
 grep -q "first card finding" "$pr" && grep -q "second card finding" "$pr" || fail "refute prompt lacks the card findings"
 nR=$(cat "$W/panel/A.refute.nonce")
@@ -156,7 +176,11 @@ merged "⚠️ first card finding [src: card, panel:A1, panel:A9]"; red "$G" mer
 merged "⚠️ first card finding [src: card, panel:A1]" "Validation (deterministic): PASS"; red "$G" merge "$W" "$T/draft.md"
 merged "$(for i in 1 2 3 4 5 6; do echo "📝 note $i [src: card, panel:A1]"; done)"; red "$G" merge "$W" "$T/draft.md"
 merged "⚠️ first card finding [src: card, panel:A1]"
-FAIL_INDEP=1 red "$G" merge "$W" "$T/draft.md"
+FAIL_GATE=independent red "$G" merge "$W" "$T/draft.md"
+FAIL_GATE=card red "$G" merge "$W" "$T/draft.md"
+merged "⚠️ first card finding [src: card, panel:A1]
+- 🔴 an untagged bullet finding"; red "$G" merge "$W" "$T/draft.md"
+merged "⚠️ first card finding [src: card, panel:A1]"
 "$G" merge "$W" "$T/draft.md" >/dev/null || fail "merge gate red on a complete draft"
 [ "$(cat "$T/draft.md.gate")" = "$(sha256sum "$T/draft.md" | cut -d' ' -f1)" ] || fail "merge did not stamp the draft"
 W3="$T/work3"; work "$W3"; "$G" prompt "$W3" A >/dev/null
@@ -168,6 +192,15 @@ red "$G" merge "$W2" "$T/draft.md" --no-panel "docs only, no code changed"
 cp "$W/independent.txt" "$W2/"
 red "$G" merge "$W2" "$T/draft.md" --no-panel "short"
 "$G" merge "$W2" "$T/draft.md" --no-panel "docs only, no code changed" >/dev/null || fail "--no-panel with a reader stayed red"
+W4="$T/work4"; work "$W4"; printf 'Validation (deterministic): N/A — no runtime surface changed\n\n⚠ plain sign\n- 🔴 bullet\n' > "$W4/card.md"
+"$G" prompt "$W4" A >/dev/null; printf 'nonce: %s\nNo findings.\n' "$(cat "$W4/panel/A.nonce")" | "$G" record "$W4" A >/dev/null || fail "a bare no-findings reply was refused"
+grep -q "⚠ plain sign" "$("$G" refute-prompt "$W4" A)" && grep -q "bullet" "$W4/panel/A.refute.prompt" || fail "card findings without U+FE0F or behind a bullet were missed"
+W5="$T/work5"; work "$W5"; printf 'Review (advisory): ✅ NO FINDINGS\nValidation (deterministic): N/A — no runtime surface changed\nPerf (advisory): N/A — no runtime surface changed\n' > "$W5/card.md"
+"$G" prompt "$W5" A >/dev/null; printf 'nonce: %s\nno findings\n' "$(cat "$W5/panel/A.nonce")" | "$G" record "$W5" A >/dev/null
+"$G" refute-prompt "$W5" A >/dev/null || fail "refute-prompt red on a clean card"
+grep -q "^NONE AVAILABLE -- " "$W5/independent.txt" || fail "clean card: independent.txt does not say none available"
+printf 'Reviewed head: %s\nReview (advisory): ✅ NO FINDINGS\nValidation (deterministic): N/A — no runtime surface changed\nPerf (advisory): N/A — no runtime surface changed\n' "$sha" > "$T/clean.md"
+"$G" merge "$W5" "$T/clean.md" >/dev/null || fail "a clean PR cannot pass the merge gate"
 echo "ok panel-gate"
 
 # --- post-review.py

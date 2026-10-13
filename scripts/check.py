@@ -194,7 +194,9 @@ def resolve(name):
         if os.path.islink(where):
             top = git(os.path.realpath(where), "rev-parse", "--show-toplevel")
             repo, branch = (tilde(top), git(top, "branch", "--show-current") or "detached") if top else (tilde(os.path.realpath(where)), "-")
-            if branch == "detached" and top and git(top, "rev-parse", "HEAD") == git(top, "rev-parse", "origin/HEAD"):
+            rel = os.path.relpath(os.path.realpath(where), top) if top else ""
+            tree = git(top, "rev-parse", f"HEAD:{rel}") if branch == "detached" and top else ""
+            if tree and tree == git(top, "rev-parse", f"origin/HEAD:{rel}"):
                 branch = "origin/HEAD"
             if top and branch not in ("main", "origin/HEAD"):
                 warn = f"{repo} is on {branch}, not main, and the link follows the checked-out branch"
