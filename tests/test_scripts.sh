@@ -151,6 +151,9 @@ EXISTING=1 post "$sha" COMMENT 2>/dev/null; [ $? -eq 5 ] || fail "posted a secon
 LIVE_HEAD=$sha "$ROOT/scripts/post-review.py" o/r '7/../x' "$T/draft.md" COMMENT 2>/dev/null; [ $? -eq 2 ] || fail "accepted a bad PR number"
 draft "see /ho""me/someone/aiter/foo.py"; post "$sha" COMMENT 2>/dev/null; [ $? -eq 6 ] || fail "posted a local path"
 draft "tracked in SILO""TIGER-123"; post "$sha" COMMENT 2>/dev/null; [ $? -eq 6 ] || fail "posted a ticket key"
+printf '# local only\nsecret-model-[0-9]+\n' > "$H/.cursor/mstack/leak-patterns.txt"
+draft "tuned for Secret-Model-7"; post "$sha" COMMENT 2>/dev/null; [ $? -eq 6 ] || fail "posted a name from leak-patterns.txt"
+draft "tuned for a public model"; post "$sha" COMMENT >/dev/null 2>&1; [ $? -eq 0 ] || fail "leak-patterns.txt blocked a clean draft"
 sed -i 1d "$T/draft.md"; post "$sha" COMMENT 2>/dev/null; [ $? -eq 2 ] || fail "posted a draft with no head line"
 set -e
 echo "ok post-review"

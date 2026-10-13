@@ -272,6 +272,13 @@ twenty short skills, one principle each. `ateam-mode` indexes them inline and re
 
 </details>
 
+## pr review caveats
+
+- **nda model names are optional.** before a review posts, `scripts/post-review.py` blocks local paths and internal ticket keys. it can also block nda model names, but mstack ships no list, because a list in this repo would leak the names. to add one, prompt your agent: "add these model names to `~/.cursor/mstack/leak-patterns.txt`, one case-insensitive regex per line." the file stays on your machine, and a plugin update never overwrites it.
+- **triton is not fully compatible yet.** a triton pr gets the same rule set, gates, panel, and conventions check as aiter and flydsl, in a snapshot of your triton checkout. two gaps remain:
+  - the `pr.validate` port's skill does not recognize triton's repo layout, so the gpu base-vs-head check always reports `INCONCLUSIVE`. runtime evidence comes from the pr's own tests through the `bench.run` port, and it is advisory.
+  - the review rules come from aiter's review history. their triton families target triton kernels (`tl.load` masks, launch configs, accumulator precision), not the compiler's c++ and mlir passes, which get only the generic rules.
+
 ## not shipped here
 
 a few things `ateam-mode` references but doesn't bundle:

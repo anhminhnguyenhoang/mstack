@@ -6,7 +6,8 @@ Each `### <path>:<line>` or `### <path>:<start>-<end>` section under a `## Inlin
 becomes an inline comment on the new side of the diff. A section whose lines are not all in
 the diff moves into the body, because GitHub rejects the whole review otherwise.
 Refuses when the head moved (exit 3), when this user already reviewed that head (exit 5,
-REPOST=1 posts again), or when the draft leaks a local path or an internal ticket key (exit 6).
+REPOST=1 posts again), or when the draft leaks a local path, an internal ticket key, or a
+pattern from the optional machine-local file ~/.cursor/mstack/leak-patterns.txt (exit 6).
 """
 import json
 import os
@@ -16,8 +17,10 @@ import sys
 import tempfile
 
 GH = os.environ.get("GH", "gh")
-# Ticket keys as TICKET_KEY in check.py.
-LEAK = re.compile(r"/home/[A-Za-z0-9_.-]+/|" + re.escape(os.environ.get("TMPDIR", "/tmp")) + r"/review-pr-|\bSILOTIGER-\d+|\bROCM-3\d+", re.I)
+# Ticket keys as TICKET_KEY in check.py. NDA names stay machine-local, never in this repo.
+LOCAL_PATTERNS = os.path.expanduser(os.environ.get("MSTACK_LEAK_PATTERNS", "~/.cursor/mstack/leak-patterns.txt"))
+EXTRA = [p.strip() for p in open(LOCAL_PATTERNS) if p.strip() and not p.startswith("#")] if os.path.isfile(LOCAL_PATTERNS) else []
+LEAK = re.compile("|".join([r"/home/[A-Za-z0-9_.-]+/", re.escape(os.environ.get("TMPDIR", "/tmp")) + r"/review-pr-", r"\bSILOTIGER-\d+", r"\bROCM-3\d+", *EXTRA]), re.I)
 HUNK = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@")
 ANCHOR = re.compile(r"^### (\S+?):(\d+)(?:-(\d+))?\s*$")
 
