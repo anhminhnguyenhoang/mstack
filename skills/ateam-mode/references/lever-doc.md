@@ -49,7 +49,7 @@ Status, for a lever. Use it in the `result` cell of `decision.tsv`.
 - `loser`. Did not. It has a class.
 - `kept`. In S*.
 - `dropped`. Was in S*, and the ablation showed a marginal gain inside noise.
-- `retired`. A loser with a root cause, evidence, and a `Retry if` condition that does not hold now. A lever that the `kernel-optimization/` area of the `kb` resource records as a dead end for the same mechanism starts here, before any screen. Its root cause is the one the note states, its Evidence is the note (cite the note file), and its `Retry if` is the note's stated condition, or "new evidence that the premise holds here". Screen it only when that condition holds now.
+- `retired`. A loser with a root cause, evidence, and a `Retry if` condition that does not hold now. A lever that the `failure-modes` role of the `kb` resource records as a dead end for the same mechanism starts here, before any screen. Its root cause is the one the note states, its Evidence is the note (cite the note file), and its `Retry if` is the note's stated condition, or "new evidence that the premise holds here". Screen it only when that condition holds now.
 
 Class, for a loser. Each class has a retry rule.
 

@@ -103,7 +103,7 @@ A row that carries the marker `(probe)` names a default location to look in. It 
 | Forge | `gh auth status`, and `get_me` on each GitHub MCP namespace in the session. Per push remote, test push reachability read-only for its scheme. All schemes: `GIT_TERMINAL_PROMPT=0 timeout 15 git -C <path> ls-remote --heads <remote>`, so it never waits on a credential prompt. `ssh` only: `timeout 15 ssh -o BatchMode=yes -T git@<host>`. `https` only: note which credential path answers, a helper from `git config --get-all credential.helper` or `gh` when `gh auth status` succeeds. A public repo answers `ls-remote` without credentials, so `ls-remote` alone does not prove push for `https`: record `no helper` when no credential path exists. Never read, print, or store a token, and never put one in a URL. Per host or org, the push remote is the remote and scheme that pass. PR path is `gh` when `gh auth status` succeeds, or the MCP namespace whose sign-in covers that host or org. The order of use is in [`references/forge.md`](../ateam-mode/references/forge.md) |
 | Jira sites | The `JIRA_URL` of each server in `~/.cursor/mcp.json`, and each remote Atlassian MCP namespace in the session. Seed project prefixes from the URL and `**Site:**` lines in `<tickets>/*/ticket-raw.md`: the key prefix maps to that site |
 | GPU picker | `test -f <skills>/<pr.validate skill>/pick-idle-gpu.py`. `<skills>` is the directory of the `skills` resource, and `<pr.validate skill>` is the skill that `ports.md` binds to `pr.validate`. Skipped when `skills` is not found |
-| `kb` | Probe `~/knowledge-base/README.md` (probe). Record the path, the git remote (`git -C <path> remote get-url origin`), and whether all four areas exist (`test -f <path>/<area>/README.md` for `hardware`, `kernel-optimization`, `papers`, `dsl`). A missing area is `not set` |
+| `kb` | Detects nothing by name. Runs only after the user gives a root in step 9. Read-only: `git -C <root> remote get-url origin`, `ls <root>`, the root index file, and the first lines of the index of each top-level folder. A path that does not exist is `not set` |
 | `skills` | The directory is `$MSTACK_SKILLS_DIR` when set, else probe `~/.claude/skills` (probe). Then run `MSTACK_SKILLS_DIR=<dir> python3 <plugin>/scripts/check.py --skills-only`, where `<plugin>` is the mstack plugin root, two directories above this SKILL.md. It resolves every binding in [`references/ports.md`](../ateam-mode/references/ports.md), checks each bound skill's frontmatter, names each installed skill that no port binds, and prints the Skills table. A symlinked skill's row carries its repo and checked-out branch. Exit 1 means at least one row is not `ok`. Record the rows either way. No skills dir: record the section as `not set` |
 | `refs` | Probe for markdown files whose names contain `roofline`, `peak`, or `numerics` under the `docs/` of each repo in `repos` (probe). Each hit is a candidate source. The user confirms its name and topics in step 9. No hit: `not set` |
 
@@ -121,9 +121,26 @@ Ask once, in one AskQuestion form. Offer the detected values as options, plus `n
 - For each confirmed repo: the remote to push branches to (name and scheme), and the upstream PRs target.
 - For each repo: the default container and its mount path, when no ticket names one.
 - The GPU lock convention. The default is `flock /tmp/gpu-<id>.lock` with the picker that the `pr.validate` port's skill ships. Offer `team convention` as free text.
-- For each resource that detection did not find or confirm (`repos`, `skills`, `kb`, `refs`, `tickets`), ask in this same form, with the same wording: "Do you have a knowledge base / reference docs / a ticket root / a skills dir? Give the path, or skip." For `refs`, ask for a name, a path, and topics (`peaks`, `roofline`, `numerics`) per source. Allow more than one source. Check that each path the user gives exists. For `kb`, check for a `README.md` at its root. Ask again for a path that fails, or record `not set`.
+- For each of `repos`, `skills`, `refs`, and `tickets` that detection did not find or confirm, ask in this same form, with the same wording: "Do you have reference docs / a ticket root / a skills dir? Give the path, or skip." For `refs`, ask for a name, a path, and topics (`peaks`, `roofline`, `numerics`) per source. Allow more than one source. Check that each path the user gives exists. Ask again for a path that fails, or record `not set`.
+- The knowledge base is optional. mstack works without it. Ask in this same form: "Do you have a knowledge base? Where is it? Give the path, or skip." Use no default name and no default location. Check that the path exists, and ask again for one that fails.
+- Only when the user asks for help finding a knowledge base, offer a read-only search. List directories under `$HOME`, to depth 3, that are a git repo or hold a top-level `README.md` that indexes subfolders. Show the candidates. The user picks one, or says none.
 - The Jira MCP namespace for each site it cannot map, and the project prefixes for each site it has no ticket for. A prefix maps to exactly one site.
 - The PR path for each GitHub host or org (`gh` or an MCP namespace name), when detection finds none or more than one. The push remote is asked only when its reachability test fails or an `https` remote has no credential path. Show the remote URL without any credential, the scheme, and the failing test. Never offer to switch the scheme.
+
+**Map the knowledge base.** Run this after the user gives a root. A knowledge base has its own layout, so map it before you record anything.
+
+```
+root given ──► list top-level folders ──► read each folder's index ──► propose role → folder
+                 (read-only)               (read-only)                          │
+                                                                                ▼
+                                       user confirms or changes ──► record in the env file
+```
+
+1. List the top-level folders. Read the root index file, whatever it is called, and the index of each folder.
+2. Propose a role-to-folder map for the roles in [`references/resources.md`](../ateam-mode/references/resources.md): `hardware`, `method`, `levers`, `failure-modes`, `papers`, `dsl`.
+3. A role may map to a subfolder. Several roles may share one folder. A role with no match is `not set`. Do not rename or require any folder.
+4. Show the map as a table and ask the user to accept it or change specific roles. Prefer AskQuestion over free text.
+5. Record the root, the index file, and the git remote if any, with the confirmed map, in step 10.
 
 A fact or a resource the user skips is written as `not set`. A skill that needs a `not set` required fact stops and asks. A step that wants a `not set` optional resource skips it with a note (`references/resources.md`). Nothing ever guesses.
 
@@ -153,7 +170,9 @@ Overwrite `~/.cursor/mstack/env.md` in full, so a rerun stays idempotent. Every 
 | Picker | Lock | Source |
 
 ## KB
-| Path | Remote | Areas | Source |
+| Root | Index file | Remote | Source |
+
+| Role | Path inside the KB | Source |
 
 ## Refs
 | Name | Path | Topics | Source |
@@ -167,7 +186,7 @@ Overwrite `~/.cursor/mstack/env.md` in full, so a rerun stays idempotent. Every 
 | Port | Skill | Status | Repo | Branch | Warning | Source |
 ```
 
-Each resource has a section named for its key: Repos, Skills, KB, Refs, and Tickets. A resource the user skipped gets one row with `not set` in each value cell. Repos has one row per repo, and Refs has one row per source. `Areas` in KB lists the areas that exist. The Dir row of Skills holds the `skills` directory, and `scripts/check.py` reads that row when `$MSTACK_SKILLS_DIR` is unset. The port rows of Skills are the rows `check.py --skills-only` prints, plus the Source column. Status is `ok`, `missing`, `malformed`, or `unbound`. Repo is `mstack` for mstack's own skill, `local` for a plain directory, and the repo root for a symlinked skill. A symlink follows its repo's checked-out branch, so a repo that is not on `main` gets a warning.
+Each resource has a section named for its key: Repos, Skills, KB, Refs, and Tickets. A resource the user skipped gets one row with `not set` in each value cell. Repos has one row per repo, and Refs has one row per source. KB has one row for the root, the index file, and the remote if any, then one row per role: `hardware`, `method`, `levers`, `failure-modes`, `papers`, `dsl`. Path inside the KB is relative to the root. A role with no folder is `not set`. A skipped KB has `not set` in the root row and in every role row. The Dir row of Skills holds the `skills` directory, and `scripts/check.py` reads that row when `$MSTACK_SKILLS_DIR` is unset. The port rows of Skills are the rows `check.py --skills-only` prints, plus the Source column. Status is `ok`, `missing`, `malformed`, or `unbound`. Repo is `mstack` for mstack's own skill, `local` for a plain directory, and the repo root for a symlinked skill. A symlink follows its repo's checked-out branch, so a repo that is not on `main` gets a warning.
 
 The GPU lock row holds commands, not paths. The Picker cell is the full picker command line, which prints one HIP index, as the GPU claim stage of `validate-kernel-pr` runs it. The Lock cell is the lock prefix with `<id>` for that index, such as `flock /tmp/gpu-<id>.lock`. **verify-gpu-kernel** runs both cells as written.
 
@@ -178,12 +197,12 @@ Then write `~/.cursor/rules/mstack-env.mdc`, overwriting it in full:
 description: mstack machine facts
 alwaysApply: true
 ---
-mstack machine facts (hosts, containers, forge, Jira sites, GPU lock) and local resources (repos, skills, kb, refs, tickets) are in ~/.cursor/mstack/env.md. Read it before a GPU run, a container exec, a PR, or a Jira read. A missing file or a `not set` required fact means: stop and ask the user to run /setup-mstack env. A `not set` optional resource (kb, refs) means: skip it, write one line, and ask once per session whether the user has it.
+mstack machine facts (hosts, containers, forge, Jira sites, GPU lock) and local resources (repos, skills, kb, refs, tickets) are in ~/.cursor/mstack/env.md. Read it before a GPU run, a container exec, a PR, or a Jira read. A missing file or a `not set` required fact means: stop and ask the user to run /setup-mstack env. A `not set` optional resource (kb, refs) means: skip it, write one line, and ask once per session whether the user has it. A KB role that is `not set` is skipped the same way.
 ```
 
 ### 11. Report
 
-Show the env file as a short table per section. List each fact that is `not set`, and which skill stops on it. List each resource that is `not set` and what skipping it costs: `kb` and `refs` lose cited notes and peaks, `tickets` stops ticket work, `repos` stops GPU runs and PRs, `skills` stops every port. List each Skills row that is not `ok` or has a warning, and the port it breaks. Show what changed since the last run.
+Show the env file as a short table per section. List each fact that is `not set`, and which skill stops on it. List each resource that is `not set` and what skipping it costs: `kb` and `refs` lose cited notes and peaks, a KB role that is `not set` loses its notes only, `tickets` stops ticket work, `repos` stops GPU runs and PRs, `skills` stops every port. List each Skills row that is not `ok` or has a warning, and the port it breaks. Show what changed since the last run.
 
 ## Part C. Verification
 

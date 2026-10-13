@@ -12,7 +12,7 @@ Every spawn is a Task subagent with `subagent_type: generalPurpose` and `readonl
 
 ## 0. Check the `kb` resource
 
-Read the `kb` resource when it is configured: its root `README.md`, the matching area `README.md`, then the note. When a note covers the question, cite it and explore only the gap. Pass the note paths to every explorer and explainer. When `kb` is missing or `not set`, say so in one line, skip this step, and ask once per session whether the user has one (`../ateam-mode/references/resources.md`).
+Read the `kb` resource when it is set. Pick the role that fits the question. Read the KB index recorded in the env file, then the index of that role's folder, then the note. When a note covers the question, cite it and explore only the gap. Pass the note paths to every explorer and explainer. When `kb` or the role is missing or `not set`, say so in one line, skip this step, and ask once per session whether the user has one (`../ateam-mode/references/resources.md`).
 
 ## 1. Assess complexity
 

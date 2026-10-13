@@ -37,7 +37,7 @@ Use this section for a number from a GPU kernel on AMD Instinct (MI300X `gfx942`
 **Peaks.** Do not quote a peak from memory. State the peak, its source, the arch, and whether it is per GCD or per module. Take it from the first source that is configured:
 
 - A `refs` source tagged `peaks` or `roofline`. Prefer its max-achievable figure over the vendor peak, and cite the source name and the file.
-- The `hardware/` area of the `kb` resource. Cite the note file you used.
+- The `hardware` role of the `kb` resource. Read the KB index recorded in the env file, then the index of that role's folder, then the note. Cite the note you used.
 - Neither is configured: state the vendor peak with its public source. Write `skipped refs: not set` in the report, and ask once per session whether the user has reference docs (`../ateam-mode/references/resources.md`).
 
 Two sources can differ because one counts per GCD and the other per module. Name which you used.
