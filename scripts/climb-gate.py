@@ -1,18 +1,24 @@
 #!/usr/bin/env python3
-"""Harness lock for the Kernel hillclimb playbook. check exits 1 on a red gate.
+"""Harness lock and stop gate for the Kernel hillclimb playbook. check exits 1 on a red gate.
 
   climb-gate.py freeze <TICKET> <ROOT> <FILE>...   hash the harness files into TICKET/harness.lock
                                                    and turn the stop hook on for this chat
   climb-gate.py check  <TICKET>                    re-hash them in ROOT and in every worktree
                                                    of ROOT's repo whose HEAD descends from B
+  climb-gate.py best   <TICKET> <WORKTREE>         the worktree of S*, which the stop gate checks
+                                                   instead of B
+  climb-gate.py pause  <TICKET> <REASON>           let the next stop pass without proof
   climb-gate.py done   <TICKET>                    turn the stop hook off for this chat
   climb-gate.py hook                               the plugin's stop hook, the event on stdin
 
 FILE is relative to ROOT. When ROOT is in a git checkout, B is its HEAD at freeze, and a
 file that B tracks counts as changed when a descendant worktree lacks it. The hook acts
 only for the chat that ran freeze (CURSOR_CONVERSATION_ID) and only on a completed stop.
-It prints {} on any error, so a broken lock never blocks an unrelated chat.
+It sends the turn back when the harness changed, or when the best worktree (S*, else B)
+has no TICKET/bench_*.json with correctness passed at its clean HEAD. It prints {} on any
+error, so a broken lock never blocks an unrelated chat.
 """
+import glob
 import hashlib
 import json
 import os
@@ -103,6 +109,63 @@ def load(ticket):
         return json.load(f)
 
 
+def pause_file(ticket):
+    return os.path.join(ticket, "harness.pause")
+
+
+def best(ticket, worktree):
+    if not os.path.isfile(lock_file(ticket)):
+        red(f"no {lock_file(ticket)}: run freeze first")
+    head = git(worktree, "rev-parse", "HEAD")
+    if not head:
+        red(f"{worktree} is not a git worktree")
+    lock = load(ticket)
+    lock["best"] = os.path.abspath(worktree)
+    with open(lock_file(ticket), "w") as f:
+        json.dump(lock, f, indent=1)
+    print(f"stop gate checks {lock['best']}")
+
+
+def pause(ticket, reason):
+    if not reason.strip():
+        red("give a reason")
+    with open(pause_file(ticket), "w") as f:
+        f.write(reason)
+    print("the next stop passes without proof")
+
+
+def proven(ticket, head):
+    for path in glob.glob(os.path.join(ticket, "bench_*.json")):
+        try:
+            with open(path) as f:
+                art = json.load(f)
+            if art["correctness"]["passed"] is True and any(
+                len(r.get("sha") or "") >= 7 and head.startswith(r["sha"]) and r.get("dirty") is False for r in art["repos"]
+            ):
+                return True
+        except (OSError, ValueError, KeyError, TypeError, AttributeError):
+            continue
+    return False
+
+
+def proof_message(ticket, lock):
+    target = lock.get("best") or (lock["root"] if lock["base"] else None)
+    head = target and git(target, "rev-parse", "HEAD")
+    if not head:
+        return None
+    dirty = git(target, "status", "--porcelain", "--untracked-files=no")
+    if not dirty and proven(ticket, head):
+        return None
+    me = os.path.abspath(__file__)
+    what = "S*" if lock.get("best") else "B"
+    state = "has uncommitted changes" if dirty else f"has no bench_*.json with correctness passed at {head[:12]}"
+    return "\n".join([
+        f"mstack stop gate: {what} in {target} {state}, in {ticket}.",
+        "Commit it and measure it through the bench.run port before you end the turn.",
+        f'To stop on purpose first, such as NO_GPU or a question for the human, log the reason in decision.tsv, run `python3 {me} pause {ticket} "<reason>"`, and end the turn.',
+    ])
+
+
 def check(ticket):
     if not os.path.isfile(lock_file(ticket)):
         red(f"no {lock_file(ticket)}: run freeze first")
@@ -131,7 +194,10 @@ def stop_message(event):
     lock = load(ticket)
     bad = changed(lock)
     if not bad:
-        return None
+        if os.path.isfile(pause_file(ticket)):
+            os.remove(pause_file(ticket))
+            return None
+        return proof_message(ticket, lock)
     restore = f"git -C <worktree> checkout {lock['base']} -- <file>" if lock["base"] else "your frozen copy"
     return "\n".join([
         f"mstack harness lock ({lock_file(ticket)}): the frozen harness changed.",
@@ -158,6 +224,10 @@ def main(argv):
         freeze(args[0], args[1], args[2:])
     elif cmd == "check" and len(args) == 1:
         check(args[0])
+    elif cmd == "best" and len(args) == 2:
+        best(args[0], args[1])
+    elif cmd == "pause" and len(args) == 2:
+        pause(args[0], args[1])
     elif cmd == "done" and len(args) == 1:
         done(args[0])
     elif cmd == "hook" and not args:

@@ -14,7 +14,7 @@ It is a fork of [pstack](https://github.com/cursor/plugins/tree/main/pstack) (se
 /add-plugin mstack
 ```
 
-the plugin ships two hooks ([`hooks/hooks.json`](./hooks/hooks.json)). the `sessionStart` hook syncs the skills that the `pr.review` and `pr.validate` ports bind to their repo's latest `origin`, in the background, so a session never waits on it. the `stop` hook acts only in a chat that froze a hillclimb harness with `scripts/climb-gate.py freeze`. when a frozen file changed in a worktree of the climb, it sends the turn back with the paths, at most 3 times in a row.
+the plugin ships two hooks ([`hooks/hooks.json`](./hooks/hooks.json)). the `sessionStart` hook syncs the skills that the `pr.review` and `pr.validate` ports bind to their repo's latest `origin`, in the background, so a session never waits on it. the `stop` hook acts only in a chat that froze a hillclimb harness with `scripts/climb-gate.py freeze`. it sends the turn back, at most 3 times in a row, when a frozen file changed in a worktree of the climb, or when the current best (S\* or B) has no bench artifact with correctness passed at its HEAD. `climb-gate.py pause` lets one stop pass, with a reason.
 
 ## get started
 

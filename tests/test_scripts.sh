@@ -104,7 +104,16 @@ stop() { printf '{"conversation_id":"%s","status":"%s"}' "$1" "${2:-completed}" 
 env -u CURSOR_CONVERSATION_ID python3 "$CG" freeze "$TK" "$R" test_x.py | grep -q "^NOTE stop hook off" || fail "freeze without a chat id did not say the hook is off"
 CURSOR_CONVERSATION_ID=c1 python3 "$CG" freeze "$TK" "$R" test_x.py >/dev/null
 python3 "$CG" check "$TK" >/dev/null || fail "check red on an unchanged harness"
-[ "$(stop c1)" = '{}' ] || fail "stop hook fired on an unchanged harness, or on a worktree that does not descend from B"
+art() { printf '{"correctness":{"passed":%s},"repos":[{"path":"/in/container","sha":"%s","dirty":%s}]}' "$2" "$3" "${4:-false}" > "$TK/bench_$1.json"; }
+B=$(git -C "$R" rev-parse HEAD)
+stop c1 | grep -q "B in $R has no bench_" || fail "stop gate passed B with no artifact"
+art b false "$B"; stop c1 | grep -q "has no bench_" || fail "stop gate passed a failed correctness run"
+art b true "$B" true; stop c1 | grep -q "has no bench_" || fail "stop gate passed an artifact from a dirty tree"
+art b true "${B:0:6}"; stop c1 | grep -q "has no bench_" || fail "stop gate matched a sha shorter than 7"
+art b true "${B:0:12}"
+[ "$(stop c1)" = '{}' ] || fail "stop hook fired on an unchanged, measured harness, or on a worktree that does not descend from B"
+echo k9 > "$R/kernel.py"; stop c1 | grep -q "uncommitted changes" || fail "stop gate passed a dirty B"
+g -C "$R" checkout -q -- kernel.py
 echo k2 > "$T/climb-L1/kernel.py"
 [ "$(stop c1)" = '{}' ] || fail "stop hook fired on a kernel edit"
 echo h2 > "$T/climb-L1/test_x.py"
@@ -117,6 +126,17 @@ stop c1 | grep -q "climb-L1/test_x.py" || fail "stop hook missed a harness edit 
 rm "$T/climb-L1/test_x.py"
 stop c1 | grep -q "test_x.py (missing)" || fail "stop hook missed a harness file deleted from a lever worktree"
 g -C "$T/climb-L1" checkout -q -- test_x.py
+g -C "$T/climb-L1" commit -qam L1
+python3 "$CG" best "$TK" "$T/climb-L1" >/dev/null
+stop c1 | grep -q "S\* in $T/climb-L1 has no bench_" || fail "stop gate passed an unmeasured S*"
+python3 "$CG" pause "$TK" "no idle GPU" >/dev/null
+[ "$(stop c1)" = '{}' ] || fail "pause did not let the stop pass"
+stop c1 | grep -q "S\* in" || fail "pause covered more than one stop"
+art s true "$(git -C "$T/climb-L1" rev-parse HEAD)"
+[ "$(stop c1)" = '{}' ] || fail "stop gate fired on a measured S*"
+python3 "$CG" pause "$TK" "x" >/dev/null; echo h5 > "$T/climb-L1/test_x.py"
+stop c1 | grep -q "frozen harness changed" || fail "pause let a changed harness pass"
+g -C "$T/climb-L1" checkout -q -- test_x.py; rm -f "$TK/harness.pause"
 echo h3 > "$R/test_x.py"
 shook=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["hooks"]["stop"][0]["command"])' "$ROOT/hooks/hooks.json")
 ev='{"conversation_id":"c1","status":"completed"}'
