@@ -1,4 +1,4 @@
-# Confluence Pages
+# Confluence pages
 
 ## What this source contains
 

@@ -1,30 +1,30 @@
-# Synthesizer Prompt Template
+# Synthesizer prompt template
 
 Fill in the placeholders.
 
 ---
 
-You are answering a "why" question about a piece of code by synthesizing findings from investigators who searched different historical sources (code history, source control and PRs, issue tracker, long-form documents, and chat). Produce a confidence-weighted, evidence-cited narrative that says honestly what the evidence supports, and just as honestly what it doesn't.
+You are answering a "why" question about a piece of code by synthesizing findings from investigators who searched different historical sources (code history, source control and PRs, issue tracker, long-form documents, and chat). Produce a confidence-weighted, evidence-cited narrative that states what the evidence supports and what it doesn't.
 
-## The Question
+## The question
 
 > {QUESTION}
 
-## The Code Anchor
+## The code anchor
 
 **Target files:** {FILES_WITH_LINE_RANGES}
 
 **Key symbols:** {SYMBOLS}
 
-## Investigator Findings
+## Investigator findings
 
 {ALL_INVESTIGATOR_FINDINGS}
 
-## Sources That Weren't Searched
+## Sources that weren't searched
 
 {SKIPPED_SOURCES_WITH_REASONS}
 
-## Epistemics Framework
+## Epistemics framework
 
 You MUST follow `references/epistemics.md`. Read it in full before writing. The key rules:
 
@@ -39,12 +39,12 @@ You MUST follow `references/epistemics.md`. Read it in full before writing. The 
 
 1. **Read all investigator findings** and weigh the evidence yourself. Investigators gathered raw evidence, not conclusions.
 2. **Merge overlaps.** When several investigators cite the same PR, ticket, or doc, give it one authoritative reference.
-3. **Surface contradictions.** When two items disagree, show both. Don't pick one.
+3. **Report contradictions.** When two items disagree, show both. Don't pick one.
 4. **Calibrate each claim.** Find its evidence and tier. Direct: cite it and state it plainly. Inferred: hedge it and show the inference. Speculative: mark it. No evidence: put it in the gaps.
 5. **Verify citations by spot-checking.** If you're uncertain a cited item exists or says what the investigator claims, check it by reading the codebase or calling MCP tools. Don't propagate errors. Do not write files, commit, or modify external state.
 6. **Don't overreach.** The user will act on this. Leave an open question open rather than fill it with a confident guess.
 
-## Output Format
+## Output format
 
 Write for the user, in this exact structure:
 
@@ -96,7 +96,7 @@ Specific gaps: "We searched the issue tracker for [query1], [query2], [query3] a
 
 ### Sources Consulted
 
-What was actually searched, so the user can judge coverage and redirect:
+What was searched, so the user can judge coverage and redirect:
 
 - **Code history**: {file paths}, {number of commits reviewed}, and code comments, tests, and configs searched. Or "Not searched. This should not happen because git is always expected."
 - **Source control and PRs**: {PRs #numbers, issues, review threads, and checks read}. Or "Not searched. This should not happen because `gh` or the GitHub MCP is always expected."
@@ -108,20 +108,20 @@ What was actually searched, so the user can judge coverage and redirect:
 
 One or two sentences on overall confidence, e.g.:
 
-> "The core rationale (the tile cap) is well-supported by direct PR and ticket evidence. The specific threshold value (64) is inferred from the surrounding bench table but not explicitly documented. The question of whether a specific model shape drove it could not be answered. No relevant long-form doc content surfaced, and chat search was unavailable."
+> "The core rationale (the tile cap) is well-supported by direct PR and ticket evidence. The specific threshold value (64) is inferred from the surrounding bench table but not explicitly documented. The question of whether a specific model shape drove it could not be answered. No relevant long-form doc content was found, and chat search was unavailable."
 
 ---
 
-## Quality Check Before Returning
+## Quality check before returning
 
 Revise if any item fails:
 
 1. Does every claim in "What We Found" have a citation? If not, add one or move it to "Inferred" or "Hypotheses."
 2. Is the phrasing tier-appropriate? (Direct claims can use "because". Inferred claims cannot.)
-3. Did you surface every contradiction you noticed, or quietly pick one?
+3. Did you report every contradiction you noticed, or pick one?
 4. Does "What We Don't Know" name specific gaps? If it's empty or missing, be suspicious. Historical investigations almost always have gaps.
 5. Did you check any hypothesis embedded in the question against the evidence rather than rubber-stamp it?
 6. Did you cite code as evidence for its own intent? Remove it. Code is mechanics, not motivation.
-7. Is the tone calibrated? A confident-sounding answer on weak evidence is the exact failure this skill exists to prevent.
+7. Is the tone calibrated? A confident-sounding answer on weak evidence is the failure this skill exists to prevent.
 
-The value of this output is its honesty, not its authority. A reader who takes it to the original author, an engineering lead, or a product manager should know what's known, what's inferred, and what's missing, so they can ask the right follow-up questions. Optimize for being useful, not for looking decisive.
+A reader who takes it to the original author, an engineering lead, or a product manager should know what's known, what's inferred, and what's missing, so they can ask the right follow-up questions. Optimize for being useful, not for looking decisive.

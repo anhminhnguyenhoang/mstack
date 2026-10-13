@@ -51,7 +51,7 @@ mstack is built for Cursor. Its skills use the Agent Skills format, so other too
 
 Whether `/ateam-mode` stays on depends on how the user starts it:
 
-- Enter on `/ateam-mode` attaches the skill to one message. It fades as the chat moves on.
+- Enter on `/ateam-mode` attaches the skill to one message. It stops applying as the chat moves on.
 - Option+Enter on Mac or Alt+Enter on Windows, or Use as Mode from the skill entry, makes it a Custom Mode. It stays in context every turn until the user exits the mode, and it stays out of casual turns.
 - Cursor's docs list Custom Modes in the Agents Window and the CLI. Elsewhere, start each new task with `/ateam-mode`.
 

@@ -4,7 +4,7 @@ description: "Apply when context is filling up: large outputs, long files, repea
 disable-model-invocation: true
 ---
 
-# Guard the Context Window
+# Guard the context window
 
 **Why:** Context overflow degrades reasoning quality, creates compression artifacts, and halts progress.
 

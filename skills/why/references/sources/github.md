@@ -1,4 +1,4 @@
-# GitHub PRs, Issues, and Commits
+# GitHub PRs, issues, and commits
 
 ## What this source contains
 

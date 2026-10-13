@@ -28,9 +28,9 @@ Answer from the checkout. Ask the user only for what you cannot observe.
   - aiter: `op_tests/test_*.py` and its flags (`-d`, `-b`, `-s`, shapes).
   - FlyDSL: the pytest targets under `tests/kernels/`.
   - Triton kernels in aiter: the same `op_tests` scripts.
-- **Correctness gate.** Per family: the torch reference and its dtype, the `rtol` and `atol`, the shapes, the edge cases (small M, partial tiles, dtypes), and how the test counts NaN.
-- **Perf.** Per family: the frozen harness or the perf table of the op test, the reference side (torch, Triton, or a vendor library), the regime (cold-L2, warm, `hipGraph`), and the run count.
-- **Resources.** Per family: the test command that dumps ISA, for the `isa.diff` port.
+- **Correctness gate.** For each family, find the torch reference and its dtype, the `rtol` and `atol`, the shapes, the edge cases (small M, partial tiles, dtypes), and how the test counts NaN.
+- **Perf.** For each family, find the frozen harness or the perf table of the op test, the reference side (torch, Triton, or a vendor library), the regime (cold-L2, warm, `hipGraph`), and the run count.
+- **Resources.** For each family, find the test command that dumps ISA, for the `isa.diff` port.
 - **Gaps.** An op with no test is a gap. Write the test through the `test.author` port, or list the gap in the map.
 
 If the checkout does not build or import as it is, fix that first or report it exactly. A skill written against a broken base teaches wrong steps.
@@ -41,14 +41,14 @@ Write `.cursor/skills/verify-<lib>/SKILL.md`. The frontmatter has `name: verify-
 
 - **Launch.** There is no server. Launch means take one GPU lock and build the kernel once inside its container, through the `bench.run` port. Cite the port. Do not restate its lock rule.
 - **Doctor.** Cite the `bench.run` doctor. Add the checks that belong to the library: the repo SHA, the build is present, and the arch matches the gate of each op.
-- **Drive.** Real commands from this repo for each family: test paths, flags, shapes. Prefer stable handles (flags, test IDs, shape lists) over positions.
+- **Drive.** Write real commands from this repo for each family: test paths, flags, and shapes. Prefer stable handles (flags, test IDs, shape lists) over positions.
 - **Evidence.** Each run writes its artifact through `bench.run`. Write it to the ticket folder when the `tickets` resource is set and the work has a ticket. Write it to the work dir otherwise. State the proof standards:
   - Correctness comes before perf. A perf row without a passing correctness row on the same run is not a result.
   - Copy every number from the saved stdout.
   - State the perf regime on every row.
-  - State a speedup or a percent of peak with its source (**principle-explain-the-number**, **principle-explain-the-number**).
+  - State a speedup or a percent of peak with its source (**principle-explain-the-number**).
 - **Cleanup.** Remove only what the run created: scratch files, its own JIT directory, its own worktrees. Never remove the artifacts. Never kill by process name.
-- **Helpers.** Any script that the skill ships is executable. Its invocation is shown in the skill body.
+- **Helpers.** Make any script that the skill ships executable, and show its invocation in the skill body.
 
 ## 3. Seed the feature map
 

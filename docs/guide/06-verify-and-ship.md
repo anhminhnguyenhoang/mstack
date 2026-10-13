@@ -1,6 +1,6 @@
 # Verify the result and open a PR
 
-"It compiles" is not evidence. The [Prove It Works principle](../../skills/principle-prove-it-works/SKILL.md) makes the agent check the real artifact before it reports success, and your job is to make "the real artifact" checkable. This page covers stating a finish condition, vetting a measured number, generating a verification skill for a kernel library, opening the draft PR, and driving it to ready for your review.
+"It compiles" is not evidence. The [Prove it works principle](../../skills/principle-prove-it-works/SKILL.md) makes the agent check the real artifact before it reports success, and your job is to make "the real artifact" checkable. This page covers stating a finish condition, vetting a measured number, generating a verification skill for a kernel library, opening the draft PR, and driving it to ready for your review.
 
 Verification is the slowest step in most agent work, because it's the step that usually waits on a human. Make the agent able to do it, and you stop being the bottleneck. Skip it, and running more agents only gets you more unchecked work to review.
 
@@ -14,7 +14,7 @@ Put what done means in the first prompt, in whatever words fit:
 /ateam-mode add an fp8 path to this op. the bf16 output stays bit-identical, fp8 matches the torch reference within rtol and atol, and both run in the container on a locked gpu. show me the evidence.
 ```
 
-Now the agent has three checks it can run, not a mood to satisfy. When the reply comes back, it should carry the exact commands and outputs. If a check couldn't run, a good reply says "inconclusive", and you should treat a confident reply without evidence as a red flag.
+Now the agent has three checks it can run. When the reply comes back, it should carry the exact commands and outputs. If a check couldn't run, a good reply says "inconclusive", and you should treat a confident reply without evidence as a red flag.
 
 Match the check to the change:
 
@@ -44,9 +44,9 @@ A before-and-after number is the easiest evidence to get wrong by accident. A wa
 4. Did anything error or return wrong output?
 5. Does it reproduce over alternating runs, with a median and a range?
 6. Does it matter end to end, as a share of the model step?
-7. Did the work actually happen inside the timed region?
+7. Did the work happen inside the timed region?
 
-The verdict comes back as faster, slower, no measurable difference, or inconclusive, with the run count, range, and limiter. It says inconclusive when it can't name the limiter or a side ran untuned. `/ateam-mode` already runs the checklist inside the Perf issue and Kernel hillclimb playbooks, so you type it yourself when you measured something outside them, or when someone else's number looks too good. It's the working form of the [Explain the Number principle](../../skills/principle-explain-the-number/SKILL.md).
+The verdict comes back as faster, slower, no measurable difference, or inconclusive, with the run count, range, and limiter. It says inconclusive when it can't name the limiter or a side ran untuned. `/ateam-mode` already runs the checklist inside the Perf issue and Kernel hillclimb playbooks, so you type it yourself when you measured something outside them, or when someone else's number looks too good. It's the working form of the [Explain the number principle](../../skills/principle-explain-the-number/SKILL.md).
 
 ## Create a project verification skill
 
@@ -70,7 +70,7 @@ From then on, "verify it in the app" is a step any agent can execute, in this re
 /ateam-mode repro this kernel failure with /verify-gpu-kernel on gfx950. if it repros on main, fix it and show me the artifact JSON as proof.
 ```
 
-Once the verify skill works, a [`/swarm`](../../skills/swarm/SKILL.md) can split a full pass by feature-map entry and aggregate the results. A swarm of verifiers also confirms a perf win over a big enough sample, or fuzzes the surface for regressions before a PR ships.
+Once the verify skill works, a [`/swarm`](../../skills/swarm/SKILL.md) can split a full pass by feature-map entry and aggregate the results. A swarm of verifiers also confirms a perf win over a big enough sample, or fuzzes the interface for regressions before a PR ships.
 
 Treat the verification skill as infrastructure, not a one-off. Commit it, so every person and every agent on the team runs the project the same way. Then [build the lever](../../skills/principle-build-the-lever/SKILL.md). When agents keep writing throwaway scripts to click through the app, ask for a small control CLI that the skill calls instead. Agents spend fewer tokens, and every run becomes repeatable. A CLI that agents use well has these traits:
 
@@ -91,7 +91,7 @@ Op tests change, tolerances move, and feature maps rot. Run this at least once a
 /maintain-verification-skill
 ```
 
-[`/maintain-verification-skill`](../../skills/maintain-verification-skill/SKILL.md) audits the generated skill: one read-only source reader per op family in parallel, then one live pass on one locked GPU that re-proves every mapped feature. It ends in exactly one of three outcomes. `clean` means full coverage and nothing to ship. `changed` means one PR of proven corrections, confined to the verification skill's own directory. `blocked` names the blocker. It never edits kernel code. If the live pass catches a kernel regression, it reports the regression instead of papering over it in docs.
+[`/maintain-verification-skill`](../../skills/maintain-verification-skill/SKILL.md) audits the generated skill: one read-only source reader per op family in parallel, then one live pass on one locked GPU that re-proves every mapped feature. It ends in exactly one of three outcomes. `clean` means full coverage and nothing to ship. `changed` means one PR of proven corrections, confined to the verification skill's own directory. `blocked` names the blocker. It never edits kernel code. If the live pass catches a kernel regression, it reports the regression instead of hiding it in docs.
 
 ## Open the PR
 

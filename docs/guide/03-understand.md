@@ -22,7 +22,7 @@ When the cause is unclear, ask for findings, not a fix:
 /how does aiter pick between the HIP and Triton kernels for this GEMM? where does the M threshold live?
 ```
 
-Ask the question you actually have. [`/how`](../../skills/how/SKILL.md) reads the code and answers at the level of a senior engineer onboarding you onto the subsystem, with the runtime flow, the key types, and the non-obvious parts. For a big subsystem it fans out two to four read-only explorers first. For a narrow question it just reads and explains.
+Ask the question you have. [`/how`](../../skills/how/SKILL.md) reads the code and answers at the level of a senior engineer onboarding you onto the subsystem, with the runtime flow, the key types, and the non-obvious parts. For a big subsystem it fans out two to four read-only explorers first. For a narrow question it reads and explains.
 
 ## Dig up history with `/why`
 
@@ -30,9 +30,9 @@ Ask the question you actually have. [`/how`](../../skills/how/SKILL.md) reads th
 /why does this dispatch threshold route M<=64 to the HIP kernel? does the reason still hold?
 ```
 
-[`/why`](../../skills/why/SKILL.md) works like a detective on a cold case. It reads its sources in parallel: source control and PRs (GitHub), the issue tracker (Jira), long-form docs (Confluence), chat (Slack), code history, and incidents. The report cites everything, separates direct evidence from inference, and says "appears to" when the record is thin. A null result gets reported too, because "nobody wrote down why" is itself an answer.
+[`/why`](../../skills/why/SKILL.md) reads its sources in parallel: source control and PRs (GitHub), the issue tracker (Jira), long-form docs (Confluence), chat (Slack), code history, and incidents. The report cites everything, separates direct evidence from inference, and says "appears to" when the record is thin. A null result gets reported too, because "nobody wrote down why" is itself an answer.
 
-The two compose naturally. `do why first then how` is a perfectly good prompt when you suspect the history explains the mess.
+The two compose. `do why first then how` is a good prompt when you suspect the history explains the mess.
 
 ## Actually understand it with `/teach`
 
@@ -40,7 +40,7 @@ The two compose naturally. `do why first then how` is a perfectly good prompt wh
 /teach me how this PR changes the tile shape of the kernel. convince me it fixes the cause of the LDS bank conflicts and not the symptom.
 ```
 
-[`/teach`](../../skills/teach/SKILL.md) is for when a summary isn't enough. It runs `/how` and `/why`, for a small change maybe just one of them, and weaves the findings into a plain explanation that builds up diagram by diagram. The "convince me" framing is worth stealing. It turns the explanation into an argument you can poke at instead of a tour.
+[`/teach`](../../skills/teach/SKILL.md) is for when a summary isn't enough. It runs `/how` and `/why`, for a small change maybe just one of them, and weaves the findings into a plain explanation that builds up diagram by diagram. Use the "convince me" framing. It turns the explanation into an argument you can poke at instead of a tour.
 
 It works on the agent's own choices too:
 

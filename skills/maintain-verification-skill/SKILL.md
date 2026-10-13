@@ -1,12 +1,12 @@
 ---
 name: maintain-verification-skill
-description: "Periodic pass that keeps the verification skill of a kernel library honest: detect new or renamed op tests, removed shapes, changed tolerances, new gfx942 or gfx950 gates, stale reference baselines, and harness drift, then re-prove each feature on one locked GPU and report drift per op family. Use for /maintain-verification-skill, 'audit the verify skill', 'did the op tests change', 'is the aiter or FlyDSL verify map stale'."
+description: "Periodic pass that keeps the verification skill of a kernel library current: detect new or renamed op tests, removed shapes, changed tolerances, new gfx942 or gfx950 gates, stale reference baselines, and harness drift, then re-prove each feature on one locked GPU and report drift per op family. Use for /maintain-verification-skill, 'audit the verify skill', 'did the op tests change', 'is the aiter or FlyDSL verify map stale'."
 disable-model-invocation: true
 ---
 
 # Maintain a verification skill
 
-A feature map rots when the library changes. This skill is the upkeep loop for a skill that `/create-verification-skill` generated for an aiter or FlyDSL checkout. The unit of rigor is the op family. Cover every family from source, and re-prove every feature on the GPU.
+A feature map goes stale when the library changes. This skill is the upkeep loop for a skill that `/create-verification-skill` generated for an aiter or FlyDSL checkout. The unit of rigor is the op family. Cover every family from source, and re-prove every feature on the GPU.
 
 ```
 locate ──► index ──► source wave ──► reconcile ──► live pass ──► triage ──► ship or stop
@@ -24,7 +24,7 @@ Pick one, and say which:
 
 ## Edit scope
 
-Edit only the verification skill's own directory: its `SKILL.md`, `features/`, and the harness scripts it owns. Never edit kernel code during a pass. A behavior that the map describes and the library no longer has is one of two things. Doc drift: fix the map. A kernel regression: report it, and do not hide it in the docs.
+Edit only the verification skill's own directory: its `SKILL.md`, `features/`, and the harness scripts it owns. Never edit kernel code during a pass. A behavior that the map describes and the library no longer has is one of two things. If it is doc drift, fix the map. If it is a kernel regression, report it and do not hide it in the docs.
 
 ## Drift kinds
 
@@ -41,11 +41,11 @@ Edit only the verification skill's own directory: its `SKILL.md`, `features/`, a
 
 ## Pass
 
-0. **Locate the target.** Find the verification skill, usually `.cursor/skills/verify-*/` in a checkout from the `repos` resource. Several candidates: ask which. None: stop, and point at `/create-verification-skill`.
+0. **Locate the target.** Find the verification skill, usually `.cursor/skills/verify-*/` in a checkout from the `repos` resource. If several candidates exist, ask which. If none exists, stop and point at `/create-verification-skill`.
 
 1. **Index hygiene.** Read the map README. Glob its sibling files. Fix missing, extra, duplicate, or dead entries.
 
-2. **Source wave.** One read-only subagent for each op family, launched together. Each reads the family's op test, the kernel entry, and the git history of both since the last pass. The last pass is the SHA that the map README records. When it records none, use the last commit of the map directory. Each returns:
+2. **Source wave.** Launch one read-only subagent for each op family, all together. Each reads the family's op test, the kernel entry, and the git history of both since the last pass. The last pass is the SHA that the map README records. When it records none, use the last commit of the map directory. Each returns:
    - the family summary
    - the entry points
    - drift, by kind from the table, or none, with citations
@@ -58,13 +58,13 @@ Edit only the verification skill's own directory: its `SKILL.md`, `features/`, a
 4. **Live pass.** Required even when the source looks clean. Re-prove each feature through the `bench.run` port, on one locked GPU, one command at a time. The ISA features go through the `isa.diff` port. Three rules hold for the whole pass:
    - Run the `bench.run` doctor before the first run and after any failed run. A busy GPU or a wrong arch stops the run.
    - Artifacts survive every cleanup. Check them at their named location.
-   - Each run removes its own scratch files and JIT directory. Failed attempts included.
+   - Each run removes its own scratch files and JIT directory. That includes failed attempts.
 
    A doctor failure that comes from skill drift is drift. Fix it under the edit scope, and retry once. A feature is `verified-unreachable` only with the unmet prerequisite and the command tried, for example an arch gate on the wrong host. A missing prerequisite in the map is drift. With no idle GPU, report `NO_GPU`. That is `INCONCLUSIVE`, never a pass. Re-run each harness fix on the GPU before it ships.
 
 5. **Triage.** Apply the Drift kinds table. A test that fails or a number that drops with no drift in the map is a kernel regression. Record it for the user. Keep it out of the PR. For a perf drop, name the limit and rule out a measurement artifact (**principle-explain-the-number**).
 
-6. **Ship or stop.** For changed: one PR of proven corrections. Re-read every changed file first. Prepare it per the Opening a PR playbook. A PR to a public upstream opens as a draft, after the user says yes. For clean or blocked: no PR. Report the outcome and the coverage.
+6. **Ship or stop.** For changed, open one PR of proven corrections. Re-read every changed file first. Prepare it per the Opening a PR playbook. A PR to a public upstream opens as a draft, after the user says yes. For clean or blocked, open no PR. Report the outcome and the coverage.
 
 ## Report
 

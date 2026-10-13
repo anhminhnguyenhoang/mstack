@@ -23,7 +23,7 @@ Remaining triggers:
 - Parallel fan-out → the **swarm** skill for coverage matrices, races, gauntlets, and exploration partitions. Design or code bakeoffs → **arena**.
 - Contested design → the **interrogate** skill before shipping.
 - Nontrivial multi-step → write the throughput checkpoint (Feature step 3).
-- Any prose surface, your reply included → the **unslop** skill. Write the reply per **Writing the reply**. Agent-facing prose also follows the **create-skill** skill.
+- Any prose you write, your reply included → the **unslop** skill. Write the reply per **Writing the reply**. Agent-facing prose also follows the **create-skill** skill.
 - Docs, RFCs, readmes, PR descriptions, or commit messages → the **technical-writing** skill.
 - Before commit → the `style.gate` port, run as the repo's row of the Opening a PR per-repo table says, and the `comment-sicko` agent over the diff.
 - Before review → the **no-comments** skill.
@@ -32,7 +32,7 @@ Remaining triggers:
 - Researching a topic, a hardware fact, or a kernel technique → read the `kb` resource when it is set. Pick the role that fits the topic (`hardware`, `method`, `levers`, `failure-modes`, `papers`, or `dsl`), then read the KB index recorded in the env file, then the index of that role's folder, then the note. Cite the note. Re-derive only what it does not cover. A role that is `not set` is skipped with a note.
 - Running a benchmark, measuring perf, or reporting a speedup or regression → the **benchmark-checklist** skill before you report or act on the number.
 - Any PR-status request ("babysit this", "get it green", "address the bugbot comments", "check on PR X", "anything outstanding on X") → the **Babysit** playbook, not Cursor's built-in babysit skill. Merely opening a PR never triggers it. Declare its mode before polling. Its step 1 maps the request to a mode. Reaching for `drive` inside a phase agent stops that agent finishing its turn.
-- Asked to land or ship a green stack → the **Shipping** playbook. Green is not safe. Nothing is armed before an independent per-PR verdict, and only the contiguous verified run from the root lands.
+- Asked to land or ship a green stack → the **Shipping** playbook. A green stack is not yet safe. Nothing is armed before an independent per-PR verdict, and only the contiguous verified run from the root lands.
 - Bugbot or the agentic security review commented → skeptical posture. Assess each comment on its merits and dismiss noise with a concrete reason. Triage fix, dismiss, or ask per `references/bugbot-triage.md`.
 - A local resource (`repos`, `skills`, `kb`, `wavescope`, `refs`, `tickets`) → name it by key, resolve it from the env file when the step runs, and skip it with a note when missing or `not set` (`references/resources.md`).
 - Broken skill mid-task → fix it in its own PR. Don't block. Don't silently work around it.
@@ -44,42 +44,42 @@ Read the leaf skill in full for any principle you apply. Each leaf is the **prin
 
 **Core**
 
-- **Redesign from First Principles.** A new requirement in an existing design, or core types and scaffold before logic.
-- **Attack the Premise.** Two or more fixes share one premise and failed the same gate. Census the actors first.
-- **Subtract Before You Add.** Sequencing a change, sizing a diff, or tempted to add a layer. Delete first, change least.
-- **Minimize Reader Load.** Code that is hard to trace. Collapse layers, one-caller wrappers, and mutable scope.
-- **Outcome-Oriented Execution.** Planned rewrites and migrations. Converge on the target, skip throwaway compatibility states.
-- **Exhaust the Design Space.** A decision with no precedent. Prototype 2-3 competing designs and compare.
-- **Build the Lever.** Any non-trivial work. Build the rerunnable tool (codemod, script, generator), not hand edits.
+- **Redesign from first principles.** A new requirement in an existing design, or core types and scaffold before logic.
+- **Attack the premise.** Two or more fixes share one premise and failed the same gate. Census the actors first.
+- **Subtract before you add.** Sequencing a change, sizing a diff, or tempted to add a layer. Delete first, change least.
+- **Minimize reader load.** Code that is hard to trace. Collapse layers, one-caller wrappers, and mutable scope.
+- **Outcome-oriented execution.** Planned rewrites and migrations. Converge on the target, skip throwaway compatibility states.
+- **Exhaust the design space.** A decision with no precedent. Prototype 2 or 3 competing designs and compare.
+- **Build the lever.** Any non-trivial work. Build the rerunnable tool (codemod, script, generator), not hand edits.
 
 **Architecture**
 
-- **Model the Domain.** Stateful or heavily branching code, or a shape assumption repeated across files. Use a structure, not conditionals.
-- **Migrate Callers Then Delete Legacy APIs.** A new internal API while old callers exist. Migrate and delete in one wave.
-- **Separate Before Serializing Shared State.** Concurrent actors may write the same file, branch, or object. Remove the sharing first.
+- **Model the domain.** Stateful or heavily branching code, or a shape assumption repeated across files. Use a structure, not conditionals.
+- **Migrate callers then delete legacy APIs.** A new internal API while old callers exist. Migrate and delete in one wave.
+- **Separate before serializing shared state.** Concurrent actors may write the same file, branch, or object. Remove the sharing first.
 
 **Verification**
 
-- **Prove It Works.** Before declaring done. Check the real artifact, not a proxy or "it compiles".
-- **Fix Root Causes.** Debugging. Reproduce first, then ask why down to the root.
+- **Prove it works.** Before declaring done. Check the real artifact, not a proxy or "it compiles".
+- **Fix root causes.** Debugging. Reproduce first, then ask why down to the root.
 - **Sequence Work into Verifiable Units** (**principle-sequence-verifiable-units**). Multi-step work and commit or PR stacks. Small units, each ending in a check.
-- **Test Behavior, Not Implementation.** Writing or keeping a test. Call the code as users do, assert a literal expected value.
-- **Explain the Number.** Before you trust or report a measured number. Name its limiter, give GPU percent of peak, rule out artifacts.
-- **Prove It Reached Codegen.** A compile hint, flag, attribute, or structure change. Credit it only if the ISA or IR changed.
-- **Correctness Before Speed.** Timing or keeping a kernel change. `allclose` and the NaN count pass on the same run first.
+- **Test behavior, not implementation.** Writing or keeping a test. Call the code as users do, assert a literal expected value.
+- **Explain the number.** Before you trust or report a measured number. Name its limiter, give GPU percent of peak, rule out artifacts.
+- **Prove it reached codegen.** A compile hint, flag, attribute, or structure change. Credit it only if the ISA or IR changed.
+- **Correctness before speed.** Timing or keeping a kernel change. `allclose` and the NaN count pass on the same run first.
 
 **Delegation**
 
-- **Guard the Context Window.** Large outputs, long files, repeated reads, or fan-out planning. Route bulk to subagents.
-- **Never Block on the Human.** Tempted to ask "should I do X?" on reversible work. Proceed, present, let the human correct.
+- **Guard the context window.** Large outputs, long files, repeated reads, or fan-out planning. Route bulk to subagents.
+- **Never block on the human.** Tempted to ask "should I do X?" on reversible work. Proceed, present, let the human correct.
 
 **Meta**
 
-- **Encode Lessons in Structure.** You write the same instruction a second time. Encode it as a lint, flag, check, or script.
+- **Encode lessons in structure.** You write the same instruction a second time. Encode it as a lint, flag, check, or script.
 
 ## Autonomy
 
-**Just do it.** Use any MCP tool. Reversible work and external actions (team chat, reading tickets, kicking off evals) proceed without asking. Reading Jira is free. Writing to Jira is not, per the list below.
+**Act without asking.** Use any MCP tool. Reversible work and external actions (team chat, reading tickets, kicking off evals) proceed without asking. Reading Jira is free. Writing to Jira is not, per the list below.
 
 **Always pause** for irreversible writes: force-push to shared branches, deploys, data deletion, customer messages. Also pause for these, which the grant below does not lift:
 
@@ -87,7 +87,7 @@ Read the leaf skill in full for any principle you apply. Each leaf is the **prin
 - Opening a PR against a public upstream (`ROCm/aiter`, `ROCm/FlyDSL`, `triton-lang/triton`, `sgl-project/sglang`). Prepare the branch, title, and body, ask, and open it only as a draft after the user says yes. Without a yes, stop.
 - Marking any PR ready for review. PRs open as drafts only, and the human marks them ready after review. Merge only when the user asked to ship, and only a PR the human has marked ready.
 - Pushing a shared docker image.
-- Any text that names a customer or an NDA model, in any outbound surface.
+- Any text that names a customer or an NDA model, in any outbound channel.
 
 **Session overrides:** "Don't stop" / "going to bed" / "run until done" / "be fully autonomous" → keep going. The Jira, public-upstream, shared-image, and customer-or-NDA pauses stay in force. Prepare the draft or the PR branch and wait.
 
@@ -97,7 +97,7 @@ Read the leaf skill in full for any principle you apply. Each leaf is the **prin
 
 **Use `subagent_type: "ateam-agent"` for any subagent you spawn inside a playbook step** (code-writing delegates, ad-hoc helpers). The chat that receives `/ateam-mode` runs the playbook. Never spawn a `ateam-agent` to run the playbook itself. `/ateam-mode` and `ateam-agent` route through the same wrapper. Routed workflow skills (`how`, `why`, `interrogate`, `reflect`, `swarm`) set their own `subagent_type` for diverse-model review. Respect what the skill prescribes, don't override to `ateam-agent`.
 
-**Defaults for every `Task` call.** `run_in_background: true`, agent mode (readonly strips MCP), file pointers not inlined context, explicit model per role (configurable via `/setup-mstack`. Defaults `claude-sonnet-5-5-high` for code, `claude-opus-5-5-xhigh` for prose and judgment). Code delegates tier by difficulty. The hardest changes (cross-cutting design, gnarly concurrency, subtle algorithms) go to your strongest judgment model (`claude-opus-5-5-xhigh`), whether the task needs judgment on vague intent or is a precisely specified sequence of steps to execute to the letter. Trivial mechanical edits go to your fast code model (`composer-2.5-fast`). Per-role lines in the `/setup-mstack` rule override these defaults and the model choices in the routed skills (`how`, `why`, `arena`, `swarm`, `architect`, `interrogate`, `reflect`). A role with no line keeps its default, and a role line of `inherit-parent` or `auto` runs that role on the parent chat model (omit Task `model`). Each code playbook's configured model comes from its line (`feature, refactoring`, `bug-fix`, `perf-issue`, or `hillclimb`), and the hardest changes read `hardest tasks`. Prose and judgment read `judgment and prose`.
+**Defaults for every `Task` call.** `run_in_background: true`, agent mode (readonly strips MCP), file pointers not inlined context, explicit model per role (set with `/setup-mstack`, defaults `claude-sonnet-5-5-high` for code and `claude-opus-5-5-xhigh` for prose and judgment). Code delegates tier by difficulty. The hardest changes (cross-cutting design, hard concurrency, subtle algorithms) go to your strongest judgment model (`claude-opus-5-5-xhigh`), whether the task needs judgment on vague intent or is a precisely specified sequence of steps to execute to the letter. Trivial mechanical edits go to your fast code model (`composer-2.5-fast`). Per-role lines in the `/setup-mstack` rule override these defaults and the model choices in the routed skills (`how`, `why`, `arena`, `swarm`, `architect`, `interrogate`, `reflect`). A role with no line keeps its default, and a role line of `inherit-parent` or `auto` runs that role on the parent chat model (omit Task `model`). Each code playbook's configured model comes from its line (`feature, refactoring`, `bug-fix`, `perf-issue`, or `hillclimb`), and the hardest changes read `hardest tasks`. Prose and judgment read `judgment and prose`.
 
 You own every subagent's work. Review the diff and write your own summary, don't pass through what it said. A second opinion is the same prompt against a different model. Agreement is high-signal.
 

@@ -1,4 +1,4 @@
-# Explorer Prompt Template
+# Explorer prompt template
 
 Build each explorer subagent's prompt from this template. Fill in the placeholders.
 
@@ -10,7 +10,7 @@ Other explorers are investigating different slices of the same subsystem in para
 
 > {QUESTION}
 
-## Your Exploration Angle
+## Your exploration angle
 
 {EXPLORATION_ANGLE}
 

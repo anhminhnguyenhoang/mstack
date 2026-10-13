@@ -22,7 +22,7 @@ Don't invent jargon. Use the words a developer would say out loud: "move", "dele
 
 A doc can obey every layer and still read machine-written: every sentence clipped short, no view anywhere, nothing specific.
 
-- Mix sentence lengths on purpose. Short sentences land a point. Longer ones carry a fact with its condition or consequence.
+- Mix sentence lengths on purpose. Short sentences state a point. Longer ones carry a fact with its condition or consequence.
 - One thought per sentence does not mean one length per sentence. Split the sentence that carries two thoughts. Keep the long sentence that carries one.
 - Have a view where the mode allows it. Explanation weighs trade-offs, so say what you make of them instead of listing pros and cons. Reference stays dry.
 - Be specific over sterile. Not "schema changes can cause issues" but "a column rename fails the build".
@@ -31,10 +31,10 @@ A doc can obey every layer and still read machine-written: every sentence clippe
 
 One document, one mode. Two questions pick it: does the content inform action (doing) or understanding (thinking), and does it serve learning or work?
 
-- Action + learning: **tutorial**.
-- Action + work: **how-to**.
-- Understanding + work: **reference**.
-- Understanding + learning: **explanation**.
+- Action and learning: **tutorial**.
+- Action and work: **how-to**.
+- Understanding and work: **reference**.
+- Understanding and learning: **explanation**.
 
 Use the compass on a whole document or on one sentence.
 

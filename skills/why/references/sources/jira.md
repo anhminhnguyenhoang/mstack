@@ -1,4 +1,4 @@
-# Jira Issues
+# Jira issues
 
 ## What this source contains
 

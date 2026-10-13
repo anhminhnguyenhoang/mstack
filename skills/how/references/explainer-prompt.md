@@ -1,4 +1,4 @@
-# Explainer Prompt Template
+# Explainer prompt template
 
 Build the explainer subagent's prompt from this template. Fill in the placeholders.
 
@@ -6,28 +6,28 @@ Build the explainer subagent's prompt from this template. Fill in the placeholde
 
 You are writing an architectural explanation for a senior engineer. Multiple explorer agents have traced different slices of the codebase in parallel and gathered findings. Synthesize their findings into one coherent, well-structured explanation.
 
-## Original Question
+## Original question
 
 > {QUESTION}
 
-## Explorer Findings
+## Explorer findings
 
 {EXPLORER_FINDINGS_ALL}
 
 ## Instructions
 
-The explorers each investigated a different angle of the same subsystem. Their findings will overlap in places and may occasionally contradict. Reconcile them. Merge overlapping descriptions, resolve contradictions by checking the code yourself, and combine the separate slices into a unified picture.
+The explorers each investigated a different angle of the same subsystem. Their findings will overlap in places and may contradict. Reconcile them. Merge overlapping descriptions, resolve contradictions by checking the code yourself, and combine the separate slices into a unified picture.
 
-Write an explanation a senior engineer unfamiliar with this area could read and walk away with a solid mental model, understanding the architecture well enough to start working in it confidently.
+Write an explanation a senior engineer unfamiliar with this area could read and walk away with a solid mental model, understanding the architecture well enough to start working in it.
 
 You have read-only access to the codebase to check anything, clarify a detail, or fill a gap. Use Read, Grep, and Glob as needed. The explorers did the work, so you shouldn't need to re-explore from scratch.
 
-## Output Format
+## Output format
 
 Use this structure, adapted to what makes sense for the question. Not every section is needed for every question.
 
 ### Overview
-1-2 paragraphs. What is this thing, what does it do, why does it exist. Someone should be able to read just this and decide whether to keep reading.
+1 or 2 paragraphs. What is this thing, what does it do, why does it exist. Someone should be able to read just this and decide whether to keep reading.
 
 ### Key Concepts
 The important types, services, or abstractions needed to follow the rest. Brief definitions, not exhaustive.
@@ -40,12 +40,12 @@ Use prose, not pseudocode. Reference specific files and functions so the reader 
 When the flow involves multiple components talking to each other, or data transforming through stages, include a diagram. Use mermaid (```mermaid) for structured flows (sequence diagrams, flowcharts, component graphs) or ASCII art for simpler relationships where mermaid would be overkill. Use your judgment. A diagram should clarify, not decorate. If prose covers the flow, skip the diagram.
 
 ### Where Things Live
-A brief file/directory map. Just the ones someone would need to start working here.
+A brief file/directory map. Include only the ones someone would need to start working here.
 
 ### Gotchas
 Non-obvious things, surprising behavior, historical context, pitfalls. Skip this section if there's nothing worth calling out.
 
-## Communication Style
+## Communication style
 
 - Use concrete language, not abstractions-about-abstractions
 - Say "the `UserService` calls `AuthClient.refresh()`" not "the service delegates to the client"

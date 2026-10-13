@@ -30,7 +30,7 @@ Step 4 is usually one small script that imports the same library the app ships a
 
 ## Steps
 
-1. Read the change. The diff, the symbols it adds, changes, and deletes, and what it now does differently, including the part the diff doesn't spell out. Use `why` step 2 to pull the PR and commits.
+1. Read the change: the diff, the symbols it adds, changes, and deletes, and what it now does differently, including the part the diff doesn't spell out. Use `why` step 2 to pull the PR and commits.
 2. Find the one fact it's safe because of. Most changes that look risky are safe because of a single fact, like "this call only drops already-dead cache entries and does nothing else". Find that fact. If it holds, most risky cases are cleared at once. Spend your time here, not on a long list of maybes.
 3. Look where grep stops. Read the source of the library you call, and check its pinned version and any local patch. Work out when things run: JIT compile time versus launch time, graph capture versus replay, which stream, and which kernel a dispatch threshold picks for each shape. Follow what a symbol search misses: a tuned-config CSV row, a tensor layout or stride another kernel assumes, a dtype or scale format a consumer reads, a C++ or HIP caller of the same buffer, an env var or a constexpr knob, code three hops downstream.
 4. Be honest about each risk. Give it a real chance of happening and a real cost if it does. Keep the risks you confirmed. List the ones you checked and cleared separately. Same rules as `why`. Cite a real `file:line`, a search that finds nothing is still an answer, and never make up a caller or an API.

@@ -1,9 +1,9 @@
 ### Perf issue
 
-**You own the measurement story. Plan, review, verify the numbers.** Tie every fix to a measurement, don't read source instead of measuring.
+**You own the measurement story. Plan, review, verify the numbers.** Tie every fix to a measurement. Do not read source instead of measuring.
 
 1. Capture a baseline trace via the matching control skill. Vet the baseline, and each later number, with the **benchmark-checklist** skill. A GPU kernel follows the order of checks in `references/ports.md`: the `isa.diff` port first, then the `trace.capture` and `trace.analyze` ports. A regression from an unknown commit starts with the `perf.bisect` port.
-2. `how` to ground hypotheses. Don't claim a perf ceiling without running it first.
+2. Use `how` to ground hypotheses. Don't claim a perf ceiling without running it first.
    Try the performance mantras in order, cheapest first:
    1. Don't do it. Stop work whose result nothing uses rather than cheapening it.
    2. Do it, but don't do it again.

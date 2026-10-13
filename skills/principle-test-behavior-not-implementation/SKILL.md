@@ -4,7 +4,7 @@ description: "Apply when you write, change, or keep a test. Call the code as its
 disable-model-invocation: true
 ---
 
-# Test Behavior, Not Implementation
+# Test behavior, not implementation
 
 A test calls the code as its users do and asserts the exact result they see. Rewrite or delete any test that would still pass if every imported function returned `undefined` or a wrong value.
 

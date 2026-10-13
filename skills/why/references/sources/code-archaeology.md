@@ -1,4 +1,4 @@
-# Code Archaeology (git + in-repo)
+# Code archaeology (git + in-repo)
 
 ## What this source contains
 
@@ -11,7 +11,7 @@
 - CHANGELOG entries and release notes in the repo
 - Issue/ticket IDs in commit messages and PR bodies
 
-The most trustworthy source, tied directly to the code, and the most complete. Everything that went through the repo should be here.
+This is the most trustworthy and most complete source, tied directly to the code. Everything that went through the repo should be here.
 
 ## How to search it
 
@@ -77,7 +77,7 @@ git log --oneline -i --grep='revert' -- <file>
 ## Common pitfalls
 
 - **Rename and move noise.** `git blame -w -C -C` skips whitespace and moved lines. Use it before you trust the last-touch commit.
-- **Mass reformat commits.** A format commit owns the line but not the idea. Step past it.
+- **Mass reformat commits.** A format commit shows as the last author of a line but carries no rationale. Blame the commit before it.
 - **Tuned CSV churn.** Tuning commits rewrite many rows at once. Read the diff for the row you care about.
 - **Code as its own proof.** A threshold in code shows what the code does. It does not show why. Look for text that states the reason.
 

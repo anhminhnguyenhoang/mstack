@@ -17,7 +17,7 @@ orient ──► how (data flow, mapping, waits) ──┐
 
 1. Pick the few things the reader must understand. Read their goal from the conversation: about to change it, reviewing it, debugging it, or new to it. Skip what they know.
 2. Orient. Read the kernel source, the tile constants, the dtype, and the arch (`gfx942` or `gfx950`). For an API fact, read the reference of the `kernel.write` port. Do not recall API facts from memory.
-3. Run `how` for the data flow and `why` for the design reasons. Run them in parallel. Narrow `why` in the ask, for example the tile size, the stage count, or the swizzle. Widen it only when the reasons are the point. Keep its confidence words. A hedge is a finding.
+3. Run `how` for the data flow and `why` for the design reasons. Run them in parallel. Narrow `why` in the ask, for example the tile size, the stage count, or the swizzle. Widen it only when the reasons are the point. Keep its confidence words. A hedge reports real uncertainty.
 4. Draw the data flow as a build-up series. Draw one part per diagram. See Diagrams.
 5. Explain the numbers. See Numbers.
 6. When the structure is rich, write the HTML page. See HTML page.
@@ -69,7 +69,7 @@ The reply still carries the first diagram and the verdict. The page adds depth.
 
 ## Reply
 
-Write in the owner's reply style: about half ASD-STE100, short sentences, one thought each, diagrams first. Follow the **unslop** skill. Give each concept one name and keep it. Do not print framing labels. No quizzes, no pacing theater.
+Write in the owner's reply style: about half ASD-STE100, short sentences, one thought each, diagrams first. Follow the **unslop** skill. Give each concept one name and keep it. Do not print framing labels. No quizzes. No staged pauses.
 
 - Line 1 names the reader and what they can now do.
 - Then the first diagram, and the smallest complete answer in one or two sentences.

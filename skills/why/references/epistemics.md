@@ -2,13 +2,13 @@
 
 How to reason about confidence when evidence is historical, fragmentary, and sometimes contradictory, and how to tell the user without flattening it into false certainty. Code shows what it does, not *why it exists*. The why lives in commits, PRs, tickets, docs, and conversations, all incomplete, biased, and sometimes missing. Pretending otherwise produces confident-sounding guesses that mislead the user.
 
-## Confidence Tiers
+## Confidence tiers
 
 Every claim in the output must sit in one tier. The tier sets its section and its phrasing.
 
 ### 1. Direct
 
-An explicit, textual citation answers the question: something an author actually *wrote* that says why, not "the code does X so the author must have wanted X." For example, a PR description "this fixes the wrong result for M not divisible by the tile", a ticket "we're adding this because decode shapes ran 30% under the reference on gfx950", a code comment "// cap the tile at 128 because 256 spills VGPRs", a design doc "we chose split-k over stream-k because the workspace stays fixed", or a chat message from the author "switching to this layout since the old one had LDS bank conflicts".
+An explicit, textual citation answers the question: something an author *wrote* that says why, not "the code does X so the author must have wanted X." For example, a PR description "this fixes the wrong result for M not divisible by the tile", a ticket "we're adding this because decode shapes ran 30% under the reference on gfx950", a code comment "// cap the tile at 128 because 256 spills VGPRs", a design doc "we chose split-k over stream-k because the workspace stays fixed", or a chat message from the author "switching to this layout since the old one had LDS bank conflicts".
 
 Phrasing: confident, present tense, cited. "This exists because X."
 
@@ -34,9 +34,9 @@ Phrasing: "One possibility is X, but we have no direct evidence." Usually lives 
 
 You looked and couldn't find out. A valid, important outcome. Document it.
 
-Phrasing: "We searched X, Y, and Z and found no evidence of why." Be specific about *what* you searched. "We couldn't find out" is less useful than "We searched the ticket tracker with keywords A and B, scanned the 6 PRs that touched this file since 2023, and grep'd the repo for string literals matching the threshold. None surfaced a rationale."
+Phrasing: "We searched X, Y, and Z and found no evidence of why." Be specific about *what* you searched. "We couldn't find out" is less useful than "We searched the ticket tracker with keywords A and B, scanned the 6 PRs that touched this file since 2023, and grep'd the repo for string literals matching the threshold. None stated a rationale."
 
-## Phrasing Guide
+## Phrasing guide
 
 **Confidence words** imply Direct or Supported evidence and need a citation immediately adjacent. Never use them for inferences: "because", "the reason is", "was designed to" (claims author intent), "fixes" / "addresses" / "solves" (claims the change achieved its goal), "the team decided" (claims a group decision happened).
 
@@ -50,22 +50,22 @@ Phrasing: "We searched X, Y, and Z and found no evidence of why." Be specific ab
 - "just" (as in "it's just X for performance"). Dismissive and usually hides uncertainty
 - "I think" / "I believe". You're synthesizing evidence, not giving a personal opinion. Use "the evidence suggests" instead.
 
-## Avoid Rationalization
+## Avoid rationalization
 
 Code that "makes sense" today may have been written for reasons that no longer apply, or that were wrong at the time. Don't retrofit a clean rationale onto messy history. Don't assume the author did the "right" thing and work backward to justify it. Don't assume a consistent pattern was intentional when it might be copy-paste. Don't turn an absence of evidence into evidence of absence ("no one mentioned security concerns, so it must not have been a concern").
 
-## The Sycophancy Trap
+## The sycophancy trap
 
-Users often embed a hypothesis: "Why do we do it this way, I assume it's for performance?" Don't simply confirm it. The guess is a prompt for investigation, not a conclusion to validate. Treat it as one candidate among others and check the evidence independently. If the evidence supports it, say so with citations. If not, say so, and present what the evidence *does* support.
+Users often embed a hypothesis: "Why do we do it this way, I assume it's for performance?" Don't confirm it on the user's say-so. The guess is a prompt for investigation, not a conclusion to validate. Treat it as one candidate among others and check the evidence independently. If the evidence supports it, say so with citations. If not, say so, and present what the evidence *does* support.
 
-## When Evidence Contradicts
+## When evidence contradicts
 
-Surface both sources in the output, with citations. Don't pick the one that fits a tidier narrative. For example, the ticket says "we need this for a release perf target" and the PR says "cleaning up tech debt in this area". Both may be true (the ticket motivated the work, the PR gave the author's framing), or one may be wrong. Let the user make the call.
+Show both sources in the output, with citations. Don't pick the one that fits a tidier narrative. For example, the ticket says "we need this for a release perf target" and the PR says "cleaning up tech debt in this area". Both may be true (the ticket motivated the work, the PR gave the author's framing), or one may be wrong. Let the user make the call.
 
-## When Evidence Is Missing
+## When evidence is missing
 
-An honest "we don't know" is one of the most valuable outputs. The user learns the answer isn't in the obvious places, that they'll need to ask a human (the original author, the product owner, the team lead), or that they can decide the question isn't worth pursuing further. Failing to mark a gap, and instead filling it with a confident guess, actively harms the user, because they'll act on the guess. Name each gap concretely: the question, the sources searched, what you searched for in each, and what you found (nothing, or only tangential material).
+An honest "we don't know" is one of the most valuable outputs. The user learns the answer isn't in the obvious places, that they'll need to ask a human (the original author, the product owner, the team lead), or that they can decide the question isn't worth pursuing further. Failing to mark a gap, and instead filling it with a confident guess, harms the user, because they'll act on the guess. Name each gap concretely: the question, the sources searched, what you searched for in each, and what you found (nothing, or only tangential material).
 
-## Before Finalizing
+## Before finalizing
 
-Before the synthesizer delivers the output, it checks every claim in "What We Found" and "What We Can Reasonably Infer". Each claim has a citation or moves to Inferred or Hypotheses. Its phrasing matches its tier. It doesn't treat code as evidence for its own intent (if it does, remove or reclassify it). The output has a "What We Don't Know" section. If no gaps are mentioned, that's suspicious. Either the evidence was unusually complete or something is being swept under the rug.
+Before the synthesizer delivers the output, it checks every claim in "What We Found" and "What We Can Reasonably Infer". Each claim has a citation or moves to Inferred or Hypotheses. Its phrasing matches its tier. It doesn't treat code as evidence for its own intent (if it does, remove or reclassify it). The output has a "What We Don't Know" section. If no gaps are mentioned, that's suspicious. Either the evidence was unusually complete or a gap was left out.

@@ -4,7 +4,7 @@ description: "Apply during planned rewrites and migrations with explicit phase b
 disable-model-invocation: true
 ---
 
-# Outcome-Oriented Execution
+# Outcome-oriented execution
 
 Optimize for the intended, verifiable end state rather than preserving smooth intermediate states.
 

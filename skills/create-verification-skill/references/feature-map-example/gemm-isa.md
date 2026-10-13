@@ -19,7 +19,7 @@ GEMM ISA resources lets a kernel author check, without a GPU, that a change did 
 Preconditions:
 
 - The container is up, and the library is at the revision under test.
-- The same test command and the same arch are used for the base and the head.
+- Use the same test command and the same arch for the base and the head.
 - The runtime cache is off for both captures.
 
 - **Base.** Check out the base revision. Run the GEMM test command into a fresh dump directory. The directory holds one resource record for each kernel.

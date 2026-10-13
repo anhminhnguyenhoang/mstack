@@ -82,7 +82,7 @@ Machine facts live in `~/.cursor/mstack/env.md`, never in the plugin. The plugin
 
 ### 7. Load current state
 
-If `~/.cursor/mstack/env.md` exists, read it. A fact marked `user` is the user's answer. Keep it unless detection now contradicts it, and then show both values and ask. A fact marked `detected` is refreshed by step 8. A resource value that no longer passes its check is treated as not found.
+If `~/.cursor/mstack/env.md` exists, read it. A fact marked `user` is the user's answer. Keep it unless detection now contradicts it, and then show both values and ask. Step 8 refreshes a fact marked `detected`. Treat a resource value that no longer passes its check as not found.
 
 ### 8. Detect
 
@@ -119,7 +119,7 @@ A row that carries the marker `(probe)` names a conventional tool location, such
 
 ### 9. Ask what detection cannot settle
 
-Look it up first, and ask the human only when you cannot find it. Step 8 already looked. Ask only for a resource that was `not found`, is `ambiguous`, or failed its check. A `found` resource is not asked. It is reported in step 11, and the user corrects it by rerunning `/setup-mstack env`.
+Look it up first, and ask the human only when you cannot find it. Step 8 already looked. Ask only for a resource that was `not found`, is `ambiguous`, or failed its check. Do not ask about a `found` resource. Step 11 reports it, and the user corrects it by rerunning `/setup-mstack env`.
 
 Ask once, in one AskQuestion form. Offer the detected values as options, plus `none` or `skip` where it applies. Never guess a name or a location. Ask only what is unknown or contradicted:
 
@@ -139,7 +139,7 @@ Ask once, in one AskQuestion form. Offer the detected values as options, plus `n
 - The Jira MCP namespace for each site it cannot map, and the project prefixes for each site it has no ticket for. A prefix maps to exactly one site.
 - The PR path for each GitHub host or org (`gh` or an MCP namespace name), when detection finds none or more than one. The push remote is asked only when its reachability test fails or an `https` remote has no credential path. Show the remote URL without any credential, the scheme, and the failing test. Never offer to switch the scheme.
 
-When the user gives a path, run the same signature test on it. A path that fails the test is asked again.
+When the user gives a path, run the same signature test on it. Ask again for a path that fails the test.
 
 **Map the knowledge base.** Run this once the root is found or given. A knowledge base has its own layout, so map it before you record anything.
 
@@ -157,7 +157,7 @@ root found ──► read root index and each folder index ──► score each 
 4. Do not rename or require any folder.
 5. Record the root, the index file, and the git remote if any, with the map, in step 10. The report in step 11 shows the map, so the user can change any role.
 
-A fact or a resource the user skips is written as `not set`. A skill that needs a `not set` required fact stops and asks. A step that wants a `not set` optional resource skips it with a note (`references/resources.md`). Nothing ever guesses.
+A fact or a resource the user skips is written as `not set`. A skill that needs a `not set` required fact stops and asks. A step that wants a `not set` optional resource skips it with a note (`references/resources.md`). No step guesses.
 
 ### 10. Write the env file
 

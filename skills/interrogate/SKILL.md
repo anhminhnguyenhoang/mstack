@@ -22,7 +22,7 @@ Package the diff or file contents with any surrounding context files the reviewe
 
 Before spawning reviewers, state the intent in one clear paragraph from the user's message, commit messages, the PR description if one exists, and the code. If you're unsure about the intent, ask the user before proceeding.
 
-## Step 3, Spawn Reviewers
+## Step 3, Spawn reviewers
 
 Launch all reviewers in a single message with the Task tool, one per entry on the `interrogate reviewers` line in `~/.cursor/rules/mstack-models.mdc`, labeled Reviewer A, B, and so on to match the entry count. If the rule or that line is missing, use the table defaults.
 
@@ -41,7 +41,7 @@ Read `references/reviewer-prompt.md` and fill in the same template for every rev
 
 As results come back, build a unified picture. Parse every reviewer's findings. Merge findings that describe the same issue differently, and note which models raised each one. Findings two or more models raised independently are the highest signal. Read a lone model's finding, but weight it accordingly. Note disagreements. If one model flags something and another explicitly says the opposite, that is context for the verdict.
 
-## Step 5, Lead Judgment
+## Step 5, Lead judgment
 
 You are the lead reviewer, a pragmatic senior engineer, not a neutral aggregator. Read `references/lead-judgment.md` for the full framework. Put every finding in one of four buckets, with the model(s) that raised it and a one-line rationale.
 
@@ -50,7 +50,7 @@ You are the lead reviewer, a pragmatic senior engineer, not a neutral aggregator
 - **Noted**. Technically valid but not actionable. Context-dependent, premature optimization, or low-impact at this stage.
 - **Dismissed**. Wrong, nitpicky, or missing context, with a brief reason.
 
-## Output Format
+## Output format
 
 ### Intent
 > [The stated intent paragraph from Step 2]

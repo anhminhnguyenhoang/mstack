@@ -1,12 +1,12 @@
 # Run work while you sleep
 
-This is the payoff for everything before it. An agent you can trust to verify its own work is an agent you can leave alone with a hard task. What makes that safe isn't hope. It's a checkable finish condition, an isolated worktree or cloud agent, and a decision log you audit in the morning.
+This is the payoff for everything before it. An agent you can trust to verify its own work is an agent you can leave alone with a hard task. Three things make that safe: a checkable finish condition, an isolated worktree or cloud agent, and a decision log you audit in the morning.
 
 ![She waves goodnight from the door while robots keep the factory running, one updating a DECISION LOG wall board under a BUILD LOOP ACTIVE sign.](./images/overnight.jpg)
 
 ## Earn the trust before the loop
 
-A loop you don't trust just produces unchecked work faster, and the mess compounds with every iteration. Before you leave one running, check that it has earned it:
+A loop you don't trust produces unchecked work faster, and the mess compounds with every iteration. Before you leave one running, check that it has earned it:
 
 - You've done the task once by hand, or watched an agent do it, so you know what good looks like.
 - The agent has the tools and signals you'd use yourself: `/verify-gpu-kernel`, the profiler, the ATT trace.
@@ -26,14 +26,14 @@ keep a decision log. don't ask me before committing.
 /loop until done. if you're truly stuck after a few hours, stop and write up why.
 ```
 
-Walk through what each line buys you:
+What each line does:
 
 - "im going to bed" is a session override. The agent stops asking and keeps going.
 - "done means..." turns the goal into checks every iteration can run.
 - "fresh worktree off `<base>`" keeps the run from colliding with anything else you have open.
 - "don't ask me before committing" pre-answers the permission the agent would otherwise block on.
 - `/loop` is Cursor's built-in wake mechanism, not an mstack skill. The [Autonomous run playbook](../../skills/ateam-mode/playbooks/autonomous-run.md) uses it to re-check the finish condition on events or a heartbeat.
-- The escape hatch lets it stop at a genuine dead end and write up why, which beats eight hours of creative goal reinterpretation.
+- The escape hatch lets it stop at a genuine dead end and write up why, instead of spending eight hours reinterpreting the goal.
 
 Because you'll review this work after stepping away, `/ateam-mode` routes it through [`/figure-it-out`](../../skills/figure-it-out/SKILL.md), which designs the run's phases before any code and wires in the decision log.
 
@@ -53,7 +53,7 @@ flowchart TD
     G --> A
 ```
 
-One change, one check, one log row, every iteration. Changes that didn't help get discarded, not left to ride. A plateau means pivot, not stop, and the finish condition never quietly relaxes to declare victory.
+One change, one check, one log row, every iteration. The loop discards changes that didn't help. A plateau means pivot, not stop, and the finish condition never relaxes to declare victory.
 
 ## The morning audit
 

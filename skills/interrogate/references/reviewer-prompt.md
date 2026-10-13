@@ -1,4 +1,4 @@
-# Reviewer Prompt Template
+# Reviewer prompt template
 
 Build each reviewer subagent's prompt from this template, filling in the placeholders.
 
@@ -14,15 +14,15 @@ The author's stated intent for this change:
 
 Review whether the code achieves this intent well. Do NOT question the intent itself. Assume the goal is correct and challenge the execution.
 
-## Code Under Review
+## Code under review
 
 {DIFF_OR_FILES}
 
-## Review Rubric
+## Review rubric
 
 {RUBRIC_CONTENTS}
 
-## Code Quality Lens
+## Code quality lens
 
 {CODE_QUALITY_CONTENTS}
 

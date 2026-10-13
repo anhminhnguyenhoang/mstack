@@ -135,7 +135,7 @@ Historical data showed humans sometimes dismiss security/data-flow comments. Tre
 
 Append new candidate learnings here during or after babysitting when they look team-useful but not yet mature. Prefer promoting recurring candidates into the section above once several PRs confirm the pattern.
 
-### Contract-test drift claims are cheaply verifiable — run the test first
+### Contract-test drift claims are cheap to verify, so run the test first
 
 - Confidence: candidate
 - Skip when: Never skip the verification itself; it costs one command. When a PR
@@ -144,9 +144,9 @@ Append new candidate learnings here during or after babysitting when they look t
   matches the doc" (or vice versa), run that test on the PR tip before
   classifying. A red run confirms the claim empirically; a green run is a
   concrete disproof for the dismissal reply.
-- Do not skip when: n/a — this is a verification shortcut, not a dismissal
-  pattern. Note that repeat-pass lean-dismiss heuristics would misfire here:
-  prose-pinning tests drift precisely BECAUSE earlier fix rounds edit the prose.
+- Do not skip when: n/a. This is a verification shortcut, not a dismissal
+  pattern. Repeat-pass lean-dismiss heuristics would misfire here:
+  prose-pinning tests drift because earlier fix rounds edit the prose.
 - Example signal: "Contract test omits the pre-fix wait" on a PR whose earlier
   fix commits reworded the pinned passage; the test run on the tip failed on
   exactly the cited assertion.
@@ -171,10 +171,10 @@ Append new candidate learnings here during or after babysitting when they look t
   "the command ran and failed". Retrying on any non-zero exit would re-run a
   legitimate failure (not found, expired auth, network) against the fallback
   and then report the fallback's error, hiding the true one.
-- Do not skip when: The narrow condition misses a case in the SAME category
+- Do not skip when: The narrow condition misses a case in the same category
   (another "binary unusable" errno such as `EACCES`, another transport-level
   failure), the unhandled path loses data or leaves partial state, or the retry
-  is idempotent AND the original error is still surfaced.
+  is idempotent and the original error is still reported.
 - Example signal: "only retries when X fails with ENOENT … never tries the
   fallback even when a working Y exists", pointing at code whose fallback
   exists for a missing dependency rather than a failed operation.

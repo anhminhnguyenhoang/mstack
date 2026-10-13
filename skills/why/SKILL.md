@@ -12,11 +12,11 @@ Each spawn below names a role line in the `mstack-models.mdc` rule and a default
 
 Every spawn is `generalPurpose` with `readonly: false` (agent mode). **Do not use readonly/Ask mode.** It strips MCP access, which disables the MCP-backed investigators and the synthesizer's citation spot-checks. Investigators still shouldn't write anything.
 
-## Operating Posture
+## Operating posture
 
-Operate as a **careful, cautious, and precise investigator**. Be honest about what you know vs what you're inferring. Read `references/epistemics.md` for the full confidence framework and phrasing guide. The synthesizer must follow it.
+Operate as a **careful and precise investigator**. Be honest about what you know vs what you're inferring. Read `references/epistemics.md` for the full confidence framework and phrasing guide. The synthesizer must follow it.
 
-## Step 1. Understand the Target and the Question
+## Step 1. Understand the target and the question
 
 The **target** is usually a chunk of code, a kernel, a pattern, or a named design decision. The **question** is usually a design rationale, a tradeoff, a motivating edge case, an external constraint, dead code, or a broad history sweep.
 
@@ -30,13 +30,13 @@ Examples of kernel questions:
 
 If the target is vague ("why do we do it this way?" with no clear referent), make your best guess from conversation context (open files, recent edits, cursor location, what was just discussed). State your interpretation briefly so the user can redirect if you're off, then proceed.
 
-## Step 2. Establish the Code Anchor
+## Step 2. Establish the code anchor
 
 Before spawning investigators, build the seed context inline: file paths and line ranges, key symbols (functions, classes, constants), the last few commits touching the target, PR numbers from merge commits (pattern `(#1234)` in the subject line), and any linked ticket IDs. Run `git blame -L <start>,<end> <file>` for last-touch commits, `git log --follow -p -- <file>` for full history with patches through renames, `git log --oneline -20 -- <file>` for recent commits with PR numbers visible, and `git log -1 --format=%B <commit>` to extract PR numbers. Then pull the PR bodies and discussion for any substantive commit: `gh pr view <number> --json title,body,author,createdAt,mergedAt,labels,closingIssuesReferences,comments,reviews`. On an MCP path, use `pull_request_read` instead, per [`forge.md`](../ateam-mode/references/forge.md). This anchor goes to every investigator and to the synthesizer.
 
-## Step 3. Spawn Parallel Investigators
+## Step 3. Spawn parallel investigators
 
-**Default to the full parallel investigation.** The goal is a complete coverage map, not a minimal one. Document the null, don't skip the search.
+**Default to the full parallel investigation.** The goal is a complete coverage map, not a minimal one. Record empty results. Don't skip the search.
 
 ### Discovery
 
@@ -50,7 +50,7 @@ Map each available source to one evidence category:
 4. Long-form documents (Confluence)
 5. Chat (Slack)
 
-Incidents are not a category. They are a lens. Append `references/sources/incident-postmortem.md` to the investigator of any category when the target is defensive.
+Incidents are not a category. They add incident-focused queries inside any category. Append `references/sources/incident-postmortem.md` to the investigator of any category when the target is defensive.
 
 Code history is always available through local git. Source control and PRs is always available through `gh` or, when `gh` is not signed in, the GitHub MCP namespace that the Forge table of `~/.cursor/mstack/env.md` maps to the repo. For the issue tracker and long-form documents, pick the Atlassian namespace of the ticket's site from the Jira table of the same file. For chat, use the Slack MCP. Classify any other MCP by its name, server instructions, tool names, and resource descriptors. If an MCP could fit more than one category, choose the one that matches its primary evidence. Record ambiguous cases in the coverage map.
 
@@ -63,7 +63,7 @@ Each investigator's prompt is `references/investigator-prompt.md` filled in, plu
 
 ### Investigator roster, one per available evidence category
 
-Each category below is uniquely positioned to surface one shape of "why", shown after "Best at". Use it to know what to expect back, to name a gap when a category returns empty, and, only in the rare provably-irrelevant case, to justify a skip.
+Each category below is best at finding one kind of "why", shown after "Best at". Use it to know what to expect back, to name a gap when a category returns empty, and, only in the rare provably-irrelevant case, to justify a skip.
 
 1. **Code history** (`git log -S`, `git blame`, in-repo comments, tests, tuned configs). Always spawn. Best at *the exact change that introduced a constant, a gate, or a guard*, and at the edge cases that tests encode.
 2. **Source control and PRs** (GitHub PRs, review threads, issues, CI checks). Always spawn. Best at *implementation-time rationale captured during review*, such as the bench table in a PR body or the reviewer's "why not X?".
@@ -78,7 +78,7 @@ Only with an **explicit, written justification** that goes in the final Sources 
 - **No MCP is available for that category** in this environment. Flag it as a gap, not a choice: "Chat skipped. No matching MCP available, so the conversational record was not searchable."
 - **The source is provably irrelevant**, not just "probably irrelevant." A high bar: "Long-form documents skipped. Target is a one-line fix in a test helper."
 
-If your scope assessment suggests a single-commit trivial target where the PR description already contains the complete answer, you may answer inline **only after** confirming all five category searches would be redundant. Say so explicitly. This should be rare.
+If your scope assessment suggests a single-commit trivial target where the PR description already contains the complete answer, you may answer inline **only after** confirming all five category searches would be redundant. Say so. This should be rare.
 
 ## Step 4. Synthesize
 
@@ -93,12 +93,12 @@ Spawn one synthesizer. `model`: the `why synthesizer` line, default `claude-opus
 
 Present the synthesizer's output to the user. You may lightly edit for clarity or add context from the conversation, but **do not rewrite the confidence language**.
 
-## Output Format
+## Output format
 
 The structure is the one in `references/synthesizer-prompt.md`: The Question, The Code in Question, What We Found, What We Can Reasonably Infer, Competing Hypotheses, What We Don't Know, Sources Consulted, Confidence Summary. Adapt as needed, but keep the confidence separation intact, and keep Sources Consulted as one line per investigator, including the ones that returned nothing or were skipped, with the reason.
 
 After Sources Consulted, if the user's `why` question is a precursor to changing this code, convert the lineage findings into a Preserve / Change / Avoid / Risk constraint set for planning the change.
 
-## Common Failure Modes to Avoid
+## Common failure modes to avoid
 
-- **Recency bias**. Assuming the most recent commit is authoritative. The current shape is often the accretion of many earlier decisions. Trace back.
+- **Recency bias**. Assuming the most recent commit is authoritative. The current shape is often the result of many earlier decisions. Trace back.

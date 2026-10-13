@@ -104,7 +104,7 @@ A retired lever whose root cause is general is a candidate for the `kb.capture` 
 
 This section applies only when the `wavescope` resource is set. When `wavescope` is not set, or the `trace.annotate` skill is missing, deliver the trace findings in the reply or the ticket folder instead, skip the `notes.json` loop, write `skipped wavescope: not set`, and ask once per session whether the user uses WaveScope.
 
-The `trace.annotate` port publishes trace findings as `annotations.json`, and the human verifies them in WaveScope. The human replies in `notes.json` beside the trace. When a `notes.json` exists for a trace of B or S*, read it before the next phase, the way the port's skill says.
+The `trace.annotate` port publishes trace findings as `annotations.json`, and the human verifies them in WaveScope. The human replies in `notes.json` beside the trace. When a `notes.json` exists for a trace of B or S*, read it before the next phase, as the port's skill says.
 
 ```
 annotations.json ──► human reads in WaveScope ──► notes.json ──► lever doc ──► next phase

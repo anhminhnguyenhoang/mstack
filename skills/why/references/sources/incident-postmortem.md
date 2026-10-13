@@ -1,4 +1,4 @@
-# Incident & Postmortem Context
+# Incident & postmortem context
 
 - **Jira**: look for tickets with labels such as `incident`, `regression`, `perf-regression`, `postmortem-action-item`. Check issue links of type `caused by`.
 - **Confluence**: search for postmortem and RCA pages near the dates the target code was added.

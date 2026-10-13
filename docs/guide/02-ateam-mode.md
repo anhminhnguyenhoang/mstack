@@ -1,6 +1,6 @@
 # Route work through `/ateam-mode`
 
-`/ateam-mode` is the front door. You give it a goal, it matches one of twenty-five playbooks, copies that playbook's steps into the todo list, and calls the other skills as the steps need them. In this page you learn what a good prompt looks like, and how little of one you actually need.
+`/ateam-mode` is the entry point. You give it a goal, it matches one of twenty-five playbooks, copies that playbook's steps into the todo list, and calls the other skills as the steps need them. In this page you learn what a good prompt looks like, and how little of one you need.
 
 ![A dispatcher pulls a switch lever to route robots on rail handcars toward lit gates, under a /ateam-mode departure board listing BUG FIX, FEATURE, and INVESTIGATION.](./images/router.jpg)
 
@@ -96,7 +96,7 @@ A long chat accumulates context from the last task. When you change subjects, sa
 
 ## Give parallel work its own machine
 
-If you run several agents against one repository on one computer, they will fight over the working tree, the ports, and the build output. The cleanest isolation is a [cloud subagent](https://cursor.com/docs/subagents#cloud-subagents). Each one gets its own VM and branch, so it can install dependencies and build without touching your machine. A cloud VM has no AMD GPU, so use it for compile-only work such as ISA checks and cleanups, not for benchmarks. Type `/in-cloud` before the task, or ask the parent chat to hand work to cloud subagents.
+If you run several agents against one repository on one computer, they will conflict over the working tree, the ports, and the build output. The cleanest isolation is a [cloud subagent](https://cursor.com/docs/subagents#cloud-subagents). Each one gets its own VM and branch, so it can install dependencies and build without touching your machine. A cloud VM has no AMD GPU, so use it for compile-only work such as ISA checks and cleanups, not for benchmarks. Type `/in-cloud` before the task, or ask the parent chat to hand work to cloud subagents.
 
 When the work has to stay local, ask for a worktree up front:
 
@@ -104,7 +104,7 @@ When the work has to stay local, ask for a worktree up front:
 /ateam-mode new task. branch off <base> in a fresh worktree, then port the FlyDSL fix there.
 ```
 
-Each task in its own branch and worktree means no agent stomps another's files. Worktrees cost disk and machine resources, so a laptop runs only a handful at once. The [Opening a PR playbook](../../skills/ateam-mode/playbooks/opening-a-pr.md) already works from a worktree for code changes, so mostly you only say this when a specific base or location matters.
+Each task in its own branch and worktree means no agent overwrites another's files. Worktrees cost disk and machine resources, so a laptop runs only a handful at once. The [Opening a PR playbook](../../skills/ateam-mode/playbooks/opening-a-pr.md) already works from a worktree for code changes, so mostly you only say this when a specific base or location matters.
 
 Worktrees accumulate. When disk gets tight, ask:
 

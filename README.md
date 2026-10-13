@@ -120,9 +120,9 @@ when invoked it:
 
 the full rules and playbooks live in [`skills/ateam-mode/SKILL.md`](./skills/ateam-mode/SKILL.md).
 
-to keep [`/ateam-mode`](./skills/ateam-mode/SKILL.md) on across turns, pick it from the `/` menu and press option+enter (mac) or alt+enter (windows) instead of enter. that makes it a [custom mode](https://cursor.com/docs/skills), which cursor offers in the agents window and the cli. it stays in context every turn, applies itself when a playbook matches or the task needs rigor, and stays out of the way otherwise. plain enter attaches it to one message only. say so to opt out, or exit the mode to turn it off.
+to keep [`/ateam-mode`](./skills/ateam-mode/SKILL.md) on across turns, pick it from the `/` menu and press option+enter (mac) or alt+enter (windows) instead of enter. that makes it a [custom mode](https://cursor.com/docs/skills), which cursor offers in the agents window and the cli. it stays in context every turn, applies itself when a playbook matches or the task needs rigor, and does nothing otherwise. plain enter attaches it to one message only. say so to opt out, or exit the mode to turn it off.
 
-[`/ateam-mode`](./skills/ateam-mode/SKILL.md) works extremely well with cursor's `/loop` command. you can make cursor work for many hours without sacrificing rigor.
+[`/ateam-mode`](./skills/ateam-mode/SKILL.md) works well with cursor's `/loop` command. cursor can then work for many hours without sacrificing rigor.
 
 ## skills
 
@@ -154,7 +154,7 @@ to keep [`/ateam-mode`](./skills/ateam-mode/SKILL.md) on across turns, pick it f
 | [`/arena`](./skills/arena/SKILL.md) | you want N parallel attempts at the same thing, then to grab the best parts of each. |
 | [`/swarm`](./skills/swarm/SKILL.md) | you want N parallel workers across different slices or races, then one aggregated report. |
 | [`/interrogate`](./skills/interrogate/SKILL.md) | you have a diff and want different models to try to break it, including a strict code-quality lens. |
-| [`/automate-me`](./skills/automate-me/SKILL.md) | you want your own `-mode` skill, drafted from how you've actually worked. |
+| [`/automate-me`](./skills/automate-me/SKILL.md) | you want your own `-mode` skill, drafted from how you've worked. |
 | [`/setup-mstack`](./skills/setup-mstack/SKILL.md) | you want to pick which models mstack uses per role, or map this machine for kernel work. `/setup-mstack models` writes the model rule. `/setup-mstack env` writes `~/.cursor/mstack/env.md`. |
 | [`/reflect`](./skills/reflect/SKILL.md) | a long task landed and you want the recipe captured as a skill edit. |
 | [`/correct`](./skills/correct/SKILL.md) | you keep correcting agents for the same mistakes. mines history for mistake classes, fixes each at the highest level that works (architecture, then types, lint, and ci, then tests, with docs last), and keeps a table pairing each rule with what enforces it. |
@@ -277,13 +277,13 @@ a few things `ateam-mode` references but doesn't bundle:
 
 ## why are there no planning skills?
 
-cursor already has a great plan mode which works great with mstack. but personally, i don't believe in planning. the best spec is code. if you do want to make a plan, [`/ateam-mode`](./skills/ateam-mode/SKILL.md) covers it, but it's not a default. 
+cursor already has a plan mode, and it works with mstack. but personally, i don't believe in planning. the best spec is code. if you do want to make a plan, [`/ateam-mode`](./skills/ateam-mode/SKILL.md) covers it, but it's not a default.
 
 ## make it yours
 
 `ateam-mode` is one engineer's style. you may not want exactly that.
 
-type [`/automate-me`](./skills/automate-me/SKILL.md). it mines your recent transcripts, drafts a `<your-name>-mode` skill from how you've actually worked, and routes through mstack underneath. you keep mstack as the base and end up with your own routing skill alongside `ateam-mode`.
+type [`/automate-me`](./skills/automate-me/SKILL.md). it mines your recent transcripts, drafts a `<your-name>-mode` skill from how you've worked, and routes through mstack underneath. you keep mstack as the base and end up with your own routing skill alongside `ateam-mode`.
 
 models are configurable too. type [`/setup-mstack`](./skills/setup-mstack/SKILL.md). it detects the models you have access to and writes a small always-applied rule mapping each role (code, judgment, the review panels) to a model. every skill reads it and falls back to sensible defaults when the rule is absent, so you override only what you want.
 
@@ -291,7 +291,7 @@ when a default changes, a rule written before the change still pins the old defa
 
 ## Upstream
 
-mstack is forked from [pstack](https://github.com/cursor/plugins/tree/main/pstack) 0.15.20 by poteto (Lauren Tan), MIT licensed. The pristine import is commit `1491916`. [`LICENSE`](./LICENSE) keeps the upstream copyright notice.
+mstack is a fork of [pstack](https://github.com/cursor/plugins/tree/main/pstack) 0.15.20 by poteto (Lauren Tan), MIT licensed. The pristine import is commit `1491916`. [`LICENSE`](./LICENSE) keeps the upstream copyright notice.
 
 To sync with upstream:
 

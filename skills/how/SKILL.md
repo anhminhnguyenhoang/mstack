@@ -33,7 +33,7 @@ Once all explorers have returned, spawn one explainer with `references/explainer
 
 ## 4. Present
 
-Present the explainer's output. Light edits for clarity or context from the conversation are fine. Do not substantially rewrite it.
+Present the explainer's output. Light edits for clarity or context from the conversation are fine. Do not rewrite it.
 
 ## Output format
 

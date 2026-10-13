@@ -21,9 +21,9 @@ host ──► container ──► one locked GPU ──► one command ──�
 
 Read `~/.cursor/mstack/env.md`, the machine-local file that `/setup-mstack env` writes. Its Hosts table gives the host, SSH alias, arch, and GPU count. The rules are in [`env.md`](../ateam-mode/references/env.md). A GPU run needs the `repos` resource, and ticket work needs `tickets` ([`resources.md`](../ateam-mode/references/resources.md)).
 
-- No file → stop, and ask the user to run `/setup-mstack env`.
-- The run needs an arch with no host in the table, or a fact you need is `not set` → stop and ask. Do not pick a host by guess.
-- Reaching a host by SSH → run `ssh <alias> hostname` first, and match it to the table.
+- If the file is missing, stop and ask the user to run `/setup-mstack env`.
+- If the run needs an arch with no host in the table, or a fact you need is `not set`, stop and ask. Do not pick a host by guess.
+- To reach a host by SSH, run `ssh <alias> hostname` first and match the result to the table.
 
 Check the arch every time, because a number from the wrong arch is not a number:
 

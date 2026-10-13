@@ -4,7 +4,7 @@ Review through whichever lenses are relevant. Not every lens applies to every ch
 
 ## Correctness
 
-Does the code actually do what the intent says it should?
+Does the code do what the intent says it should?
 
 - Edge cases: empty inputs, nil/undefined, boundary values, concurrent access
 - Error handling: are errors caught, propagated, or silently swallowed?
@@ -16,20 +16,20 @@ Does the code actually do what the intent says it should?
 
 When you find a potential bug, trace the execution path. Don't just flag "this could be nil". Show the call chain that makes it nil.
 
-## Root Causes vs. Symptoms
+## Root causes vs. symptoms
 
-Is the code fixing the actual problem or papering over a symptom?
+Is the code fixing the cause or hiding a symptom?
 
-Answering this often requires looking beyond the changed files. Read the surrounding code (callers, callees, type definitions, sibling modules) and understand the architecture the change lives in. Use the tools available to you (Read, Grep, Glob) to follow the call chain, read the types, and understand why the code exists before judging whether the change addresses the right layer.
+Answering this often requires looking beyond the changed files. Read the surrounding code (callers, callees, type definitions, sibling modules) and understand the architecture the change belongs to. Use the tools available to you (Read, Grep, Glob) to follow the call chain and read the types. Understand why the code exists before judging whether the change addresses the right layer.
 
 - Guard clauses that mask a deeper invariant violation
 - Retry logic that hides a broken contract
 - Type casts that silence a modeling error
 - A workaround: why is it needed? What would a proper fix look like?
-- A fix in module A that should really be a fix in module B's contract
+- A fix in module A that should be a fix in module B's contract
 - Instructions where structure would be better: if the fix is a comment saying "don't do X" or a convention someone has to remember, ask whether it could instead be a type constraint, a lint rule, or a runtime check that makes the wrong thing impossible
 
-## Structural Integrity
+## Structural integrity
 
 Does the code fit well into the system it's part of?
 
@@ -53,7 +53,7 @@ Can you tell that this code works from reading it?
 - Check the real thing, not a proxy. If the code checks liveness via file mtime or cached state instead of reading the actual value, that's a verification gap.
 - For delegated or async work: does the code verify actual output artifacts, or does it trust self-reports and summaries?
 
-## Complexity Budget
+## Complexity budget
 
 Is the complexity justified by what the code accomplishes?
 
@@ -62,7 +62,7 @@ Is the complexity justified by what the code accomplishes?
 - Configuration or parameterization for cases that don't exist yet
 - Dead code, unused imports, vestigial parameters
 - Over-engineering: "just in case" code paths with no current callers
-- Obsolete compatibility paths kept alive for transitional stability that's no longer needed. If the migration is done, delete the scaffolding
+- Obsolete compatibility paths kept alive for transitional stability that's no longer needed. If the migration is done, delete the temporary code
 - Does the user experience justify the complexity? Every feature, control, and option should earn its place. Half-finished features are worse than missing ones.
 
 Simpler is better unless simpler is wrong.

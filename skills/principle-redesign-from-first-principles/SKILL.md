@@ -4,7 +4,7 @@ description: "Apply when integrating a new requirement into an existing design, 
 disable-model-invocation: true
 ---
 
-# Redesign From First Principles
+# Redesign from first principles
 
 When integrating a change, don't bolt it onto the existing design. Redesign as if the requirement had been a foundational assumption from the start.
 
@@ -29,4 +29,4 @@ At code level, DRY the structure, not every line. Types and data models should c
 
 Each increment should land a coherent abstraction or deepen one that exists. Do not spread a new capability across callers as special-case coordination.
 
-Subtraction comes before scaffolding. Remove dead code first, then lay foundations.
+Subtraction comes before setup work. Remove dead code first, then lay foundations.

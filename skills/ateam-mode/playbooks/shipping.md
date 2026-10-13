@@ -1,6 +1,6 @@
 ### Shipping
 
-**You own what lands. Verify each PR independently, land only the verified run from the root, then keep your hands off the queue.**
+**You own what lands. Verify each PR independently, land only the verified run from the root, then leave the queue alone.**
 
 This is the half after `playbooks/babysit.md`.
 
