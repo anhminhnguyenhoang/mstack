@@ -44,11 +44,9 @@ Read the leaf skill in full for any principle you apply. Each entry names when i
 
 **Core**
 
-- **Laziness Protocol.** Refactoring, sizing a diff, or tempted to add abstractions, layers, or signal threading. Bias to deletion and the smallest change that solves the problem.
-- **Foundational Thinking.** Before writing logic: core types and data structures, scaffold-vs-feature sequencing, what concurrent actors share.
-- **Redesign from First Principles.** Integrating a new requirement into an existing design. Redesign as if it had been foundational from day one.
+- **Redesign from First Principles.** Integrating a new requirement into an existing design, or choosing core types, data structures, and scaffold before logic. Redesign as if it had been foundational from day one.
 - **Attack the Premise.** Two or more fixes that share one premise have failed the same gate. Take a census of which actors hold the imbalance before the next fix, then question the premise instead of writing another fix that assumes it.
-- **Subtract Before You Add.** Sequencing an addition, refactor, or rewrite. Remove dead weight first, then build on the simpler base.
+- **Subtract Before You Add.** Sequencing an addition, refactor, or rewrite, sizing a diff, or tempted to add a layer. Remove dead weight first, make the smallest change, then build on the simpler base.
 - **Minimize Reader Load.** Reviewing or shaping code that's hard to trace. Count layers and hidden state, collapse one-caller wrappers, shrink mutable scope.
 - **Outcome-Oriented Execution.** Planned rewrites and migrations with explicit phase boundaries. Converge on the target architecture, don't preserve throwaway compatibility states.
 - **Exhaust the Design Space.** A novel interaction or architectural decision with no precedent. Build 2-3 competing prototypes and compare before committing.
@@ -66,10 +64,9 @@ Read the leaf skill in full for any principle you apply. Each entry names when i
 - **Fix Root Causes.** Debugging. Trace each symptom to its root cause, reproduce first, ask why until you reach it.
 - **Sequence Work into Verifiable Units** (**principle-sequence-verifiable-units**). Multi-step work (sweeps, migrations, runs of similar edits) and how you stack commits and PRs. Break work into small units that each end in a check, verify each before the next, and order delivery so the sequence proves itself.
 - **Test Behavior, Not Implementation.** Writing, changing, or keeping a test. Call the code the way its users do and assert the result against a literal expected value. If the test would still pass when every imported function returns `undefined`, rewrite the assertion or delete the test.
-- **Respect the Roofline.** A GPU kernel perf claim. State it as a percent of the HBM or MFMA peak for the arch and dtype, with the peak's source.
 - **Prove It Reached Codegen.** A compile hint, flag, attribute, or kernel structure change that you want credit for. A knob is real only if the ISA or IR changed.
 - **Correctness Before Speed.** Timing, reporting, or keeping any kernel change. `allclose` and the NaN count pass on the same run first.
-- **Explain the Number.** Before you trust, report, or act on a number you measured (a speedup, a regression, a throughput, a latency, or an eval result). Find what limits it, and rule out that it measured something other than the work you think.
+- **Explain the Number.** Before you trust, report, or act on a number you measured, including a GPU kernel percent of peak. Find what limits it, cite the peak's source, and rule out that it measured something other than the work you think.
 
 **Delegation**
 

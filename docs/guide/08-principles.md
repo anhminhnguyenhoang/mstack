@@ -1,6 +1,6 @@
 # Steer with principle names
 
-mstack ships 23 principles as individual skills. `/ateam-mode` reads their index at the start of every multi-step task, applies the ones the task triggers, and names each applied principle in its reply along with the decision it changed.
+mstack ships 20 principles as individual skills. `/ateam-mode` reads their index at the start of every multi-step task, applies the ones the task triggers, and names each applied principle in its reply along with the decision it changed.
 
 You don't invoke principles. You use their names to steer. Each name points at a complete rule the agent has already read, so one phrase redirects the work more precisely than a paragraph of instructions.
 
@@ -26,15 +26,13 @@ separate before serializing shared state. give each attempt its own worktree, no
 
 Each phrase lands because the rule behind it is specific. The agent still has to say, in its reply, which decision the rule changed. A principle citation with no decision behind it is the tell that it name-dropped instead of applying.
 
-## The 23, briefly
+## The 20, briefly
 
 The core principles decide how much to build and when to rethink the design:
 
-- [Laziness Protocol](../../skills/principle-laziness-protocol/SKILL.md) prefers deletion and the smallest change that solves the problem.
-- [Foundational Thinking](../../skills/principle-foundational-thinking/SKILL.md) chooses the core data structures before writing logic.
-- [Redesign from First Principles](../../skills/principle-redesign-from-first-principles/SKILL.md) integrates a new requirement as if it had been there from day one.
+- [Redesign from First Principles](../../skills/principle-redesign-from-first-principles/SKILL.md) integrates a new requirement as if it had been there from day one, and chooses the core data structures and scaffold before writing logic.
 - [Attack the Premise](../../skills/principle-attack-the-premise/SKILL.md) questions the premise that two or more failed fixes shared, after a census of which actors hold the imbalance.
-- [Subtract Before You Add](../../skills/principle-subtract-before-you-add/SKILL.md) removes dead weight before building on top of it.
+- [Subtract Before You Add](../../skills/principle-subtract-before-you-add/SKILL.md) removes dead weight before building on top of it, and prefers deletion and the smallest change that solves the problem.
 - [Minimize Reader Load](../../skills/principle-minimize-reader-load/SKILL.md) collapses layers and hidden state a reader must hold in their head.
 - [Outcome-Oriented Execution](../../skills/principle-outcome-oriented-execution/SKILL.md) converges rewrites on the target design instead of preserving throwaway compatibility states.
 - [Exhaust the Design Space](../../skills/principle-exhaust-the-design-space/SKILL.md) builds two or three competing prototypes when there's no precedent.
@@ -52,8 +50,7 @@ The verification principles define what counts as proof:
 - [Fix Root Causes](../../skills/principle-fix-root-causes/SKILL.md) reproduces and traces to the cause before changing code.
 - [Sequence Work into Verifiable Units](../../skills/principle-sequence-verifiable-units/SKILL.md) ends each small unit in a check before starting the next.
 - [Test Behavior, Not Implementation](../../skills/principle-test-behavior-not-implementation/SKILL.md) calls the code the way its users do and asserts a literal expected value, and deletes a test that would still pass if every imported function returned nothing.
-- [Explain the Number](../../skills/principle-explain-the-number/SKILL.md) names what limits a measured number and rules out that it measured something else, before anyone trusts or reports it. [`/benchmark-checklist`](../../skills/benchmark-checklist/SKILL.md) turns it into seven questions you answer from real runs.
-- [Respect the Roofline](../../skills/principle-respect-the-roofline/SKILL.md) states every GPU kernel perf claim as a percent of the HBM or MFMA peak, with the peak's source.
+- [Explain the Number](../../skills/principle-explain-the-number/SKILL.md) names what limits a measured number and rules out that it measured something else, before anyone trusts or reports it. States every GPU kernel perf claim as a percent of the HBM or MFMA peak, with the peak's source. [`/benchmark-checklist`](../../skills/benchmark-checklist/SKILL.md) turns it into seven questions you answer from real runs.
 - [Prove It Reached Codegen](../../skills/principle-prove-it-reached-codegen/SKILL.md) counts a compile knob as real only when the ISA or IR changed.
 - [Correctness Before Speed](../../skills/principle-correctness-before-speed/SKILL.md) gates every perf number on `allclose` and a NaN count from the same run.
 
