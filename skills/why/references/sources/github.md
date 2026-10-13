@@ -16,7 +16,7 @@ The PR body of a kernel change often holds the bench table and the reason for a 
 
 ## How to search it
 
-Pick the path from the forge rules in [`forge.md`](../../../ateam-mode/references/forge.md). Use `gh` when `gh auth status` succeeds. Otherwise use the GitHub MCP namespace that the Forge table of `~/.cursor/mstack/env.md` maps to the repo's host or org. Pass `owner` and `repo` from the Repos table, never from memory.
+Pick the path from the PR tool rules in [`pr-tool.md`](../../../ateam-mode/references/pr-tool.md). Use `gh` when `gh auth status` succeeds. Otherwise use the GitHub MCP namespace that the PR tool table of `~/.cursor/mstack/env.md` maps to the repo's host or org. Pass `owner` and `repo` from the Repos table, never from memory.
 
 Inspect the tool schema with `GetDynamicTools` before the first call. Parameter names differ between namespace families (`pullNumber` against `pull_number`).
 

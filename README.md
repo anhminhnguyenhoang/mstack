@@ -20,7 +20,7 @@ the plugin ships two hooks ([`hooks/hooks.json`](./hooks/hooks.json)). the `sess
 
 two steps:
 
-1. run [`/setup-mstack`](./skills/setup-mstack/SKILL.md), pick a reasoning budget, and choose which models you want. it then maps this machine (gpu hosts, your containers, forge, jira sites, gpu lock) into `~/.cursor/mstack/env.md`. it also looks up your local resources and optional modules by what they contain, and asks only for what it did not find. see [local resources and optional modules](#local-resources-and-optional-modules).
+1. run [`/setup-mstack`](./skills/setup-mstack/SKILL.md), pick a reasoning budget, and choose which models you want. it then maps this machine (gpu hosts, your containers, PR tool, jira sites, gpu lock) into `~/.cursor/mstack/env.md`. it also looks up your local resources and optional modules by what they contain, and asks only for what it did not find. see [local resources and optional modules](#local-resources-and-optional-modules).
 2. use [`/ateam-mode`](./skills/ateam-mode/SKILL.md) whenever you're doing anything that requires rigor.
 
 new here? the [mstack guide](./docs/guide/README.md) walks you through a first real task, from setup and prompting through verification and overnight runs. stuck, or unsure which skill fits? ask [`/ateam-help`](./skills/ateam-help/SKILL.md).
@@ -99,7 +99,7 @@ morning.
 | [eval](./skills/ateam-mode/playbooks/eval.md) | test how a skill or prompt change affects agent behavior, blinded. |
 | [pr review](./skills/ateam-mode/playbooks/pr-review.md) | advisory review of an aiter, flydsl, or triton pr: one rule set and its gates run in the pr's own repo, gpu base-vs-head evidence, the repo's conventions, a model panel, and a draft you approve before it posts with line comments. |
 | [babysit](./skills/ateam-mode/playbooks/babysit.md) | drive a pr or a stack to merge-ready: conflicts, review threads, ci. |
-| [shipping](./skills/ateam-mode/playbooks/shipping.md) | independently verify a green stack, then land the contiguous verified run bottom-up through the resolved forge. |
+| [shipping](./skills/ateam-mode/playbooks/shipping.md) | independently verify a green stack, then land the contiguous verified run bottom-up through the resolved PR tool. |
 | [autonomous run](./skills/ateam-mode/playbooks/autonomous-run.md) | drive a long task to completion without stopping. |
 | [autopilot-full](./skills/ateam-mode/playbooks/autopilot-full.md) | run independent prs to merged with one owner per pr and a root fan-out verdict on each round, from the code-ready head on. |
 | [autopilot-stack](./skills/ateam-mode/playbooks/autopilot-stack.md) | build and verify one linear base-branch stack for the operator to review and land. |

@@ -6,7 +6,7 @@ Where kernel work runs. Read this before a GPU run, a container exec, a worktree
 host ──► container ──► repo path ──► test command ──► arch
 ```
 
-The facts for this machine are not in the plugin. They are in `~/.cursor/mstack/env.md`, which `/setup-mstack env` writes (**setup-mstack**, Part B). That file has the hosts and their SSH aliases, the user's containers and mounts, the forge and the push remote with its scheme (SSH or HTTPS), the Jira site to MCP namespace map, the GPU lock convention, and one table per local resource: `repos`, `skills`, `kb`, `wavescope`, `refs`, and `tickets`. [`resources.md`](resources.md) is the contract for them. A resource is optional unless its row there says it is required.
+The facts for this machine are not in the plugin. They are in `~/.cursor/mstack/env.md`, which `/setup-mstack env` writes (**setup-mstack**, Part B). That file has the hosts and their SSH aliases, the user's containers and mounts, the PR tool and the push remote with its scheme (SSH or HTTPS), the Jira site to MCP namespace map, the GPU lock convention, and one table per local resource: `repos`, `skills`, `kb`, `wavescope`, `refs`, and `tickets`. [`resources.md`](resources.md) is the contract for them. A resource is optional unless its row there says it is required.
 
 - The file is missing → stop, and ask the user to run `/setup-mstack env`. An optional resource alone (`kb`, `wavescope`, `refs`) is skipped with a note instead, per `resources.md`.
 - A fact you need is `not set` → stop, and ask the user for it or to rerun `/setup-mstack env`. Do not guess a host, a container, or a remote.
@@ -23,5 +23,6 @@ Rules.
 - Run in the worktree, with `-w <wt>` and `PYTHONPATH` set to it, per **verify-gpu-kernel**. A script in `op_tests/` otherwise imports the installed checkout.
 - Check the arch from inside the container (`rocminfo | grep -m1 gfx`) before you trust a number.
 - A ticket's scripts, artifacts, and notes live in `<tickets>/<KEY>/`, mounted in its container.
-- Pick the Jira MCP namespace from the ticket URL's site, or from the project-prefix map for a bare key, per the env file's Jira table. Pick the GitHub path per its Forge table.
-- Resolve the forge, and map `gh` to MCP tools, per [`forge.md`](forge.md).
+- Pick the Jira MCP namespace from the ticket URL's site, or from the project-prefix map for a bare key, per the env file's Jira table. Pick the GitHub path per its PR tool table.
+- An env file written before this change names the PR tool table `Forge`. Read it as the PR tool table until `/setup-mstack env` rewrites the file.
+- Resolve the PR tool, and map `gh` to MCP tools, per [`pr-tool.md`](pr-tool.md).

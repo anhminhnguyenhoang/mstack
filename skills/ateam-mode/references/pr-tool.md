@@ -1,10 +1,10 @@
-### Forge
+### PR tool
 
-Which tool reads and writes PRs. The playbooks (`playbooks/opening-a-pr.md`, `playbooks/babysit.md`, `playbooks/shipping.md`) point here. Resolve the forge once per program, keep it for every PR operation, and record the path you chose.
+Which tool reads and writes PRs. The playbooks (`playbooks/opening-a-pr.md`, `playbooks/babysit.md`, `playbooks/shipping.md`) point here. Resolve the PR tool once per program, keep it for every PR operation, and record the path you chose.
 
 ```
 built-in PR tool ─► gh ─► GitHub MCP namespace ─► stop
-   (run has one)    (auth status   (env.md Forge table
+   (run has one)    (auth status   (env.md PR tool table
                      succeeds)      maps host/org)
 ```
 
@@ -12,10 +12,10 @@ built-in PR tool ─► gh ─► GitHub MCP namespace ─► stop
 
 1. The run's built-in PR tool, when it has one. It covers create, edit, retarget, and ready.
 2. `gh`. Only when `gh auth status` succeeds. A `gh` that is installed but not signed in is not a path.
-3. The GitHub MCP namespace that the Forge table of `~/.cursor/mstack/env.md` maps to the repo's host or org.
-4. No path resolves → stop and report. The env file is missing, or its Forge row is `not set` → stop and ask the user to run `/setup-mstack env`.
+3. The GitHub MCP namespace that the PR tool table of `~/.cursor/mstack/env.md` maps to the repo's host or org.
+4. No path resolves → stop and report. The env file is missing, or its PR tool row is `not set` → stop and ask the user to run `/setup-mstack env`.
 
-Push is always `git push` over the remote that the Repos table of the env file names, SSH or HTTPS. No forge path changes that.
+Push is always `git push` over the remote that the Repos table of the env file names, SSH or HTTPS. No PR tool path changes that.
 
 Rules for push.
 

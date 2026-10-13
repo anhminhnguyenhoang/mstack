@@ -158,7 +158,7 @@ A large or cross-cutting effort (a migration across many call sites, an ambitiou
 - **Eval.** Test how a skill, structure, or prompt change affects agent behavior before promoting it.
 - **PR review.** An advisory review of someone's PR, by number or URL, ending in a draft the human approves before it posts. "Review PR 123." For a local diff, the **interrogate** skill.
 - **Babysit.** Drive a PR or stack to merge-ready: conflicts, review threads, CI.
-- **Shipping.** Verify a green stack independently, then land the contiguous verified run bottom-up (`references/forge.md`).
+- **Shipping.** Verify a green stack independently, then land the contiguous verified run bottom-up (`references/pr-tool.md`).
 - **Autonomous run.** A long task driven to completion. "Run until done", "/loop until X".
 - **Autopilot-full.** A queue of independent PRs run to merged, one owner per PR. "Full autopilot on this queue."
 - **Autopilot-stack.** A queue built and verified as one linear stack the operator lands. "Stack them, don't ship."
