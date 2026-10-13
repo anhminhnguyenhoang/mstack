@@ -25,7 +25,7 @@ two steps:
 
 new here? the [mstack guide](./docs/guide/README.md) walks you through a first real task, from setup and prompting through verification and overnight runs. stuck, or unsure which skill fits? ask [`/ateam-help`](./skills/ateam-help/SKILL.md).
 
-that's it. the other skills are situational; the mode skill uses them for you as needed. out of the box the mode splits work by model strength: code delegates (feature, refactoring, bug fix, perf, hillclimb) go to sonnet 5.5, while the hardest changes, prose, and judgment go to opus 5.5. the default panel is opus 5.5 / sonnet 5.5. [`/setup-mstack`](./skills/setup-mstack/SKILL.md) changes any of it.
+that's it. the other skills are situational; the mode skill uses them for you as needed. out of the box the mode splits work by model strength: code delegates (feature, refactoring, bug fix, perf, hillclimb) go to sonnet 5.5, while the hardest changes, prose, and judgment go to opus 5.5. each list role defaults to opus 5.5 / sonnet 5.5. [`/setup-mstack`](./skills/setup-mstack/SKILL.md) changes any of it.
 
 ## local resources and optional modules
 
@@ -97,7 +97,7 @@ morning.
 | [prototype](./skills/ateam-mode/playbooks/prototype.md) | a throwaway sketch to make a design or behavioral decision cheaply, or to settle an empirical fork by observing it. |
 | [authoring a skill](./skills/ateam-mode/playbooks/authoring-a-skill.md) | writing or editing a SKILL.md. |
 | [eval](./skills/ateam-mode/playbooks/eval.md) | test how a skill or prompt change affects agent behavior, blinded. |
-| [pr review](./skills/ateam-mode/playbooks/pr-review.md) | advisory review of an aiter, flydsl, or triton pr: one rule set and its gates run in the pr's own repo, gpu base-vs-head evidence, the repo's conventions, a model panel, and a draft you approve before it posts with line comments. |
+| [pr review](./skills/ateam-mode/playbooks/pr-review.md) | advisory review of an aiter, flydsl, or triton pr: one rule set and its gates run in the pr's own repo, gpu base-vs-head evidence, the repo's conventions, a review group on several models, and a draft you approve before it posts with line comments. |
 | [babysit](./skills/ateam-mode/playbooks/babysit.md) | drive a pr or a stack to merge-ready: conflicts, review threads, ci. |
 | [shipping](./skills/ateam-mode/playbooks/shipping.md) | independently verify a green stack, then land the contiguous verified run bottom-up through the resolved PR tool. |
 | [autonomous run](./skills/ateam-mode/playbooks/autonomous-run.md) | drive a long task to completion without stopping. |
@@ -275,9 +275,9 @@ twenty short skills, one principle each. `ateam-mode` indexes them inline and re
 
 - **pr review needs `gh` 2.24 or later, signed in.** the review's fetch step reads the pr through `gh`, and git or the github mcp cannot stand in from a script. a distro package can be too old (ubuntu 22.04 ships 2.4.0), so install a [release binary](https://github.com/cli/cli/releases) if needed. sign in with `gh auth login`, or set `GH_TOKEN` to a token that can read pull requests, and write them if you want mstack to post reviews.
 - **nda model names are optional.** before a review posts, `scripts/post-review.py` blocks local paths and internal ticket keys. it can also block nda model names, but mstack ships no list, because a list in this repo would leak the names. to add one, prompt your agent: "add these model names to `~/.cursor/mstack/leak-patterns.txt`, one case-insensitive regex per line." the file stays on your machine, and a plugin update never overwrites it.
-- **the panel steps need local cursor transcripts.** `scripts/panel-gate.py` reads each reviewer's reply from its own subagent transcript under the workspace's `agent-transcripts/` directory, so a pr review runs in a local chat, not a cloud agent.
+- **the review-group steps need local cursor transcripts.** `scripts/review-group-gate.py` reads each reviewer's reply from its own subagent transcript under the workspace's `agent-transcripts/` directory, so a pr review runs in a local chat, not a cloud agent.
 - **the merge gate depends on the review skill's layout.** it re-runs the bash block under that skill's `## Step 8` heading. if upstream reshapes that section, the gate fails closed and reviews stop until mstack is updated.
-- **triton is not fully compatible yet.** a triton pr gets the same rule set, gates, panel, and conventions check as aiter and flydsl, in a snapshot of your triton checkout. two gaps remain:
+- **triton is not fully compatible yet.** a triton pr gets the same rule set, gates, review group, and conventions check as aiter and flydsl, in a snapshot of your triton checkout. two gaps remain:
   - the `pr.validate` port's skill does not recognize triton's repo layout, so the gpu base-vs-head check always reports `INCONCLUSIVE`. runtime evidence comes from the pr's own tests through the `bench.run` port, and it is advisory.
   - the review rules come from aiter's review history. their triton families target triton kernels (`tl.load` masks, launch configs, accumulator precision), not the compiler's c++ and mlir passes, which get only the generic rules.
 
@@ -299,7 +299,7 @@ cursor already has a plan mode, and it works with mstack. but personally, i don'
 
 type [`/automate-me`](./skills/automate-me/SKILL.md). it mines your recent transcripts, drafts a `<your-name>-mode` skill from how you've worked, and routes through mstack underneath. you keep mstack as the base and end up with your own routing skill alongside `ateam-mode`.
 
-models are configurable too. type [`/setup-mstack`](./skills/setup-mstack/SKILL.md). it detects the models you have access to and writes a small always-applied rule mapping each role (code, judgment, the review panels) to a model. every skill reads it and falls back to sensible defaults when the rule is absent, so you override only what you want.
+models are configurable too. type [`/setup-mstack`](./skills/setup-mstack/SKILL.md). it detects the models you have access to and writes a small always-applied rule mapping each role (code, judgment, the list roles) to a model. every skill reads it and falls back to sensible defaults when the rule is absent, so you override only what you want.
 
 when a default changes, a rule written before the change still pins the old default. delete those role lines, or delete the file, then run `/setup-mstack` again. a rerun keeps any role whose model differs from the default.
 

@@ -42,7 +42,7 @@ Ask only after the design settles. The plan is the deliverable, and it names the
 ask /arena for a second opinion on this thread and our approach
 ```
 
-Your current design becomes one candidate among several, and the synthesis tells you whether the panel found something better or confirmed what you had. It is cheap compared with the commitment it protects.
+Your current design becomes one candidate among several, and the synthesis tells you whether the runners found something better or confirmed what you had. It is cheap compared with the commitment it protects.
 
 ## Check independent slices in parallel
 

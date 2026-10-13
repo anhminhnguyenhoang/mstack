@@ -41,7 +41,7 @@ When the model rule is missing and it matters, ask whether the user wants to pic
 
 Installing changes nothing until the user invokes a skill. Only `/setup-mstack` loads from the user's words. The [README](../../README.md) and [guide page 1](../../docs/guide/01-setup.md) have the details. Offer to word their first prompt with them, per [`references/prompting.md`](references/prompting.md).
 
-If cost is the worry, say where the tokens go and how to spend fewer. mstack spends extra tokens on subagents and review panels. Rerun `/setup-mstack` and pick a smaller budget or cheaper models. A role set to `auto` or `inherit-parent` runs on the chat's model, which saves tokens when the chat runs on Auto or a cheaper model. A shorter panel list runs fewer subagents, one for each entry. Save `/ateam-mode` for work that needs rigor.
+If cost is the worry, say where the tokens go and how to spend fewer. mstack spends extra tokens on subagents and review groups. Rerun `/setup-mstack` and pick a smaller budget or cheaper models. A role set to `auto` or `inherit-parent` runs on the chat's model, which saves tokens when the chat runs on Auto or a cheaper model. A role with a shorter list runs fewer subagents, one for each entry. Save `/ateam-mode` for work that needs rigor.
 
 mstack is built for Cursor. Its skills use the Agent Skills format, so other tools can read them. But most workflow skills, including `/ateam-mode`, `/how`, `/why`, and `/teach`, spawn Cursor subagents with per-role models, and Custom Modes and `/loop` are Cursor features, so those parts may not work there.
 
@@ -102,7 +102,7 @@ Close calls:
 - `/how` explains what the code does. `/why` explains the reasons. `/teach` runs one or both and explains the result plainly.
 - `/arena` gives every worker the same brief and merges the best parts. `/ateam-mode` fans out local workers over slices or a race and returns one table of issues and gaps.
 - `/architect` implements right after it settles the design. Add "with checkpoint" to review the design before it writes code.
-- `/interrogate` reviews a local diff with a model panel. The PR review playbook reviews a PR by number: repo rules and GPU evidence, then the same panel, then a draft the human posts. `/blast-radius` looks for breakage outside the diff and proves the one fact that makes the change safe.
+- `/interrogate` reviews a local diff with a review group. The PR review playbook reviews a PR by number: repo rules and GPU evidence, then the same review group, then a draft the human posts. `/blast-radius` looks for breakage outside the diff and proves the one fact that makes the change safe.
 - `/recall` rebuilds context across recent chats. `/ketchup` covers only this chat since the user's last message. Resuming one specific chat or branch is the Session pickup playbook.
 - `/figure-it-out` designs one rigorous run. A program of many stacked PRs is a Multi-phase plan, run by an Autopilot playbook. The Autonomous run playbook drives one task to a finish condition.
 

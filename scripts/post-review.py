@@ -8,7 +8,7 @@ the diff moves into the body, because GitHub rejects the whole review otherwise.
 Refuses when the head moved (exit 3), when this user already reviewed that head (exit 5,
 REPOST=1 posts again), or when the draft leaks a local path, an internal ticket key, or a
 pattern from the optional machine-local file ~/.cursor/mstack/leak-patterns.txt (exit 6),
-or when it has no merge stamp from panel-gate.py that matches its text (exit 8). The
+or when it has no merge stamp from review-group-gate.py that matches its text (exit 8). The
 internal `[src: ...]` tags are stripped before posting.
 """
 import hashlib
@@ -68,7 +68,7 @@ def main():
     reviewed = m.group(1)
     stamp = draft + ".gate"
     if not os.path.isfile(stamp) or open(stamp).read().strip() != hashlib.sha256(text.encode()).hexdigest():
-        die(8, f"{draft} has no merge stamp that matches it: run panel-gate.py merge after the last edit")
+        die(8, f"{draft} has no merge stamp that matches it: run review-group-gate.py merge after the last edit")
 
     leaks = [f"{n}: {line}" for n, line in enumerate(text.splitlines(), 1) if LEAK.search(line)]
     if leaks:
