@@ -52,7 +52,7 @@ In context, that's enough. [`/tdd`](../../skills/tdd/SKILL.md) writes the smalle
 
 ## Clean before you commit
 
-The [Opening a PR playbook](../../skills/ateam-mode/playbooks/opening-a-pr.md) runs the `style.gate` skill function (the repo's CI style gate) and the `comment-sicko` agent on the diff before each commit and applies [`/unslop`](../../skills/unslop/SKILL.md) to the PR description and commit bodies. The skill behind `style.gate` lives in your skills dir (the `skills` resource), bound in [`skill-functions.md`](../../skills/ateam-mode/references/skill-functions.md). To clean slop beyond style, ask in plain words: remove narrating comments, unsupported guards, dead compatibility paths, and unrelated edits.
+The [Opening a PR playbook](../../skills/ateam-mode/playbooks/opening-a-pr.md) runs the `style.gate` skill function (the repo's CI style gate) and the `comment-sicko` agent on the diff before each commit. It also applies [`/unslop`](../../skills/unslop/SKILL.md) to the PR description and commit bodies. The skill behind `style.gate` lives in your skills dir (the `skills` resource), bound in [`skill-functions.md`](../../skills/ateam-mode/references/skill-functions.md). To clean slop beyond style, ask in plain words: remove narrating comments, unsupported guards, dead compatibility paths, and unrelated edits.
 
 For prose, `/unslop` takes a target and any extra rules you have:
 

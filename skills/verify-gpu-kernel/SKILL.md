@@ -91,7 +91,7 @@ Run this before the first command of a worktree. It prints the package path and 
 docker exec -w / -e PYTHONPATH=<pythonpath> <container> python3 -c "import importlib.util as u; print(u.find_spec('aiter').origin)"
 ```
 
-Use `flydsl` in place of `aiter` for FlyDSL. The path must start with `<wt>/`. If it does not, stop and report it. The run would test another checkout. Python puts the script's directory on `sys.path`, not the cwd, and the JIT builds the sources of the package it imported.
+Use `flydsl` in place of `aiter` for FlyDSL. The path must start with `<wt>/`. If it does not, stop and report it. The run would test another checkout. Python puts the script's directory on `sys.path`, not the cwd. The JIT builds the sources of the package it imported.
 
 ## Run
 
@@ -137,7 +137,7 @@ Write `<tickets>/<KEY>/bench_<topic>.json` for ticket work, and `./bench_<topic>
 - Run the real kernel path on a GPU. A CPU fallback, an import check, or a compile does not prove it.
 - Correctness comes before perf. A perf row next to a failed or unchecked correctness row is not a result.
 - Confirm the arch, the GPU id, and the repo SHAs in the artifact match what you ran.
-- The `imports` path sits under the worktree you meant to test. A run that imported another checkout is `INCONCLUSIVE`.
+- Confirm the `imports` path is under the worktree you meant to test. A run that imported another checkout is `INCONCLUSIVE`.
 - A run with no idle GPU, a missing container, or an unreadable test output is `INCONCLUSIVE`, never a pass.
 
 ## Cleanup

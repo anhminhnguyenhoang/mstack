@@ -56,9 +56,9 @@ The `arena runners` list comes from your [`/setup-mstack`](../../skills/setup-ms
 /ateam-mode check every kernel under aiter/ops/flydsl/ with the isa.diff skill function. one worker per kernel. one report.
 ```
 
-The router's fan-out rule spawns N local workers in one message. Each worker gets its own scope, the exact SHAs, and a method, then reports `PASS`, `ISSUES`, or `BLOCKED`. GPU runs queue on one locked GPU. The parent returns one table with the issues and the gaps. A gap is not a pass.
+The fan-out rule in `/ateam-mode` spawns N local workers in one message. Each worker gets its own scope, the exact SHAs, and a method, then reports `PASS`, `ISSUES`, or `BLOCKED`. GPU runs queue on one locked GPU. The parent returns one table with the issues and the gaps. A gap never counts as a pass.
 
-Reach for it when parallelism adds coverage or lets independent checks race. `/arena` gives every worker the same design or code brief, then picks a base and grafts the best parts. A fan-out covers slices or runs a race with a selection rule declared up front. It does not graft.
+Use a fan-out when parallelism adds coverage or lets independent checks race. `/arena` gives every worker the same design or code brief, then picks a base and grafts the best parts. A fan-out covers slices or runs a race with a selection rule declared up front. It does not pick a base or graft parts.
 
 ## Break it with `/interrogate`
 

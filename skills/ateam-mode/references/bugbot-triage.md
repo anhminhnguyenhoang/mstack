@@ -113,7 +113,7 @@ Default to `fix`. Bugbot findings in these classes are usually real, and a wrong
 
 - Confidence: candidate
 - Real by default when: A boundary uses `<` where `<=` is meant, a threshold tuned on one arch or dtype applies to another, a tuned-config lookup miss falls to a slow default, or a config row duplicates a shape.
-- Settled by: A sweep at the boundary (threshold minus 1, the threshold, and threshold plus 1) that logs which kernel ran and times both kernels there. Use the `bench.run` skill function. Duplicate shape rows are the `config.tune` skill function.
+- Settled by: A sweep at the boundary (threshold minus 1, the threshold, and threshold plus 1) that logs which kernel ran and times both kernels there. Use the `bench.run` skill function. Use the `config.tune` skill function for duplicate shape rows.
 - Dismiss only when: The sweep shows the same kernel is faster or equal on both sides of the boundary.
 - Example signal: "off-by-one at the threshold", "falls through to the default kernel", "threshold copied from another arch".
 

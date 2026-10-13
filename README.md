@@ -6,7 +6,7 @@ It is a fork of [pstack](https://github.com/cursor/plugins/tree/main/pstack) (se
 
 **mstack ends in a deliverable, not always a PR.** A ticket can end in a PR, a Jira comment draft, or both. A human approves every Jira post.
 
-**mstack routes kernel work through skill functions.** A playbook names a skill function, such as `lever.menu` or `isa.diff`. One file, [`skill-functions.md`](./skills/ateam-mode/references/skill-functions.md), binds each skill function to the matching skill in your skills dir, the `skills` resource. `python3 scripts/check.py` keeps that file in step with the installed skills.
+**mstack routes kernel work through skill functions.** A playbook names a skill function, such as `lever.menu` or `isa.diff`. One file, [`skill-functions.md`](./skills/ateam-mode/references/skill-functions.md), binds each skill function to the matching skill in your skills dir, the `skills` resource. `python3 scripts/check.py` checks that file against the installed skills.
 
 ## install
 
@@ -14,7 +14,7 @@ It is a fork of [pstack](https://github.com/cursor/plugins/tree/main/pstack) (se
 /add-plugin mstack
 ```
 
-the plugin ships two hooks ([`hooks/hooks.json`](./hooks/hooks.json)). the `sessionStart` hook syncs the skills that the `pr.review` and `pr.validate` skill functions bind to their repo's latest `origin`, in the background, so a session never waits on it. the `stop` hook acts only in a chat that froze a hillclimb harness with `scripts/climb-gate.py freeze`. it sends the turn back, at most 3 times in a row, when a frozen file changed in a worktree of the climb, or when the current best (S\* or B) has no bench artifact with correctness passed at its HEAD. `climb-gate.py pause` lets one stop pass, with a reason.
+the plugin ships two hooks ([`hooks/hooks.json`](./hooks/hooks.json)). the `sessionStart` hook syncs the skills that the `pr.review` and `pr.validate` skill functions bind to. it syncs each one to the latest `origin` of its repo. it runs in the background, so a session never waits on it. the `stop` hook acts only in a chat that froze a hillclimb harness with `scripts/climb-gate.py freeze`. it sends the turn back to the agent, at most 3 times in a row, in two cases. one case is a frozen file that changed in a worktree of the climb. the other is a current best with no bench artifact that has correctness passed at its HEAD. the current best is S\* (the best lever subset) once it is registered, and B (the baseline commit) before that. `climb-gate.py pause` lets one stop pass, and it takes a reason.
 
 ## get started
 
@@ -25,7 +25,7 @@ two steps:
 
 new here? the [mstack guide](./docs/guide/README.md) walks you through a first real task, from setup and prompting through verification and overnight runs. stuck, or unsure which skill fits? ask [`/ateam-help`](./skills/ateam-help/SKILL.md).
 
-that's it. the other skills are situational; the mode skill uses them for you as needed. out of the box the mode splits work by model strength: code delegates (feature, refactoring, bug fix, perf, hillclimb) go to sonnet 5.5, while the hardest changes, prose, and judgment go to opus 5.5. each list role defaults to opus 5.5 / sonnet 5.5. [`/setup-mstack`](./skills/setup-mstack/SKILL.md) changes any of it.
+that's it. the other skills are situational; the mode skill uses them for you as needed. out of the box the mode splits work by model strength. code delegates (feature, refactoring, bug fix, perf, hillclimb) go to sonnet 5.5, while the hardest changes, prose, and judgment go to opus 5.5. each list role defaults to two entries, opus 5.5 and sonnet 5.5. [`/setup-mstack`](./skills/setup-mstack/SKILL.md) changes any of it.
 
 ## local resources and optional modules
 
@@ -49,7 +49,7 @@ read-only search of your home  (bounded depth, time limit, no .git internals)
 | resource | what it enables | required | how setup finds it | without it |
 |---|---|---|---|---|
 | `repos` | gpu runs, worktrees, prs, sha records | for a gpu run, a worktree, or a pr | a git checkout whose remote url ends in `ROCm/aiter`, `ROCm/FlyDSL`, or `triton-lang/triton`. several checkouts of one repo: it asks which | gpu runs and prs stop |
-| `skills` | every skill function. the domain skills dir | for a skill function | `$MSTACK_SKILLS_DIR`, else a folder cursor loads user skills from that holds `*/SKILL.md` with valid frontmatter, the one that resolves the most skill function bindings. link each skill from its repo so it stays current | skill functions stop |
+| `skills` | every skill function. the domain skills dir | for a skill function | `$MSTACK_SKILLS_DIR`, else a folder that cursor loads user skills from and that holds `*/SKILL.md` with valid frontmatter. if several folders qualify, the one that resolves the most skill function bindings. link each skill from its repo so it stays current | skill functions stop |
 | `tickets` | ticket folders for jira work | for ticket work | folders that hold `ticket-raw.md`, `ticket-description.md`, or `ticket-description.txt`. the root is their common parent | ticket work stops |
 | `refs` | cited peaks, rooflines, numerics | no | markdown in your repos' docs, outside the kb, that covers peaks, roofline, or numerics. setup proposes the topics | peaks come from public sources |
 | `kb` | cited notes, and `kb.capture` for lessons. any name, any layout | no | a directory whose root index links to subfolders that have their own index files, with notes that carry `name` and `description` frontmatter. setup maps its folders to roles, and asks only about a role it cannot match | no cited notes, no `kb.capture` |
@@ -273,20 +273,20 @@ twenty short skills, one principle each. `ateam-mode` indexes them inline and re
 
 ## pr review caveats
 
-- **pr review needs `gh` 2.24 or later, signed in.** the review's fetch step reads the pr through `gh`, and git or the github mcp cannot stand in from a script. a distro package can be too old (ubuntu 22.04 ships 2.4.0), so install a [release binary](https://github.com/cli/cli/releases) if needed. sign in with `gh auth login`, or set `GH_TOKEN` to a token that can read pull requests, and write them if you want mstack to post reviews.
+- **pr review needs `gh` 2.24 or later, signed in.** the review's fetch step reads the pr through `gh`, and git or the github mcp cannot replace it in a script. a distro package can be too old (ubuntu 22.04 ships 2.4.0), so install a [release binary](https://github.com/cli/cli/releases) if needed. sign in with `gh auth login`, or set `GH_TOKEN` to a token that can read pull requests. if you want mstack to post reviews, the token needs write access to pull requests too.
 - **nda model names are optional.** before a review posts, `scripts/post-review.py` blocks local paths and internal ticket keys. it can also block nda model names, but mstack ships no list, because a list in this repo would leak the names. to add one, prompt your agent: "add these model names to `~/.cursor/mstack/leak-patterns.txt`, one case-insensitive regex per line." the file stays on your machine, and a plugin update never overwrites it.
 - **the review-group steps need local cursor transcripts.** `scripts/review-group-gate.py` reads each reviewer's reply from its own subagent transcript under the workspace's `agent-transcripts/` directory, so a pr review runs in a local chat, not a cloud agent.
-- **the merge gate depends on the review skill's layout.** it re-runs the bash block under that skill's `## Step 8` heading. if upstream reshapes that section, the gate fails closed and reviews stop until mstack is updated.
+- **the merge gate depends on the review skill's layout.** the gate re-runs the bash block under that skill's `## Step 8` heading. if upstream changes the layout of that section, the gate fails closed and reviews stop until you update mstack.
 - **triton is not fully compatible yet.** a triton pr gets the same rule set, gates, review group, and conventions check as aiter and flydsl, in a snapshot of your triton checkout. two gaps remain:
-  - the `pr.validate` skill function's skill does not recognize triton's repo layout, so the gpu base-vs-head check always reports `INCONCLUSIVE`. runtime evidence comes from the pr's own tests through the `bench.run` skill function, and it is advisory.
-  - the review rules come from aiter's review history. their triton families target triton kernels (`tl.load` masks, launch configs, accumulator precision), not the compiler's c++ and mlir passes, which get only the generic rules.
+  - the skill bound to the `pr.validate` skill function does not recognize triton's repo layout, so the gpu base-vs-head check always reports `INCONCLUSIVE`. runtime evidence comes from the pr's own tests through the `bench.run` skill function, and this evidence is advisory.
+  - the review rules come from aiter's review history. the triton rule families target triton kernels (`tl.load` masks, launch configs, accumulator precision). they do not target the compiler's c++ and mlir passes, and those passes get only the generic rules.
 
 ## not shipped here
 
 a few things `ateam-mode` references but doesn't bundle:
 
-- the kernel skills its skill functions bind (listed in [`skill-functions.md`](./skills/ateam-mode/references/skill-functions.md)) live in your skills dir (the `skills` resource), not in this plugin. `python3 scripts/check.py` checks that each one resolves. it reads the dir from `$MSTACK_SKILLS_DIR`, else from the skills table of `~/.cursor/mstack/env.md`, and skips the check with a note when neither is set. `--no-skills` skips it on purpose.
-- [ponytail](https://github.com/DietrichGebert/ponytail) is optional and separate. when you install it and it is on, `ateam-mode` passes its level to each code delegate, which a cursor subagent does not get from the hook. ponytail cuts code, never a playbook step or a verification gate. `/ponytail off` turns it off for mstack too.
+- the kernel skills bound to its skill functions (listed in [`skill-functions.md`](./skills/ateam-mode/references/skill-functions.md)) live in your skills dir (the `skills` resource), not in this plugin. `python3 scripts/check.py` checks that each one resolves. it reads the dir from `$MSTACK_SKILLS_DIR`, else from the skills table of `~/.cursor/mstack/env.md`, and skips the check with a note when neither is set. `--no-skills` skips it on purpose.
+- [ponytail](https://github.com/DietrichGebert/ponytail) is optional and separate. when you install it and it is on, `ateam-mode` passes its level to each code delegate, since a cursor subagent does not receive it from the hook. ponytail cuts code, never a playbook step or a verification gate. `/ponytail off` turns it off for mstack too.
 - `/create-skill` is a cursor built-in. cursor also ships a built-in `/babysit`; inside `ateam-mode`, the [babysit playbook](./skills/ateam-mode/playbooks/babysit.md) supersedes it for pr-status requests.
 
 ## why are there no planning skills?

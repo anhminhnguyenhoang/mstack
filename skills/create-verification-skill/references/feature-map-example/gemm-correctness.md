@@ -41,6 +41,6 @@ Preconditions:
 - A tolerance loose enough to pass every shape is a defect. Record `rtol` and `atol` in the artifact and compare them with the dtype's known tolerance.
 - `allclose` can pass when both sides are NaN, depending on its flags. Count NaN separately.
 - The first run compiles the kernel and is slow. Give the run its own JIT cache directory, and do not read perf from it.
-- A shape with a tuned config may run a different kernel than an untuned shape. Log which path ran. Duplicate shape rows are the `config.tune` skill function.
+- A shape with a tuned config may run a different kernel than an untuned shape. Log which path ran. Resolve duplicate shape rows through the `config.tune` skill function.
 - A partial-tile shape that the kernel refuses is not a pass. The test must show a refusal or a correct result.
 - A pass on the wrong arch proves nothing for the arch you ship. Check the arch in the artifact.

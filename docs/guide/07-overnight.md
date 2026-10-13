@@ -87,7 +87,7 @@ For a program of many stacked PRs, write the plan first. The [Multi-phase plan p
 
 ## Run many projects in parallel
 
-A [Cursor Project](https://cursor.com/blog/projects) gives one coordinator agent a persistent thread. The coordinator doesn't write code. It directs subagents. In mstack, Autopilot owners and fan-out workers run locally, so ticket text and NDA code stay on the host and the GPU is in reach. The Cursor session must stay connected for the run to continue. That's the shape the Autopilot playbooks expect. Start your prompts to the coordinator with `/ateam-mode`, and the subagents it spawns follow the playbooks.
+A [Cursor Project](https://cursor.com/blog/projects) gives one coordinator agent a persistent thread. The coordinator doesn't write code. It directs subagents. That's the shape the Autopilot playbooks expect. In mstack, Autopilot owners and fan-out workers run locally, so ticket text and NDA code stay on the host and the workers can use its GPU. The Cursor session must stay connected for the run to continue. Start your prompts to the coordinator with `/ateam-mode`, and the subagents it spawns follow the playbooks.
 
 A few habits help:
 

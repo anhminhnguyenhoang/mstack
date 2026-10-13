@@ -72,7 +72,7 @@ The default answer is `/ateam-mode`, which runs most of the others when its step
 | Know what a small diff could break outside itself | [`/blast-radius`](../blast-radius/SKILL.md) |
 | Settle types and module shape before code that crosses a function boundary | [`/architect`](../architect/SKILL.md) |
 | Get several attempts at one brief, merged into the best one | [`/arena`](../arena/SKILL.md) |
-| Run parallel checks over slices, or race workers, locally | `/ateam-mode`, which fans out per its parallel fan-out rule |
+| Run parallel checks over slices, or race workers, locally | `/ateam-mode`, which follows its parallel fan-out rule |
 | Have different models review a diff and try to break it | [`/interrogate`](../interrogate/SKILL.md) |
 | Review someone's aiter, FlyDSL, or Triton PR by number or URL, with GPU evidence, and post it with line comments after approval | `/ateam-mode review PR 123`, the [PR review](../ateam-mode/playbooks/pr-review.md) playbook |
 | Fix a bug test-first when a cheap local test exists | [`/tdd`](../tdd/SKILL.md) |
@@ -102,7 +102,7 @@ Close calls:
 - `/how` explains what the code does. `/why` explains the reasons. `/teach` runs one or both and explains the result plainly.
 - `/arena` gives every worker the same brief and merges the best parts. `/ateam-mode` fans out local workers over slices or a race and returns one table of issues and gaps.
 - `/architect` implements right after it settles the design. Add "with checkpoint" to review the design before it writes code.
-- `/interrogate` reviews a local diff with a review group. The PR review playbook reviews a PR by number: repo rules and GPU evidence, then the same review group, then a draft the human posts. `/blast-radius` looks for breakage outside the diff and proves the one fact that makes the change safe.
+- `/interrogate` reviews a local diff with a review group. The PR review playbook reviews a PR by number. It checks repo rules and GPU evidence, runs the same review group, and writes a draft that the human posts. `/blast-radius` looks for breakage outside the diff and proves the one fact that makes the change safe.
 - `/recall` rebuilds context across recent chats. `/ketchup` covers only this chat since the user's last message. Resuming one specific chat or branch is the Session pickup playbook.
 - `/figure-it-out` designs one rigorous run. A program of many stacked PRs is a Multi-phase plan, run by an Autopilot playbook. The Autonomous run playbook drives one task to a finish condition.
 
@@ -141,9 +141,9 @@ Principles are one-rule skills that `/ateam-mode` reads and cites in its replies
 | A new model choice had no effect | The rule from `/setup-mstack` applies to new chats. Start one. |
 | Runs cost more than expected | See the cost paragraph under Get set up. |
 | A skill didn't load on its own | Only `/setup-mstack` loads from the user's words. The others load when the user types them or when `/ateam-mode` runs them, and it doesn't run every skill. |
-| Parallel agents overwrote each other | Give each agent its own worktree, inside the container mount for GPU repos. |
+| Parallel agents overwrote each other | Give each agent its own worktree. For a GPU repo, put the worktree inside the container mount. |
 | An overnight run moved but finished nothing | `/loop` needs a check that can pass or fail, not a duration. See [guide page 7](../../docs/guide/07-overnight.md). |
-| A kernel step stopped because a skill function's skill is missing or malformed | Run `/setup-mstack env` and read its Skills table. A renamed or removed skill needs a fix in [`skill-functions.md`](../ateam-mode/references/skill-functions.md). |
+| A kernel step stopped because the skill bound to a skill function is missing or malformed | Run `/setup-mstack env` and read its Skills table. A renamed or removed skill needs a fix in [`skill-functions.md`](../ateam-mode/references/skill-functions.md). |
 | The reply claims success from a green build | Ask for the real command, the op test output, or the ISA. That's the prove-it-works principle. |
 
 For a run that drifts, [`references/prompting.md`](references/prompting.md) has one-line steers. [Guide page 10](../../docs/guide/10-recipes-and-pitfalls.md) has more pitfalls and the recipes worth copying.
