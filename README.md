@@ -31,7 +31,7 @@ use [`/ateam-mode`](./skills/ateam-mode/SKILL.md) at the start of a task. it rea
 
 ### just use [`/ateam-mode`](./skills/ateam-mode/SKILL.md)
 
-this skill is the main shortcut. i use it whenever i need the agent to do rigorous engineering work. it comes with twenty-six playbooks:
+this skill is the main shortcut. i use it whenever i need the agent to do rigorous engineering work. it comes with twenty-five playbooks:
 
 ```
 /ateam-mode this flydsl kernel returns nan at T=4096 on gfx950. repro first, then fix and
@@ -44,15 +44,14 @@ morning.
 ```
 
 <details>
-<summary>the twenty-six playbooks</summary>
+<summary>the twenty-five playbooks</summary>
 
 | playbook | for |
 |---|---|
 | [investigation](./skills/ateam-mode/playbooks/investigation.md) | a read-only question. how does x work, why was y built this way, are we sure. |
 | [bug fix](./skills/ateam-mode/playbooks/bug-fix.md) | reproduce a defect, root-cause it, and fix with runtime evidence. |
 | [perf](./skills/ateam-mode/playbooks/perf-issue.md) | trace a measured slowness and improve it against a baseline. |
-| [hillclimb](./skills/ateam-mode/playbooks/hillclimb.md) | sustained, scientific improvement of one metric against a target, looping hypotheses with before/after measurement and one commit per accepted win. |
-| [kernel hillclimb](./skills/ateam-mode/playbooks/kernel-hillclimb.md) | hillclimb for a gpu kernel: correctness-gated harness, isa resource pre-check before any benchmark, benchmarks queued on one locked gpu, levers named from the `lever.menu` port. |
+| [kernel hillclimb](./skills/ateam-mode/playbooks/kernel-hillclimb.md) | sustained improvement of one metric against a target, mostly a gpu kernel: correctness-gated harness, isa resource pre-check before any benchmark, benchmarks queued on one locked gpu, levers named from the `lever.menu` port, one commit per accepted win. other metrics use its non-kernel section. |
 | [bound probe](./skills/ateam-mode/playbooks/bound-probe.md) | before a redesign, measure the ceiling cheaply (analytic bound, copy roofline, remove-one-piece diagnostic, staged copy, in-model share) and decide go, no-go, or re-target. a probe proves a ceiling, never a speedup. |
 | [repro audit](./skills/ateam-mode/playbooks/repro-audit.md) | verify someone else's claim, number, or bug report on the real gpu: pin the environment, reproduce as stated, vary one axis, and give each claim a verdict. |
 | [runtime forensics](./skills/ateam-mode/playbooks/runtime-forensics.md) | diagnose a live symptom (a hang, wrong results, nan, a slowdown, a gpu stuck busy, or a host-side leak) from instrumentation. |

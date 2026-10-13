@@ -132,8 +132,7 @@ A large or cross-cutting effort (a migration across many call sites, an ambitiou
 - **Investigation.** Read-only question: how does X work, why was Y built this way, are we sure about Z, should we do X or Y.
 - **Bug fix.** A reported defect: reproduce, root-cause, fix with runtime evidence.
 - **Perf issue.** A measured slowness to trace and improve against a baseline.
-- **Hillclimb.** Sustained improvement of one metric against a target, with a decision log and one commit per win. "Hillclimb this."
-- **Kernel hillclimb.** Hillclimb for a GPU kernel: correctness gate, ISA pre-check, one locked GPU through the `bench.run` port, levers from `lever.menu`. "Beat the Triton baseline."
+- **Kernel hillclimb.** Sustained improvement of one metric against a target, with a decision log and one commit per win. For a GPU kernel: correctness gate, ISA pre-check, one locked GPU through the `bench.run` port, levers from `lever.menu`. Other metrics use its Non-kernel metrics section. "Hillclimb this." "Climb this metric." "Beat the Triton baseline."
 - **Bound probe.** Measure the ceiling before a redesign and decide go or no-go. "Bound the ceiling before we build."
 - **Repro audit.** Verify someone else's claim, number, or bug report on the real GPU. "Reproduce their numbers."
 - **Runtime forensics.** Diagnose a live symptom: hang, wrong results, NaN, slowdown, stuck GPU, host leak. Diagnosis only.

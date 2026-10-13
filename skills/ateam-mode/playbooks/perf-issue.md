@@ -20,6 +20,6 @@
 5. Cite the measurement in the PR or the comment draft.
 6. Run **Deliver**.
 
-For sustained improvement against a metric rather than a one-off fix, use the Hillclimb playbook (`playbooks/hillclimb.md`). For a GPU kernel, use Kernel hillclimb (`playbooks/kernel-hillclimb.md`).
+For sustained improvement against a metric rather than a one-off fix, use Kernel hillclimb (`playbooks/kernel-hillclimb.md`).
 
 **Reply:** baseline number, post-fix number, delta, artifact path.

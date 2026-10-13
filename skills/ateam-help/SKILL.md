@@ -121,7 +121,7 @@ Playbooks are step lists inside `/ateam-mode`, not skills, so they have no slash
 - "full autopilot on this queue" runs Autopilot-full. "stack them, don't ship" runs Autopilot-stack.
 - "run the eval playbook" runs Eval.
 - "reproduce their numbers" or "verify this claim" runs Repro audit.
-- "hillclimb this kernel" or "beat the Triton baseline" runs Kernel hillclimb.
+- "hillclimb this", "climb this metric", or "beat the Triton baseline" runs Kernel hillclimb. A metric that is not a GPU kernel uses its Non-kernel metrics section.
 - "will this redesign pay off" or "bound the ceiling before we build" runs Bound probe. It measures a ceiling and gives go, no-go, or re-target.
 - "work on PROJ-123" runs Ticket. It starts with `/ticket-init`.
 

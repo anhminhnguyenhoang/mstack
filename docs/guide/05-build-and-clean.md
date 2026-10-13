@@ -30,9 +30,9 @@ A perf prompt states the measurement, not a vibe:
 
 Each of these routes to its playbook ([Bug fix](../../skills/ateam-mode/playbooks/bug-fix.md), [Feature](../../skills/ateam-mode/playbooks/feature.md), [Refactoring](../../skills/ateam-mode/playbooks/refactoring.md), [Perf issue](../../skills/ateam-mode/playbooks/perf-issue.md)), and the playbook supplies the steps you didn't type: reproduce before fixing, name the data shape before implementing, pin behavior before restructuring, profile before optimizing.
 
-For sustained improvement of one number, there's the [Hillclimb playbook](../../skills/ateam-mode/playbooks/hillclimb.md). Give it the metric, a target, and a floor on attempts, and it loops one hypothesis at a time with a frozen measurement harness. It keeps wins and reverts everything else.
+For sustained improvement of one number, there's the [Kernel hillclimb playbook](../../skills/ateam-mode/playbooks/kernel-hillclimb.md). Give it the metric, a target, and a floor on attempts, and it screens one lever at a time with a frozen measurement harness. It combines the winners, revisits the losers, keeps wins, and reverts everything else. It also covers metrics that are not a GPU kernel.
 
-Both perf playbooks run [`/benchmark-checklist`](../../skills/benchmark-checklist/SKILL.md) on their numbers. Perf issue vets its baseline and every number after it, and Hillclimb vets its harness before freezing it. [Verify and ship](./06-verify-and-ship.md#vet-a-measured-number-with-benchmark-checklist) shows when to type it yourself.
+Both perf playbooks run [`/benchmark-checklist`](../../skills/benchmark-checklist/SKILL.md) on their numbers. Perf issue vets its baseline and every number after it, and Kernel hillclimb vets its harness before freezing it. [Verify and ship](./06-verify-and-ship.md#vet-a-measured-number-with-benchmark-checklist) shows when to type it yourself.
 
 Sometimes you want the cause before any fix. For a live symptom, such as a hang, a memory leak, or a stalled launch, the [Runtime forensics playbook](../../skills/ateam-mode/playbooks/runtime-forensics.md) instruments the running process. For a profile you already captured, the [Trace forensics playbook](../../skills/ateam-mode/playbooks/trace-forensics.md) reads the artifact and maps the hot frame to source. Both return a diagnosis, not a fix:
 
