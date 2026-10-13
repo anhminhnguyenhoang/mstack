@@ -68,6 +68,9 @@ for repo in "$@"; do
   for old in "$CACHE/$name"-$hex12; do
     [ -d "$old" ] && [ "$old" != "$wt" ] || continue
     [ "$(git -C "$old" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)" = "$common" ] || continue
+    in_use=0
+    for l in "$SKILLS"/*; do if [ -L "$l" ]; then case "$(readlink -f "$l")" in "$old"/*) in_use=1 ;; esac; fi; done
+    if [ "$in_use" = 1 ]; then rm -f "$old/.superseded"; continue; fi
     [ -e "$old/.superseded" ] || touch "$old/.superseded"
     if [ -n "$(find "$old/.superseded" -mmin +1440)" ]; then git -C "$repo" worktree remove --force "$old"; fi
   done

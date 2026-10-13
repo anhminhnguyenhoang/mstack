@@ -39,7 +39,10 @@ review=$(port_skill review) validate=$(port_skill validate)
 skill_top=$(git -C "$(readlink -f "$SKILLS/$review")" rev-parse --show-toplevel)
 checkout=$(checkout_of "$repo") || exit 7
 
-if [ "$(main_checkout "$skill_top")" = "$checkout" ]; then
+# The tree checks read the root's working tree, so it is origin's tip, not the skills snapshot,
+# which stays put while the skills do. A link into the user's own worktree is a pin and wins.
+case "$skill_top" in "${XDG_CACHE_HOME:-$HOME/.cache}/mstack/upstream/"*) pinned=0 ;; *) pinned=1 ;; esac
+if [ "$pinned" = 1 ] && [ "$(main_checkout "$skill_top")" = "$checkout" ]; then
   root=$skill_top
 else
   root=$("$ROOT/scripts/sync-upstream-skills.sh" --no-links "$checkout" | tail -1)
