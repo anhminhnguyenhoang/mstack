@@ -82,7 +82,7 @@ Rules.
 - One combo branch, `<topic>/combo`. One kept lever is one commit, `perf(<kernel>): <ID> <lever>`. Stage files by name.
 - Ablation is a revert. Branch `<topic>/ablate-<ID>` from the head of S*, then `git revert` the lever's commit. A conflicting revert means the levers edit the same lines. Record it.
 - Subsets matter, not order. Build both orders only when two levers edit the same lines.
-- Never share a JIT cache directory between combo branches.
+- Each combo branch gets its own JIT cache, per the `bench.run` port.
 
 ## Ablation table
 

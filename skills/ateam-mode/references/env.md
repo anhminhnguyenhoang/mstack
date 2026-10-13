@@ -19,8 +19,7 @@ Rules.
 - The host has no torch. Run every test and benchmark in the container, never on the bare host.
 - A container sees only its bind mounts. A path outside a mount is invisible to it. Make worktrees inside the mount.
 - Touch only the user's containers, as listed in the env file. Never `docker exec`, stop, or remove anyone else's.
-- Use `HIP_VISIBLE_DEVICES` to pick the GPU, one per run. A container's default GPU is not necessarily idle.
-- Give each worktree and each side of a comparison its own `AITER_JIT_DIR`.
+- Pick, lock, and isolate the GPU per the `bench.run` port (**verify-gpu-kernel**, Lock one idle GPU). A container's default GPU is not necessarily idle.
 - Check the arch from inside the container (`rocminfo | grep -m1 gfx`) before you trust a number.
 - A ticket's scripts, artifacts, and notes live in `<tickets>/<KEY>/`, mounted in its container.
 - Pick the Jira MCP namespace from the ticket URL's site, or from the project-prefix map for a bare key, per the env file's Jira table. Pick the GitHub path per its Forge table.

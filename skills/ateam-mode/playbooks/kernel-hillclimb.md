@@ -37,7 +37,7 @@ The record is `<tickets>/<KEY>/<topic>-opt.md`, from `references/lever-doc.md`. 
    - Run the correctness gate. A failure is class `broken`. Do not time it.
    - Run the `isa.diff` port against B. It needs no GPU and takes seconds. New spills or scratch, or a VGPR or LDS rise that crosses an occupancy step (fewer waves per SIMD), skips the benchmark and the lever is class `cost-exceeds`, unless the lever's point is to trade occupancy for speed and the hypothesis said so. A rise inside the same occupancy step is benchmarked, so a possible uplift is not skipped. Record the diff as evidence.
    - Check the change reached codegen (**principle-prove-it-reached-codegen**). An unchanged ISA or IR is class `broken` when the edit should have moved it, and class `premise-wrong` when the knob is inert.
-   - Fan out edits, builds, and ISA checks. Benchmarks run one at a time on one locked GPU (the `bench.run` port). Never run two benchmarks on one GPU together, and never share a JIT cache directory between worktrees.
+   - Fan out edits, builds, and ISA checks. Benchmarks queue on the lock of the `bench.run` port, one per GPU.
    - A lever that beats B past noise with the gate green and no tracked shape regressing past noise is a winner. A lever that wins on one shape and loses on another is a winner for that shape. Note the shape.
    - Every other lever is a loser. Classify it at once, with evidence (trace, ISA diff, or counter). The classes and their retry rules are in `references/lever-doc.md`.
    - Update `<tickets>/<KEY>/STATUS.md` with one line: W, L, and the best single lever.

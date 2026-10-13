@@ -76,6 +76,7 @@ PICK=$(<Picker cell>)
 
 - Run one command per GPU at a time. Parallel worktrees may build and check ISA together. They queue for the GPU.
 - Give the run its own `AITER_JIT_DIR`, and each worktree its own. A command that interleaves A and B gives each side its own.
+- Run both sides of a comparison on the same GPU id.
 - The host is shared. A lock file coordinates only runs that use the same convention. Treat a busy GPU as taken, lock or no lock.
 - If no GPU stays idle, stop and report `NO_GPU`. Do not benchmark on a busy GPU. A compile-only check (the `isa.diff` port) still works.
 

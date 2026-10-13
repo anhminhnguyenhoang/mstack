@@ -68,7 +68,7 @@ Tests alone are not sufficient verification. A PR is verified only when its unit
 
 ### Boot recipe, for every live lane
 
-Each live lane runs at the PR head on the machine that owns the surface. A GPU lane drives through **verify-gpu-kernel** on a locked idle GPU.
+Each live lane runs at the PR head on the machine that owns the surface. A GPU lane drives through **verify-gpu-kernel**.
 
 - [ ] `git fetch origin <head-branch> && git checkout <head SHA>`.
 - [ ] <Start the backend and the surface. Wait for ready.>
