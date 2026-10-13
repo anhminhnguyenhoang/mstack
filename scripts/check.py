@@ -16,6 +16,12 @@ REMOVED = [
     "kernel-walkthrough",
     "swarm",
 ]
+# Prose-only terms skip code spans, so a `Forge` table name from an old env file can be cited.
+RETIRED_TERMS = [
+    ("forge", "PR tool", re.compile(r"(?<![\w-])forges?(?![\w-])", re.I), True),
+    ("panel", "review group or list role", re.compile(r"(?<![\w-])panels?(?![\w-])", re.I), True),
+    ("port", "skill function", re.compile(r"`[a-z]+\.[a-z_.]+` ports?\b|(?<![\w-])ports\.md|\bPORTS\b"), False),
+]
 RETIRED_PRINCIPLES = [
     "experience-first",
     "type-system-discipline",
@@ -436,6 +442,18 @@ if not args.skills_only:
                     print(f"SLOP (unslop rule {rule}) {path}:{n}: {m.group(0)}")
     fail += slop
     summary.append(f"slop {slop}")
+
+    terms = 0
+    for path, text in walk(hidden=True):
+        if path == "scripts/check.py" or path.startswith(NAME_EXEMPT_DIRS):
+            continue
+        for n, line in enumerate(text.splitlines(), 1):
+            for old, new, pat, prose_only in RETIRED_TERMS:
+                for m in pat.finditer(CODE_SPAN.sub("", line) if prose_only else line):
+                    terms += 1
+                    print(f"RETIRED TERM {path}:{n}: {m.group(0)} (use {new})")
+    fail += terms
+    summary.append(f"retired terms {terms}")
 
 if not args.no_tests and not args.skills_only:
     r = subprocess.run(["bash", "tests/test_scripts.sh"], capture_output=True, text=True)
