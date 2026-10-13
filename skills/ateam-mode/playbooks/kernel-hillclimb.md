@@ -57,7 +57,7 @@ The record is `<tickets>/<KEY>/<topic>-opt.md`, from `references/lever-doc.md`. 
    - Subsets matter, not order. Build both orders only when two levers edit the same lines.
    - S* lives on one combo branch. One kept lever is one commit, staged by file, never `git add -A`.
    - Ablate S*. For each lever in S*, revert its commit on a scratch branch, build, and measure. The marginal gain is the metric without it minus the metric of S*. Drop a lever whose marginal gain is inside noise or negative (**principle-subtract-before-you-add**). Reclassify it `masked` with `Retry if: S* changes`, so it is not retried against the S* that just dropped it.
-   - If prefill and decode, or any two shapes, prefer different subsets, make the lever a knob or a shape dispatch. A load-layout lever that helps prefill and hurts decode is the pattern. If one subset must serve all shapes, pick by the production mix from step 1.
+   - If prefill and decode, or any two shapes, prefer different subsets, make the lever a shape dispatch. It may be a knob while you search, and it becomes a fixed dispatch rule before the PR (**Opening a PR**, Production-ready). A load-layout lever that helps prefill and hurts decode is the pattern. If one subset must serve all shapes, pick by the production mix from step 1.
    - Update `<tickets>/<KEY>/STATUS.md` with one line: S*, its metric, and the gain over B.
 8. PHASE 3, REVISIT. Do not retire a loser until its root cause shows the premise is wrong. Do not skip any uplift from an idea that still has potential.
    - Take each retry-eligible loser. A loser is eligible when its `Retry if` condition holds now.
