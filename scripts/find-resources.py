@@ -195,11 +195,11 @@ def map_roles(kb):
     return mapping, ask
 
 
-def refs_scan(paths, deadline):
+def refs_scan(paths, deadline, excluded):
     hits = []
     for base in paths:
         for dirpath, dirnames, filenames in os.walk(base):
-            dirnames[:] = [d for d in dirnames if not d.startswith(".") and d not in PRUNE]
+            dirnames[:] = [d for d in dirnames if not d.startswith(".") and d not in PRUNE and not under(os.path.join(dirpath, d), excluded)]
             if dirpath[len(base):].count(os.sep) >= 3:
                 dirnames[:] = []
             for n in filenames:
@@ -214,6 +214,10 @@ def refs_scan(paths, deadline):
                 if topics:
                     hits.append({"path": path, "topics": topics, "score": sum(found.values())})
     return sorted(hits, key=lambda h: -h["score"])[:8]
+
+
+def under(path, roots):
+    return any(path == r or path.startswith(r + os.sep) for r in roots)
 
 
 def run_wavescope(path):
@@ -311,10 +315,10 @@ else:
         result["tickets"] = {"status": "ambiguous", "candidates": [{"root": p, "folders": sum(os.path.dirname(d) == p for d in ticket_dirs)} for p in parents], "signature": sig}
 
 ref_bases = [os.path.join(p, "docs") for p in domain_paths if os.path.isdir(os.path.join(p, "docs"))]
-if result["kb"].get("status") == "found":
-    ref_bases.append(result["kb"]["path"])
-hits = refs_scan(ref_bases, time.time() + args.time_limit) if ref_bases else []
-result["refs"] = {"status": "found" if hits else "not found", "sources": hits, "signature": "markdown that mentions TB/s, TFLOPS, peak, roofline, or numerics at least twice"}
+ref_excluded = {s["path"] for s in scored} | {k["path"] for k in kbs}
+ref_bases = [b for b in ref_bases if not under(b, ref_excluded)]
+hits = refs_scan(ref_bases, time.time() + args.time_limit, ref_excluded) if ref_bases else []
+result["refs"] = {"status": "found" if hits else "not found", "sources": hits, "signature": "markdown in a detected repo's docs, outside the kb, that mentions TB/s, TFLOPS, peak, roofline, or numerics at least twice"}
 result["_notes"] = {"root": ROOT, "depth": args.depth, "walk_timed_out": timed_out}
 
 if args.json:

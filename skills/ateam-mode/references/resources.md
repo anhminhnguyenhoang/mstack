@@ -64,7 +64,7 @@ find by signature ──► one match ───────► record it, report
 | `kb` | A directory whose root index file links to subfolders that have their own index files, with notes that carry `name` and `description` frontmatter. Skills dirs and detected repos are excluded |
 | `wavescope` | A git checkout whose remote URL ends in `/WaveScope`, or a directory that holds `src/cli/att.js`, and `node <path>/src/cli/att.js` runs |
 | `tickets` | Folders that hold `ticket-raw.md`, `ticket-description.md`, or `ticket-description.txt`. The root is their common parent |
-| `refs` | Markdown in a detected repo's docs or in the detected KB that covers peaks, roofline, or numerics |
+| `refs` | Markdown in a detected repo's docs that covers peaks, roofline, or numerics. Never inside the detected KB or a skills dir, because the KB is cited through its roles |
 
 The search is read-only and bounded. It stays inside the user's home, to depth 4, with a time limit per search. It skips `.git` internals, `node_modules`, caches, build outputs, and linked git worktrees. It reads only what identifies a thing: remote URLs, index files, frontmatter, and file names. Only `refs` reads a file body.
 
