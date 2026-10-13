@@ -46,6 +46,17 @@ PROBE_MARK = "(probe)"
 TICKET_KEY = re.compile(r"\bSILOTIGER-\d+|\bROCM-3\d+", re.I)
 ENV_FILE = "~/.cursor/mstack/env.md"
 OPTIONAL_COLUMN = "Optional"
+SLOP_EXEMPT = {"skills/unslop/SKILL.md", "skills/technical-writing/SKILL.md"}
+SLOP_WORDS = lambda *ws: re.compile(r"(?<![\w-])(" + "|".join(ws) + r")(?![\w-])", re.I)
+SLOP = [
+    (7, SLOP_WORDS("additionally", "crucial(?:ly)?", "delve[sd]?", "garner(?:s|ed)?", "interplay", "intricate", "pivotal", "showcas(?:e|es|ed|ing)", "tapestry", "testament", "underscor(?:e|es|ed|ing)", "vibrant")),
+    (8, SLOP_WORDS("serves as", "serve as", "stands as", "boasts")),
+    (13, re.compile("[\u2013\u2014]")),
+    (18, re.compile("[\U0001F300-\U0001FAFF\u2600-\u27BF]")),
+    (19, re.compile("[\u2018\u2019\u201c\u201d]")),
+    (20, SLOP_WORDS("I hope this helps", "let me know if", "great question", "absolutely right", "smoking gun")),
+    (31, SLOP_WORDS("utiliz(?:e|es|ed|ing)", "leverag(?:e|es|ed|ing)", "facilitat(?:e|es|ed|ing)", "in the event that")),
+]
 
 ap = argparse.ArgumentParser(
     description="mstack consistency checks. The skills dir is $MSTACK_SKILLS_DIR, else the Skills table of ~/.cursor/mstack/env.md. With neither, the skills checks are skipped."
@@ -400,6 +411,25 @@ if not args.skills_only:
                 print(f"TICKET ID {path}:{n}: {m.group(0)}")
     fail += keys
     summary.append(f"kb paths {kb_paths} | local paths {local} | ticket ids {keys}")
+
+    slop = 0
+    for path, text in walk(hidden=True):
+        if not path.endswith(".md") or path in SLOP_EXEMPT or path.startswith(NAME_EXEMPT_DIRS):
+            continue
+        fenced = False
+        for n, line in enumerate(text.splitlines(), 1):
+            if line.lstrip().startswith("```"):
+                fenced = not fenced
+                continue
+            if fenced:
+                continue
+            prose = CODE_SPAN.sub("", line)
+            for rule, pat in SLOP:
+                for m in pat.finditer(prose):
+                    slop += 1
+                    print(f"SLOP (unslop rule {rule}) {path}:{n}: {m.group(0)}")
+    fail += slop
+    summary.append(f"slop {slop}")
 
 print(" | ".join(summary))
 print("RESULT", "PASS" if fail == 0 else f"FAIL ({fail})")
