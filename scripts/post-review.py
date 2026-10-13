@@ -7,8 +7,11 @@ becomes an inline comment on the new side of the diff. A section whose lines are
 the diff moves into the body, because GitHub rejects the whole review otherwise.
 Refuses when the head moved (exit 3), when this user already reviewed that head (exit 5,
 REPOST=1 posts again), or when the draft leaks a local path, an internal ticket key, or a
-pattern from the optional machine-local file ~/.cursor/mstack/leak-patterns.txt (exit 6).
+pattern from the optional machine-local file ~/.cursor/mstack/leak-patterns.txt (exit 6),
+or when it has no merge stamp from panel-gate.py that matches its text (exit 8). The
+internal `[src: ...]` tags are stripped before posting.
 """
+import hashlib
 import json
 import os
 import re
@@ -22,6 +25,7 @@ LOCAL_PATTERNS = os.path.expanduser(os.environ.get("MSTACK_LEAK_PATTERNS", "~/.c
 EXTRA = [p.strip() for p in open(LOCAL_PATTERNS) if p.strip() and not p.startswith("#")] if os.path.isfile(LOCAL_PATTERNS) else []
 LEAK = re.compile("|".join([r"/home/[A-Za-z0-9_.-]+/", re.escape(os.environ.get("TMPDIR", "/tmp")) + r"/review-pr-", r"\bSILOTIGER-\d+", r"\bROCM-3\d+", *EXTRA]), re.I)
 HUNK = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@")
+SOURCE = re.compile(r"\s*\[src: [^\]]*\]")
 ANCHOR = re.compile(r"^### (\S+?):(\d+)(?:-(\d+))?\s*$")
 
 
@@ -62,6 +66,9 @@ def main():
     if not m:
         die(2, f"{draft} has no 'Reviewed head: <40-hex sha>' line")
     reviewed = m.group(1)
+    stamp = draft + ".gate"
+    if not os.path.isfile(stamp) or open(stamp).read().strip() != hashlib.sha256(text.encode()).hexdigest():
+        die(8, f"{draft} has no merge stamp that matches it: run panel-gate.py merge after the last edit")
 
     leaks = [f"{n}: {line}" for n, line in enumerate(text.splitlines(), 1) if LEAK.search(line)]
     if leaks:
@@ -96,7 +103,7 @@ def main():
 
     comments, outside = [], []
     for path, start, end, lines in sections:
-        note = "\n".join(lines).strip()
+        note = SOURCE.sub("", "\n".join(lines)).strip()
         if start <= end and path in files and all(n in files[path] for n in range(start, end + 1)):
             c = {"path": path, "line": end, "side": "RIGHT", "body": note}
             if start != end:
@@ -108,7 +115,7 @@ def main():
         body = body.rstrip() + "\n\n### Outside the diff\n\n" + "\n\n".join(outside)
         print(f"{len(outside)} inline comment(s) are not on diff lines and went into the body", file=sys.stderr)
 
-    payload = {"commit_id": reviewed, "event": event, "body": body.strip() + "\n", "comments": comments}
+    payload = {"commit_id": reviewed, "event": event, "body": SOURCE.sub("", body).strip() + "\n", "comments": comments}
     with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
         json.dump(payload, f)
     try:

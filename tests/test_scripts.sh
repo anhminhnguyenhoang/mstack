@@ -35,7 +35,8 @@ skill() { mkdir -p "$1/.claude/skills/$2"; printf -- '---\nname: %s\ndescription
 for r in r k; do g init -q --bare "$T/remotes/o/$r.git"; g clone -q "$T/remotes/o/$r.git" "$T/seed-$r" 2>/dev/null; done
 skill "$T/seed-r" "$S"; skill "$T/seed-r" "$V"; skill "$T/seed-r" other; skill "$T/seed-k" kskill
 printf '#!/usr/bin/env bash\necho "pwd=$(pwd) validate=${REVIEW_AUTO_VALIDATE:-unset} args=$*"\n' > "$T/seed-r/.claude/skills/$S/fetch.sh"
-chmod +x "$T/seed-r/.claude/skills/$S/fetch.sh"
+printf '#!/usr/bin/env bash\n[ "${FAIL_INDEP:-0}" != 1 ]\n' > "$T/seed-r/.claude/skills/$S/triage.py"
+chmod +x "$T/seed-r/.claude/skills/$S/fetch.sh" "$T/seed-r/.claude/skills/$S/triage.py"
 for r in r k; do g -C "$T/seed-$r" add -A && g -C "$T/seed-$r" commit -qm v1 && g -C "$T/seed-$r" push -q origin main; done
 push() { sed -i "s/description: .*/description: $1/" "$T/seed-r/.claude/skills/$S/SKILL.md"; g -C "$T/seed-r" commit -qam "$1"; g -C "$T/seed-r" push -q origin main; }
 g clone -q "$T/remotes/o/r.git" "$H/checkout"
@@ -120,15 +121,63 @@ out=$("$ROOT/scripts/pr-review.sh" o/k#7 2>/dev/null) || fail "env.md Repos row 
 case "$out" in "pwd=$C/kcopy-"*) ;; *) fail "env.md Repos row not used: $out" ;; esac
 echo "ok pr-review"
 
-# --- post-review.py
+# --- panel-gate.py
 sha=$(printf 'a%.0s' {1..40}) other=$(printf 'b%.0s' {1..40})
-draft() { printf 'Reviewed head: %s\n\n%s\n' "$sha" "$1" > "$T/draft.md"; }
+G="$ROOT/scripts/panel-gate.py"
+red() { if "$@" >/dev/null 2>&1; then fail "gate stayed green: ${*:2}"; fi; }
+work() {
+  mkdir -p "$1"
+  printf 'diff --git a/src/a.py b/src/a.py\n+new1\n' > "$1/pr.diff"
+  printf '{"title": "Fix the a.py bound", "body": "Because b"}' > "$1/pr_meta.json"
+  printf 'Review (advisory): ⚠️ NEEDS WORK\nValidation (deterministic): N/A — no runtime surface changed\nPerf (advisory): N/A — no runtime surface changed\n\n⚠️ first card finding\n📝 second card finding\n' > "$1/card.md"
+  echo "MERGE TARGET: base" > "$1/merge_target.txt"
+}
+W="$T/work"; work "$W"
+pa=$("$G" prompt "$W" A)
+grep -q "Fix the a.py bound" "$pa" && grep -q "+new1" "$pa" || fail "blind prompt lacks the intent or the diff"
+! grep -q "card finding" "$pa" || fail "blind prompt leaks the card"
+red "$G" refute-prompt "$W" A
+printf 'nonce: wrong\n### 1. [warning] x\n' | red "$G" record "$W" A
+printf 'nonce: %s\n## Findings\n### 1. [warning] Off by one in a.py\n### 2. [nit] Naming\n' "$(cat "$W/panel/A.nonce")" | "$G" record "$W" A >/dev/null
+pr=$("$G" refute-prompt "$W" A)
+grep -q "first card finding" "$pr" && grep -q "second card finding" "$pr" || fail "refute prompt lacks the card findings"
+nR=$(cat "$W/panel/A.refute.nonce")
+printf 'nonce: %s\nSURVIVED -- opened src/a.py: the bound is wrong\n' "$nR" | red "$G" record-refute "$W" A
+printf 'nonce: %s\nSURVIVED -- opened src/a.py: the bound is wrong\nKILLED -- opened src/a.py: the name is fine\n' "$nR" | "$G" record-refute "$W" A >/dev/null
+[ "$(wc -l < "$W/independent.txt")" = 2 ] || fail "independent.txt not written from the reader"
+merged() { printf 'Reviewed head: %s\nReview (advisory): ⚠️ NEEDS WORK\n%s\nPerf (advisory): N/A — no runtime surface changed\n\n%s\n## Inline\n### src/a.py:2\non new1 [src: panel:A1]\n' "$sha" "${2:-Validation (deterministic): N/A — no runtime surface changed}" "$1" > "$T/draft.md"; }
+merged "⚠️ first card finding [src: card, panel:A1]"
+red "$G" merge "$W" "$T/draft.md"
+echo "A2 DROPPED -- too short" > "$W/panel/dispositions.txt"; red "$G" merge "$W" "$T/draft.md"
+echo "A2 DROPPED -- a naming nit outside what this PR changes" > "$W/panel/dispositions.txt"
+merged "⚠️ first card finding [src: card, panel:A1]
+📝 an untagged finding"; red "$G" merge "$W" "$T/draft.md"
+merged "⚠️ first card finding [src: card, panel:A1, panel:A9]"; red "$G" merge "$W" "$T/draft.md"
+merged "⚠️ first card finding [src: card, panel:A1]" "Validation (deterministic): PASS"; red "$G" merge "$W" "$T/draft.md"
+merged "$(for i in 1 2 3 4 5 6; do echo "📝 note $i [src: card, panel:A1]"; done)"; red "$G" merge "$W" "$T/draft.md"
+merged "⚠️ first card finding [src: card, panel:A1]"
+FAIL_INDEP=1 red "$G" merge "$W" "$T/draft.md"
+"$G" merge "$W" "$T/draft.md" >/dev/null || fail "merge gate red on a complete draft"
+[ "$(cat "$T/draft.md.gate")" = "$(sha256sum "$T/draft.md" | cut -d' ' -f1)" ] || fail "merge did not stamp the draft"
+W3="$T/work3"; work "$W3"; "$G" prompt "$W3" A >/dev/null
+printf 'nonce: %s\n### 1. [warning] Off by one in a.py\n### 2. [nit] Naming\n' "$(cat "$W3/panel/A.nonce")" | "$G" record "$W3" A >/dev/null
+cp "$W/independent.txt" "$W/panel/dispositions.txt" "$W3/" && mv "$W3/dispositions.txt" "$W3/panel/"
+red "$G" merge "$W3" "$T/draft.md"
+W2="$T/work2"; work "$W2"; merged "⚠️ first card finding [src: card]"
+red "$G" merge "$W2" "$T/draft.md" --no-panel "docs only, no code changed"
+cp "$W/independent.txt" "$W2/"
+red "$G" merge "$W2" "$T/draft.md" --no-panel "short"
+"$G" merge "$W2" "$T/draft.md" --no-panel "docs only, no code changed" >/dev/null || fail "--no-panel with a reader stayed red"
+echo "ok panel-gate"
+
+# --- post-review.py
+draft() { printf 'Reviewed head: %s\n\n%s\n' "$sha" "$1" > "$T/draft.md"; sha256sum "$T/draft.md" | cut -d' ' -f1 > "$T/draft.md.gate"; }
 post() { LIVE_HEAD=$1 "$ROOT/scripts/post-review.py" o/r 7 "$T/draft.md" "$2"; }
 payload() { python3 -c 'import json,sys;print(eval(sys.argv[2], {}, {"p": json.load(open(sys.argv[1]))}))' "$FAKE_LOG" "$1"; }
-draft "body \$(touch $T/pwned)
+draft "body \$(touch $T/pwned) [src: card]
 ## Inline
 ### src/a.py:2
-on new1
+on new1 [src: panel:A1]
 ### src/a.py:2-3
 on both new lines
 ### src/a.py:4-10
@@ -145,6 +194,7 @@ not a changed file"
 [ "$(payload '"### Outside the diff" in p["body"] and "**src/a.py:9** not in the diff" in p["body"] and "**other.py:1**" in p["body"] and "**src/a.py:4-10** spans the gap between hunks" in p["body"]')" = True ] || fail "out-of-diff comments not moved into the body"
 [ "$(payload '"## Inline" not in p["body"] and "on new1" not in p["body"]')" = True ] || fail "inline section left in the body"
 [ ! -e "$T/pwned" ] || fail "draft text was executed"
+[ "$(payload '"[src:" not in p["body"] and all("[src:" not in c["body"] for c in p["comments"])')" = True ] || fail "source tags were posted"
 [ "$(EXISTING=1 REPOST=1 post "$sha" COMMENT 2>/dev/null)" = https://example/review ] || fail "REPOST=1 refused"
 set +e
 post "$other" COMMENT 2>/dev/null; [ $? -eq 3 ] || fail "posted although head moved"
@@ -156,6 +206,8 @@ draft "tracked in SILO""TIGER-123"; post "$sha" COMMENT 2>/dev/null; [ $? -eq 6 
 printf '# local only\nsecret-model-[0-9]+\n' > "$H/.cursor/mstack/leak-patterns.txt"
 draft "tuned for Secret-Model-7"; post "$sha" COMMENT 2>/dev/null; [ $? -eq 6 ] || fail "posted a name from leak-patterns.txt"
 draft "tuned for a public model"; post "$sha" COMMENT >/dev/null 2>&1; [ $? -eq 0 ] || fail "leak-patterns.txt blocked a clean draft"
+rm "$T/draft.md.gate"; post "$sha" COMMENT 2>/dev/null; [ $? -eq 8 ] || fail "posted a draft with no merge stamp"
+draft "stamped text"; echo "edited after the gate" >> "$T/draft.md"; post "$sha" COMMENT 2>/dev/null; [ $? -eq 8 ] || fail "posted a draft edited after its stamp"
 sed -i 1d "$T/draft.md"; post "$sha" COMMENT 2>/dev/null; [ $? -eq 2 ] || fail "posted a draft with no head line"
 set -e
 echo "ok post-review"
