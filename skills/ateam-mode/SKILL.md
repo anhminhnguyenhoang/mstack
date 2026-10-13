@@ -12,70 +12,70 @@ reminder: New task? Playbook match or rigor needed -> apply /ateam-mode. Casual 
 
 ## Non-negotiables
 
-The Principles section below grounds every trigger. In your reply, name each principle that shaped a decision and the specific choice it changed. Cite only principles whose leaf SKILL.md you read this session.
+The Principles section below grounds every trigger. In your reply, name each principle that shaped a decision and the choice it changed. Cite only principles whose leaf SKILL.md you read this session.
 
 Remaining triggers:
 
 - Nontrivial change, architecture decision, or "are we sure?" → the **how** skill.
-- About to `AskQuestion` on a "which approach", "how should I", or "what should this do" fork → classify it before you ask. If the answer is a fact you could observe by running something (behavior, timing, layout, output, perf, even whether an eval separates), it is not the human's to answer. Sketch it via the Prototype playbook (`playbooks/prototype.md`) and let the result decide. If the task is a read-only Investigation whose deliverable is a cited answer, stay in it and answer from the evidence rather than building a sketch. Reserve the question for a genuine product or preference call no experiment can settle. Under a full-autonomy grant, decide a call the grant covers, act on it, and report it, with no reply word and no offer. Under the grant, for a call only the operator can make, apply a default, report it with a full explanation, and say in plain words what the operator could tell you to do instead. The operator answers in their own words. Never give a shorthand token to type back. Gates the operator named and the Always-pause list in Autonomy still need the operator.
+- About to `AskQuestion` on a "which approach", "how should I", or "what should this do" fork → classify it first. A fact you can observe by running something (behavior, timing, layout, output, perf, even whether an eval separates) is not the human's to answer. Sketch it via the Prototype playbook and let the result decide. In a read-only Investigation, answer from the evidence and build no sketch. Ask only a product or preference call no experiment can settle. Under a full-autonomy grant, decide a call the grant covers, act, and report it, with no reply word and no offer. For a call only the operator can make, apply a default, report it with a full explanation, and say in plain words what the operator could tell you instead. The operator answers in their own words. Never give a shorthand token to type back. Gates the operator named and the Always-pause list in Autonomy still need the operator.
 - Any code → name the data shape first, and choose its organizing structure per **principle-model-the-domain**.
-- Code crossing a function boundary → the **architect** skill, parallel design exploration before implementing.
-- Parallel fan-out → the **swarm** skill for coverage matrices, races, gauntlets, and exploration partitions. Use **arena** for design or code bakeoffs with base selection and grafting.
-- Contested design → the **interrogate** skill (multi-model adversarial) before shipping.
+- Code crossing a function boundary → the **architect** skill.
+- Parallel fan-out → the **swarm** skill for coverage matrices, races, gauntlets, and exploration partitions. Design or code bakeoffs → **arena**.
+- Contested design → the **interrogate** skill before shipping.
 - Nontrivial multi-step → write the throughput checkpoint (Feature step 3).
-- Any prose surface, your reply to the user included → the **unslop** skill. Write the reply per **Writing the reply**. Agent-facing prose also follows the **create-skill** skill (Cursor's built-in for authoring SKILL.md files).
-- Docs, RFCs, readmes, PR descriptions, or commit messages → the **technical-writing** skill (`/technical-writing`).
+- Any prose surface, your reply included → the **unslop** skill. Write the reply per **Writing the reply**. Agent-facing prose also follows the **create-skill** skill.
+- Docs, RFCs, readmes, PR descriptions, or commit messages → the **technical-writing** skill.
 - Before commit → the `style.gate` port, run as the repo's row of the Opening a PR per-repo table says, and the `comment-sicko` agent over the diff.
-- Before review → the **no-comments** skill (`/no-comments`).
-- Running or shipping a GPU kernel, a kernel script, or a CLI → the **verify-gpu-kernel** skill (the `bench.run` port). It is the control skill for this plugin. mstack has no UI or browser control skill. Host, container, and repo facts are in `~/.cursor/mstack/env.md`, written by `/setup-mstack env`. The rules are in `references/env.md`. For bug fixes, reproduce first on the same surface yourself. Hand to the user only under the narrow Bug fix step 1 exception.
-- FlyDSL, aiter, Triton, HIP, or MFMA kernel work, or a GPU perf number → the ports (`references/ports.md`). A playbook step names a port, such as `isa.diff`. That file binds it to the skill and says which one to pick. Read the skill before you apply it.
-- Researching a topic, a hardware fact, or a kernel technique → read the `kb` resource in three levels, when it is configured: the root `README.md`, the matching area `README.md`, then the note. Cite the note when it covers the topic. Re-derive only what it does not cover.
-- Running a benchmark, measuring perf yourself, or reporting a speedup or regression you measured → the **benchmark-checklist** skill before you report or act on the number.
-- Any PR-status request ("babysit this", "get it green", "address the bugbot comments", and most often "check on PR X" or "anything outstanding on X") → the **Babysit** playbook (`playbooks/babysit.md`), not Cursor's built-in babysit skill, whose description matches the same words. Never triggered by merely opening a PR. Declare its mode before polling. The playbook's step 1 owns the request-to-mode mapping. Reaching for `drive` inside a phase agent stops that agent finishing its turn.
-- Asked to land or ship a green stack → the **Shipping** playbook (`playbooks/shipping.md`). Green is not safe. Nothing gets armed before an independent per-PR verdict, and only the contiguous verified run from the root lands.
-- Bugbot or the agentic security review commented → skeptical posture. They catch real bugs and also file non-issues and nitpicks, so assess each on its merits and dismiss noise with a concrete reason instead of churning code. Triage fix / dismiss / ask per `references/bugbot-triage.md`.
-- A local resource (`repos`, `skills`, `kb`, `refs`, `tickets`) → name it by key, resolve it from the env file when the step runs, and skip it with a note when it is missing or `not set` (`references/resources.md`).
+- Before review → the **no-comments** skill.
+- Running or shipping a GPU kernel, a kernel script, or a CLI → the **verify-gpu-kernel** skill (the `bench.run` port). It is the control skill. mstack has no UI or browser control skill. Host, container, and repo facts are in `~/.cursor/mstack/env.md`, written by `/setup-mstack env`. Rules are in `references/env.md`. For bug fixes, reproduce first on the same surface yourself. Hand to the user only under the narrow Bug fix step 1 exception.
+- FlyDSL, aiter, Triton, HIP, or MFMA kernel work, or a GPU perf number → the ports (`references/ports.md`). A playbook step names a port, such as `isa.diff`. That file binds it to a skill. Read the skill before you apply it.
+- Researching a topic, a hardware fact, or a kernel technique → read the `kb` resource in three levels when configured: root `README.md`, area `README.md`, then the note. Cite the note. Re-derive only what it does not cover.
+- Running a benchmark, measuring perf, or reporting a speedup or regression → the **benchmark-checklist** skill before you report or act on the number.
+- Any PR-status request ("babysit this", "get it green", "address the bugbot comments", "check on PR X", "anything outstanding on X") → the **Babysit** playbook, not Cursor's built-in babysit skill. Merely opening a PR never triggers it. Declare its mode before polling. Its step 1 maps the request to a mode. Reaching for `drive` inside a phase agent stops that agent finishing its turn.
+- Asked to land or ship a green stack → the **Shipping** playbook. Green is not safe. Nothing is armed before an independent per-PR verdict, and only the contiguous verified run from the root lands.
+- Bugbot or the agentic security review commented → skeptical posture. Assess each comment on its merits and dismiss noise with a concrete reason. Triage fix, dismiss, or ask per `references/bugbot-triage.md`.
+- A local resource (`repos`, `skills`, `kb`, `refs`, `tickets`) → name it by key, resolve it from the env file when the step runs, and skip it with a note when missing or `not set` (`references/resources.md`).
 - Broken skill mid-task → fix it in its own PR. Don't block. Don't silently work around it.
-- Long, autonomous, or multi-phase work, or any task the user steps away from to review later ("going to bed", "trust it when i'm back", "/loop until X") → a decision trail via the **show-me-your-work** skill. Commit it when stakes need an auditable record. Keep it local otherwise.
+- Long, autonomous, or multi-phase work, or a task the user steps away from ("going to bed", "trust it when i'm back", "/loop until X") → a decision trail via the **show-me-your-work** skill. Commit it when stakes need an audit record. Keep it local otherwise.
 
 ## Principles
 
-Read the leaf skill in full for any principle you apply. Each entry names when it applies. Each leaf is the **principle-<title>** skill, with the title in kebab case, hyphens kept and other punctuation dropped, unless the entry gives its name.
+Read the leaf skill in full for any principle you apply. Each leaf is the **principle-<title>** skill, with the title in kebab case, hyphens kept and other punctuation dropped, unless the entry gives its name.
 
 **Core**
 
-- **Redesign from First Principles.** Integrating a new requirement into an existing design, or choosing core types, data structures, and scaffold before logic. Redesign as if it had been foundational from day one.
-- **Attack the Premise.** Two or more fixes that share one premise have failed the same gate. Take a census of which actors hold the imbalance before the next fix, then question the premise instead of writing another fix that assumes it.
-- **Subtract Before You Add.** Sequencing an addition, refactor, or rewrite, sizing a diff, or tempted to add a layer. Remove dead weight first, make the smallest change, then build on the simpler base.
-- **Minimize Reader Load.** Reviewing or shaping code that's hard to trace. Count layers and hidden state, collapse one-caller wrappers, shrink mutable scope.
-- **Outcome-Oriented Execution.** Planned rewrites and migrations with explicit phase boundaries. Converge on the target architecture, don't preserve throwaway compatibility states.
-- **Exhaust the Design Space.** A novel interaction or architectural decision with no precedent. Build 2-3 competing prototypes and compare before committing.
-- **Build the Lever.** Any non-trivial work. Build the tool that does or proves it (codemod, script, generator), not by hand. The tool is the artifact a reviewer reruns.
+- **Redesign from First Principles.** A new requirement in an existing design, or core types and scaffold before logic.
+- **Attack the Premise.** Two or more fixes share one premise and failed the same gate. Census the actors first.
+- **Subtract Before You Add.** Sequencing a change, sizing a diff, or tempted to add a layer. Delete first, change least.
+- **Minimize Reader Load.** Code that is hard to trace. Collapse layers, one-caller wrappers, and mutable scope.
+- **Outcome-Oriented Execution.** Planned rewrites and migrations. Converge on the target, skip throwaway compatibility states.
+- **Exhaust the Design Space.** A decision with no precedent. Prototype 2-3 competing designs and compare.
+- **Build the Lever.** Any non-trivial work. Build the rerunnable tool (codemod, script, generator), not hand edits.
 
 **Architecture**
 
-- **Model the Domain.** Writing stateful logic, or code that branches a lot or repeats a shape assumption across files. Encode the domain in a structure (state machine, typed model, table or registry, reducer, boundary, the right collection) instead of scattered conditionals.
-- **Migrate Callers Then Delete Legacy APIs.** Introducing a new internal API while old callers exist. Migrate and delete in one wave.
-- **Separate Before Serializing Shared State.** Concurrent actors might write the same file, branch, key, or object. Eliminate the sharing first.
+- **Model the Domain.** Stateful or heavily branching code, or a shape assumption repeated across files. Use a structure, not conditionals.
+- **Migrate Callers Then Delete Legacy APIs.** A new internal API while old callers exist. Migrate and delete in one wave.
+- **Separate Before Serializing Shared State.** Concurrent actors may write the same file, branch, or object. Remove the sharing first.
 
 **Verification**
 
-- **Prove It Works.** After a task, before declaring done. Verify against the real artifact, not a proxy or "it compiles".
-- **Fix Root Causes.** Debugging. Trace each symptom to its root cause, reproduce first, ask why until you reach it.
-- **Sequence Work into Verifiable Units** (**principle-sequence-verifiable-units**). Multi-step work (sweeps, migrations, runs of similar edits) and how you stack commits and PRs. Break work into small units that each end in a check, verify each before the next, and order delivery so the sequence proves itself.
-- **Test Behavior, Not Implementation.** Writing, changing, or keeping a test. Call the code the way its users do and assert the result against a literal expected value. If the test would still pass when every imported function returns `undefined`, rewrite the assertion or delete the test.
-- **Prove It Reached Codegen.** A compile hint, flag, attribute, or kernel structure change that you want credit for. A knob is real only if the ISA or IR changed.
-- **Correctness Before Speed.** Timing, reporting, or keeping any kernel change. `allclose` and the NaN count pass on the same run first.
-- **Explain the Number.** Before you trust, report, or act on a number you measured, including a GPU kernel percent of peak. Find what limits it, cite the peak's source, and rule out that it measured something other than the work you think.
+- **Prove It Works.** Before declaring done. Check the real artifact, not a proxy or "it compiles".
+- **Fix Root Causes.** Debugging. Reproduce first, then ask why down to the root.
+- **Sequence Work into Verifiable Units** (**principle-sequence-verifiable-units**). Multi-step work and commit or PR stacks. Small units, each ending in a check.
+- **Test Behavior, Not Implementation.** Writing or keeping a test. Call the code as users do, assert a literal expected value.
+- **Explain the Number.** Before you trust or report a measured number. Name its limiter, give GPU percent of peak, rule out artifacts.
+- **Prove It Reached Codegen.** A compile hint, flag, attribute, or structure change. Credit it only if the ISA or IR changed.
+- **Correctness Before Speed.** Timing or keeping a kernel change. `allclose` and the NaN count pass on the same run first.
 
 **Delegation**
 
-- **Guard the Context Window.** Context fills up: large outputs, long files, repeated reads, fan-out planning. Route bulk to subagents, keep summaries in the main thread.
-- **Never Block on the Human.** Tempted to ask "should I do X?" on reversible work. Proceed, present the result, let the human course-correct.
+- **Guard the Context Window.** Large outputs, long files, repeated reads, or fan-out planning. Route bulk to subagents.
+- **Never Block on the Human.** Tempted to ask "should I do X?" on reversible work. Proceed, present, let the human correct.
 
 **Meta**
 
-- **Encode Lessons in Structure.** You catch yourself writing the same instruction a second time. Encode it as a lint, metadata flag, runtime check, or script instead of more text.
+- **Encode Lessons in Structure.** You write the same instruction a second time. Encode it as a lint, flag, check, or script.
 
 ## Autonomy
 
@@ -125,33 +125,33 @@ Comments follow the same rule as the reply. Write them clean as you go. Keep a c
 
 ## Playbooks
 
-Open a todolist whose first items are the matched playbook's steps, copied in verbatim, before any task-specific todos. A step you choose not to do stays in the list with a one-line `skip: <reason>`. Match the task to a playbook below and open its full steps at `playbooks/<title>.md`, with the title in kebab case, hyphens kept and other punctuation dropped, unless the entry gives its file. Copy its steps in verbatim.
+Open a todolist whose first items are the matched playbook's steps, copied in verbatim, before any task-specific todos. A step you skip stays in the list with a one-line `skip: <reason>`. Match the task below and open `playbooks/<title>.md`, with the title in kebab case, hyphens kept and other punctuation dropped, unless the entry gives its file.
 
-A large or cross-cutting effort (a migration across many call sites, an ambitious multi-part change), or work the user steps away from to trust later, routes to the **figure-it-out** skill even when a narrower playbook like Feature fits. Use **figure-it-out** whenever no bundled playbook fits. It designs a bespoke, rigorous playbook for the task. A multi-day program of many stacked PRs routes to **Multi-phase plan** instead, which writes the plan and names the Autopilot playbook that runs it. figure-it-out designs one bespoke run.
+A large or cross-cutting effort (a migration across many call sites, an ambitious multi-part change), or work the user steps away from to trust later, routes to the **figure-it-out** skill even when a narrower playbook fits. Use it whenever no playbook fits. A multi-day program of stacked PRs routes to **Multi-phase plan**, which names the Autopilot playbook that runs it.
 
 - **Investigation.** Read-only question: how does X work, why was Y built this way, are we sure about Z, should we do X or Y.
-- **Bug fix.** A reported defect to reproduce, root-cause, and fix with runtime evidence.
+- **Bug fix.** A reported defect: reproduce, root-cause, fix with runtime evidence.
 - **Perf issue.** A measured slowness to trace and improve against a baseline.
-- **Hillclimb.** Sustained, scientific improvement of one metric against a target: loop hypotheses with before/after measurement, a decision log, and one commit per accepted win. Distinct from Perf issue, which is a one-off fix.
-- **Kernel hillclimb.** Hillclimb for a GPU kernel: GPU harness with a correctness gate, ISA resource pre-check before any benchmark, one benchmark on a locked GPU at a time, levers named from the `lever.menu` port. File: `playbooks/kernel-hillclimb.md`.
-- **Bound probe.** Before a redesign, measure the ceiling cheaply and decide go or no-go: analytic bound, copy roofline, remove-one-piece diagnostic, staged copy of the proposed data flow, in-model share. A probe proves a ceiling, never a speedup. File: `playbooks/bound-probe.md`.
-- **Repro audit.** Verify someone else's claim, number, or bug report on the real GPU: pin the environment, reproduce as stated, vary one axis, and give each claim a verdict (reproduced, partial, not reproduced, blocked). The deliverable is a finding. File: `playbooks/repro-audit.md`.
-- **Runtime forensics.** Diagnose a runtime symptom (a hang, wrong results, NaN, a slowdown, a GPU stuck busy, or a host-side leak or spin) from live instrumentation. The deliverable is a diagnosis, not a fix.
-- **Trace forensics.** Diagnose a captured profiling artifact (an ATT decode directory, `rocprofv3` output, ISA or IR dumps, or for a host process a cpuprofile, spindump, or heap snapshot) handed to you after the fact. The deliverable is a diagnosis, not a fix.
+- **Hillclimb.** Sustained improvement of one metric against a target, with a decision log and one commit per win. "Hillclimb this."
+- **Kernel hillclimb.** Hillclimb for a GPU kernel: correctness gate, ISA pre-check, one locked GPU through the `bench.run` port, levers from `lever.menu`. "Beat the Triton baseline."
+- **Bound probe.** Measure the ceiling before a redesign and decide go or no-go. "Bound the ceiling before we build."
+- **Repro audit.** Verify someone else's claim, number, or bug report on the real GPU. "Reproduce their numbers."
+- **Runtime forensics.** Diagnose a live symptom: hang, wrong results, NaN, slowdown, stuck GPU, host leak. Diagnosis only.
+- **Trace forensics.** Diagnose a captured artifact: ATT decode, `rocprofv3` output, ISA or IR dumps, cpuprofile. Diagnosis only.
 - **Feature.** New or changed behavior, built from a named data shape.
-- **Refactoring.** A behavior-preserving change to structure or shape (rename, extract, inline, dedupe, move).
-- **Prototype.** A throwaway sketch to make a design or behavioral decision cheaply, or to settle an empirical fork by observing it instead of asking the human ("prototype", "mock it up", "try this layout", "sketch it to decide").
-- **Authoring or modifying a skill.** Writing or editing a SKILL.md. File: `playbooks/authoring-a-skill.md`.
-- **Eval.** Testing how a skill, structure, or prompt change affects agent behavior before promoting it.
-- **Babysit.** Driving a PR or a stack to merge-ready: conflicts, review threads, CI.
-- **Shipping.** The half after Babysit. Independently verifying a green stack, then landing the contiguous verified run bottom-up through `gh` by default or Origin when its CLI is available.
-- **Autonomous run.** A long task to drive to completion without stopping ("run until done", "/loop until X").
-- **Autopilot-full.** A queue of independent PRs run to merged with full autonomy. One owner per PR carries build through merge, and the root swarm-verifies each PR before its owner merges ("autopilot this queue", "full autopilot", one-owner-per-PR programs).
-- **Autopilot-stack.** A queue of changes built and verified with full autonomy, delivered as one linear reviewed base-branch stack the operator lands ("autopilot-stack", "stack them, don't ship", "build the stack, I'll land it").
-- **Session pickup.** Resuming or taking over a prior agent's in-flight work from a transcript, cloud-agent URL, or pushed branch.
-- **Pause safely.** Suspending in-flight work cleanly so it can be resumed, on an explicit pause, going offline, a Cursor restart, or imminent context compaction. The complement to Session pickup.
-- **Multi-phase or multi-PR plan.** Work that spans phases or stacked PRs. File: `playbooks/multi-phase-plan.md`.
-- **Worktree cleanup.** Reclaiming local disk by pruning merged or abandoned git worktrees ("what's using my disk", "clean up worktrees", "prune safe-to-prune worktrees", "free up space"). File: `playbooks/worktree-cleanup.md`.
-- **Ticket.** Work that starts from a Jira key. Loads the ticket into its ticket folder (`<tickets>/<KEY>/`) with `/ticket-init`, sets a checkable predicate, routes to the matching playbook, and ends in Deliver.
-- **Deliver.** Invoked at the end of every other playbook. Classifies the output as code, finding, or both. Code goes to Opening a PR. A finding becomes a Jira comment draft the human approves.
-- **Opening a PR.** Opens a draft PR from small ordered commits. Invoked by Deliver for code output.
+- **Refactoring.** Behavior-preserving change to structure: rename, extract, inline, dedupe, move.
+- **Prototype.** Throwaway sketch to settle a design or empirical fork. "Prototype", "mock it up", "try this layout".
+- **Authoring or modifying a skill.** Writing or editing a SKILL.md (`authoring-a-skill`).
+- **Eval.** Test how a skill, structure, or prompt change affects agent behavior before promoting it.
+- **Babysit.** Drive a PR or stack to merge-ready: conflicts, review threads, CI.
+- **Shipping.** Verify a green stack independently, then land the contiguous verified run bottom-up (`references/forge.md`).
+- **Autonomous run.** A long task driven to completion. "Run until done", "/loop until X".
+- **Autopilot-full.** A queue of independent PRs run to merged, one owner per PR. "Full autopilot on this queue."
+- **Autopilot-stack.** A queue built and verified as one linear stack the operator lands. "Stack them, don't ship."
+- **Session pickup.** Resume or take over in-flight work from a transcript, cloud-agent URL, or branch.
+- **Pause safely.** Suspend in-flight work so it can resume: pause, going offline, restart, imminent compaction.
+- **Multi-phase or multi-PR plan.** Work across phases or stacked PRs (`multi-phase-plan`).
+- **Worktree cleanup.** Prune merged or abandoned worktrees. "What's using my disk", "free up space".
+- **Ticket.** Work that starts from a Jira key: `/ticket-init`, a checkable predicate, the matching playbook, then Deliver.
+- **Deliver.** Ends every other playbook. Code goes to Opening a PR. A finding becomes a Jira comment draft the human approves.
+- **Opening a PR.** Open a draft PR from small ordered commits. Deliver invokes it for code output.
