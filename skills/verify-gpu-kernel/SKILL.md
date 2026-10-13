@@ -71,8 +71,11 @@ Pick over a sampling window, not one reading, then hold a lock for the whole run
 
 ```bash
 PICK=$(<Picker cell>)
-<Lock cell, with $PICK for <id>> docker exec -e HIP_VISIBLE_DEVICES=$PICK <container> <command>
+<Lock cell, with $PICK for <id>> docker exec -w <wt> -e PYTHONPATH=<pythonpath> -e HIP_VISIBLE_DEVICES=$PICK <container> <command>
 ```
+
+- `<wt>` is the container path of the worktree under test, or of the repo root when there is no worktree, per the Worktree paragraph of [`opening-a-pr.md`](../ateam-mode/playbooks/opening-a-pr.md).
+- `<pythonpath>` is `<wt>` for aiter and for a Triton kernel in aiter. For FlyDSL it is `<wt>/python:<wt>/build-fly/python_packages`.
 
 - Run one command per GPU at a time. Parallel worktrees may build and check ISA together. They queue for the GPU.
 - Give the run its own `AITER_JIT_DIR`, and each worktree its own. A command that interleaves A and B gives each side its own.
@@ -80,11 +83,21 @@ PICK=$(<Picker cell>)
 - The host is shared. A lock file coordinates only runs that use the same convention. Treat a busy GPU as taken, lock or no lock.
 - If no GPU stays idle, stop and report `NO_GPU`. Do not benchmark on a busy GPU. A compile-only check (the `isa.diff` port) still works.
 
+## Check the import
+
+Run this before the first command of a worktree. It prints the package path and does not import the package, so no JIT build runs. Run it from `/`, not from `<wt>`. `python3 -c` puts the cwd on `sys.path`, so a check from `<wt>` passes even when `PYTHONPATH` is missing.
+
+```bash
+docker exec -w / -e PYTHONPATH=<pythonpath> <container> python3 -c "import importlib.util as u; print(u.find_spec('aiter').origin)"
+```
+
+Use `flydsl` in place of `aiter` for FlyDSL. The path must start with `<wt>/`. If it does not, stop and report it. The run would test another checkout. Python puts the script's directory on `sys.path`, not the cwd, and the JIT builds the sources of the package it imported.
+
 ## Run
 
 Run the repo's own test target. Do not rewrite it.
 
-| Repo | Command (inside the container, in the repo root) |
+| Repo | Command (inside the container, in `<wt>`, with the `PYTHONPATH` above) |
 |---|---|
 | aiter | `python3 op_tests/test_<op>.py` with the test's own `-d`, `-b`, `-s` flags. It prints a correctness-and-perf markdown table per the `test.author` port |
 | FlyDSL | `python3 -m pytest tests/kernels/<test>.py -q` |
@@ -110,6 +123,7 @@ Write `<tickets>/<KEY>/bench_<topic>.json` for ticket work, and `./bench_<topic>
   "versions": {"rocm": "", "torch": "", "hip": "", "triton": ""},
   "repos": [{"path": "<repo path>", "sha": "", "dirty": false}],
   "command": "<exact command>",
+  "imports": {"<aiter or flydsl>": "<find_spec origin>"},
   "correctness": {"passed": true, "rtol": 0, "atol": 0, "nan_count": 0, "shapes_checked": 0},
   "perf": [{"shape": "", "us_median": 0, "runs": 0, "min_us": 0, "max_us": 0, "regime": "cold-L2 | warm | hipGraph"}],
   "raw_output": "<path to the saved stdout>"
@@ -123,6 +137,7 @@ An A/B command adds a `side` field to each `perf` row. Save the full stdout besi
 - Run the real kernel path on a GPU. A CPU fallback, an import check, or a compile does not prove it.
 - Correctness comes before perf. A perf row next to a failed or unchecked correctness row is not a result.
 - Confirm the arch, the GPU id, and the repo SHAs in the artifact match what you ran.
+- The `imports` path sits under the worktree you meant to test. A run that imported another checkout is `INCONCLUSIVE`.
 - A run with no idle GPU, a missing container, or an unreadable test output is `INCONCLUSIVE`, never a pass.
 
 ## Cleanup
