@@ -46,6 +46,7 @@ The record is `<tickets>/<KEY>/<topic>-opt.md`, from `references/lever-doc.md`. 
    - A lever that beats B past noise with the gate green and no tracked shape regressing past noise is a winner. A lever that wins on one shape and loses on another is a winner for that shape. Note the shape. A lever that "might help" but stays inside noise is not kept.
    - Correctness and simplicity outrank the number. Revert a win that breaks behavior. It is class `broken`. Keep a simplification that holds the number. A lever that removes code and stays inside noise of the baseline is kept, noted as a simplification (**principle-subtract-before-you-add**).
    - Every other lever is a loser. Classify it at once, with evidence (trace, ISA diff, or counter). The classes and their retry rules are in `references/lever-doc.md`.
+   - You write each lever's `decision.tsv` rows, from its diff, gate, ISA diff, and bench artifact, never from the delegate's summary. The brief asks the delegate to end its report with each direction it tried and dropped, and why. A delegate that stops before it reports (turn cap, crash, abort) loses that list. Read the delegate's transcript, and log each dropped direction as one row with its reason. A lever with no measurement stays `queued`.
    - Update `<tickets>/<KEY>/STATUS.md` with one line: W, L, and the best single lever.
    - Each phase ends in a check before the next begins (**principle-sequence-verifiable-units**).
 7. PHASE 2, COMBINE. Using all the winners can be worse than using a subset. One winning lever can cancel another's gain.
