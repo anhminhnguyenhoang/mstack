@@ -14,6 +14,8 @@ It is a fork of [pstack](https://github.com/cursor/plugins/tree/main/pstack) (se
 /add-plugin mstack
 ```
 
+the plugin ships one `sessionStart` hook ([`hooks/hooks.json`](./hooks/hooks.json)). it syncs the skills that the `pr.review` and `pr.validate` ports bind to their repo's latest `origin`, in the background, so a session never waits on it.
+
 ## get started
 
 two steps:
@@ -95,7 +97,7 @@ morning.
 | [prototype](./skills/ateam-mode/playbooks/prototype.md) | a throwaway sketch to make a design or behavioral decision cheaply, or to settle an empirical fork by observing it. |
 | [authoring a skill](./skills/ateam-mode/playbooks/authoring-a-skill.md) | writing or editing a SKILL.md. |
 | [eval](./skills/ateam-mode/playbooks/eval.md) | test how a skill or prompt change affects agent behavior, blinded. |
-| [pr review](./skills/ateam-mode/playbooks/pr-review.md) | advisory review of someone's pr: the repo's review rules with gpu base-vs-head evidence, a model panel, one merged verdict, and a draft you approve before it posts. |
+| [pr review](./skills/ateam-mode/playbooks/pr-review.md) | advisory review of an aiter, flydsl, or triton pr: one rule set and its gates run in the pr's own repo, gpu base-vs-head evidence, the repo's conventions, a model panel, and a draft you approve before it posts with line comments. |
 | [babysit](./skills/ateam-mode/playbooks/babysit.md) | drive a pr or a stack to merge-ready: conflicts, review threads, ci. |
 | [shipping](./skills/ateam-mode/playbooks/shipping.md) | independently verify a green stack, then land the contiguous verified run bottom-up through the resolved forge. |
 | [autonomous run](./skills/ateam-mode/playbooks/autonomous-run.md) | drive a long task to completion without stopping. |

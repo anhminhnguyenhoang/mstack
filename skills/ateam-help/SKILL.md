@@ -74,7 +74,7 @@ The default answer is `/ateam-mode`, which runs most of the others when its step
 | Get several attempts at one brief, merged into the best one | [`/arena`](../arena/SKILL.md) |
 | Run parallel checks over slices, or race workers, as cloud agents | [`/swarm`](../swarm/SKILL.md) |
 | Have different models review a diff and try to break it | [`/interrogate`](../interrogate/SKILL.md) |
-| Review someone's PR by number or URL, with GPU evidence, and post it after approval | `/ateam-mode review PR 123`, the [PR review](../ateam-mode/playbooks/pr-review.md) playbook |
+| Review someone's aiter, FlyDSL, or Triton PR by number or URL, with GPU evidence, and post it with line comments after approval | `/ateam-mode review PR 123`, the [PR review](../ateam-mode/playbooks/pr-review.md) playbook |
 | Fix a bug test-first when a cheap local test exists | [`/tdd`](../tdd/SKILL.md) |
 | Strip comments before review, using a reviewer that didn't write them | [`/no-comments`](../no-comments/SKILL.md) |
 | Clean AI tells out of prose | [`/unslop`](../unslop/SKILL.md) |
