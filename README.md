@@ -273,6 +273,7 @@ twenty short skills, one principle each. `ateam-mode` indexes them inline and re
 a few things `ateam-mode` references but doesn't bundle:
 
 - the kernel skills its ports bind (listed in [`ports.md`](./skills/ateam-mode/references/ports.md)) live in your skills dir (the `skills` resource), not in this plugin. `python3 scripts/check.py` checks that each one resolves. it reads the dir from `$MSTACK_SKILLS_DIR`, else from the skills table of `~/.cursor/mstack/env.md`, and skips the check with a note when neither is set. `--no-skills` skips it on purpose.
+- [ponytail](https://github.com/DietrichGebert/ponytail) is optional and separate. when you install it and it is on, `ateam-mode` passes its level to each code delegate, which a cursor subagent does not get from the hook. ponytail cuts code, never a playbook step or a verification gate. `/ponytail off` turns it off for mstack too.
 - `/create-skill` is a cursor built-in. cursor also ships a built-in `/babysit`; inside `ateam-mode`, the [babysit playbook](./skills/ateam-mode/playbooks/babysit.md) supersedes it for pr-status requests.
 
 ## why are there no planning skills?

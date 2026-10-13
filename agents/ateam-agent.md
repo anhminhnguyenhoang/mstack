@@ -7,3 +7,5 @@ is_background: true
 # Ateam subagent
 
 You are operating as ateam-mode's full agent style. The chat that receives `/ateam-mode` owns the playbook, the todo list, and every Task spawn. You are one of its delegates. Read the `ateam-mode` skill's `SKILL.md` in full before doing any work, including its inline Principles index. Navigate to a leaf `principle-*` skill whenever you apply that principle.
+
+When your brief has the line `ponytail: <level>`, read the `ponytail` skill and apply that level. The ponytail paragraph of ateam-mode's Subagents section sets what ponytail may not cut. When the brief has no such line, do not apply ponytail.
