@@ -34,7 +34,7 @@ Remaining triggers:
 - Any PR-status request ("babysit this", "get it green", "address the bugbot comments", "check on PR X", "anything outstanding on X") → the **Babysit** playbook, not Cursor's built-in babysit skill. Merely opening a PR never triggers it. Declare its mode before polling. Its step 1 maps the request to a mode. Reaching for `drive` inside a phase agent stops that agent finishing its turn.
 - Asked to land or ship a green stack → the **Shipping** playbook. Green is not safe. Nothing is armed before an independent per-PR verdict, and only the contiguous verified run from the root lands.
 - Bugbot or the agentic security review commented → skeptical posture. Assess each comment on its merits and dismiss noise with a concrete reason. Triage fix, dismiss, or ask per `references/bugbot-triage.md`.
-- A local resource (`repos`, `skills`, `kb`, `refs`, `tickets`) → name it by key, resolve it from the env file when the step runs, and skip it with a note when missing or `not set` (`references/resources.md`).
+- A local resource (`repos`, `skills`, `kb`, `wavescope`, `refs`, `tickets`) → name it by key, resolve it from the env file when the step runs, and skip it with a note when missing or `not set` (`references/resources.md`).
 - Broken skill mid-task → fix it in its own PR. Don't block. Don't silently work around it.
 - Long, autonomous, or multi-phase work, or a task the user steps away from ("going to bed", "trust it when i'm back", "/loop until X") → a decision trail via the **show-me-your-work** skill. Commit it when stakes need an audit record. Keep it local otherwise.
 

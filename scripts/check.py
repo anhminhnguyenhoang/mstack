@@ -45,6 +45,7 @@ PROBE_FILE = "skills/setup-mstack/SKILL.md"
 PROBE_MARK = "(probe)"
 TICKET_KEY = re.compile(r"\bSILOTIGER-\d+|\bROCM-3\d+", re.I)
 ENV_FILE = "~/.cursor/mstack/env.md"
+OPTIONAL_COLUMN = "Optional"
 
 ap = argparse.ArgumentParser(
     description="mstack consistency checks. The skills dir is $MSTACK_SKILLS_DIR, else the Skills table of ~/.cursor/mstack/env.md. With neither, the skills checks are skipped."
@@ -135,9 +136,9 @@ def env_skills_dir():
 def parse_ports():
     text = open(PORTS, encoding="utf-8").read()
     lines = text.splitlines()
-    head = next((i for i, line in enumerate(lines) if cells(line)[:4] == ["Port", "When", "Skill", "Selection rule"]), None)
+    head = next((i for i, line in enumerate(lines) if cells(line)[:5] == ["Port", "When", "Skill", OPTIONAL_COLUMN, "Selection rule"]), None)
     if head is None:
-        raise ValueError("no | Port | When | Skill | Selection rule | table")
+        raise ValueError(f"no | Port | When | Skill | {OPTIONAL_COLUMN} | Selection rule | table")
     bindings = []
     for line in lines[head + 2:]:
         if not line.startswith("|"):
@@ -145,9 +146,10 @@ def parse_ports():
         row = cells(line)
         ports = re.findall(r"`([^`]+)`", row[0])
         skills = re.findall(r"`([^`]+)`", row[2]) if len(row) > 2 else []
-        if len(ports) != 1 or not skills:
-            raise ValueError(f"row needs one port and at least one skill: {line}")
-        bindings.append((ports[0], skills))
+        optional = row[3].strip().lower() if len(row) > 3 else ""
+        if len(ports) != 1 or not skills or optional not in ("yes", "no"):
+            raise ValueError(f"row needs one port, at least one skill, and Optional Yes or No: {line}")
+        bindings.append((ports[0], skills, optional == "yes"))
     m = re.search(r"^## Ignored[ \t]*\n(.*?)(?=^## |\Z)", text, re.M | re.S)
     if not m:
         raise ValueError("no ## Ignored section")
@@ -246,20 +248,25 @@ except Exception as e:
     fail += 1
     print(f"BAD PORTS FILE {PORTS}: {e}")
     bindings, ignored = [], []
-port_names = [p for p, _ in bindings]
+port_names = [p for p, _, _ in bindings]
 for p in sorted({p for p in port_names if port_names.count(p) > 1}):
     fail += 1
     print(f"PORT BOUND TWICE {p}")
-bound = {s for _, skills in bindings for s in skills}
+bound = {s for _, skills, _ in bindings for s in skills}
+required_bound = {s for _, skills, optional in bindings if not optional for s in skills}
 own = set(os.listdir("skills"))
 
 if not args.no_skills and not skip_skills:
-    rows, bad = [], {"missing": 0, "malformed": 0}
-    for port, skills in bindings:
+    rows, bad, optional_missing = [], {"missing": 0, "malformed": 0}, 0
+    for port, skills, optional in bindings:
         for s in skills:
             status, why, repo, branch, warn = resolve(s)
-            rows.append((f"`{port}`", f"`{s}`", status, repo, branch, warn))
-            if status != "ok":
+            skippable = status == "missing" and optional and s not in required_bound
+            rows.append((f"`{port}`", f"`{s}`", status, repo, branch, "optional port: its step is skipped" if skippable else warn))
+            if skippable:
+                optional_missing += 1
+                print(f"NOTE optional skill missing {port} -> {s}: {why}. The step is skipped with a note.")
+            elif status != "ok":
                 bad[status] += 1
                 print(f"BOUND SKILL {status.upper()} {port} -> {s}: {why}")
             if warn:
@@ -291,9 +298,9 @@ if not args.no_skills and not skip_skills:
         print("|---|---|---|---|---|---|")
         for row in rows:
             print("| " + " | ".join(row) + " |")
-    summary.append(f"ports {len(port_names)} bindings {sum(len(s) for _, s in bindings)} | skills {len(installed)} missing {bad['missing']} malformed {bad['malformed']} unbound {len(unbound)}")
+    summary.append(f"ports {len(port_names)} bindings {sum(len(s) for _, s, _ in bindings)} | skills {len(installed)} missing {bad['missing']} optional missing {optional_missing} malformed {bad['malformed']} unbound {len(unbound)}")
 else:
-    summary.append(f"ports {len(port_names)} bindings {sum(len(s) for _, s in bindings)} | skills skipped")
+    summary.append(f"ports {len(port_names)} bindings {sum(len(s) for _, s, _ in bindings)} | skills skipped")
 
 if not args.skills_only:
     names = sorted((bound | set(ignored) | set(REMOVED)) - own, key=len, reverse=True)

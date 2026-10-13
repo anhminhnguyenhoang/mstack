@@ -6,9 +6,9 @@ Where kernel work runs. Read this before a GPU run, a container exec, a worktree
 host ──► container ──► repo path ──► test command ──► arch
 ```
 
-The facts for this machine are not in the plugin. They are in `~/.cursor/mstack/env.md`, which `/setup-mstack env` writes (**setup-mstack**, Part B). That file has the hosts and their SSH aliases, the user's containers and mounts, the forge and the push remote with its scheme (SSH or HTTPS), the Jira site to MCP namespace map, the GPU lock convention, and one table per local resource: `repos`, `skills`, `kb`, `refs`, and `tickets`. [`resources.md`](resources.md) is the contract for them. A resource is optional unless its row there says it is required.
+The facts for this machine are not in the plugin. They are in `~/.cursor/mstack/env.md`, which `/setup-mstack env` writes (**setup-mstack**, Part B). That file has the hosts and their SSH aliases, the user's containers and mounts, the forge and the push remote with its scheme (SSH or HTTPS), the Jira site to MCP namespace map, the GPU lock convention, and one table per local resource: `repos`, `skills`, `kb`, `wavescope`, `refs`, and `tickets`. [`resources.md`](resources.md) is the contract for them. A resource is optional unless its row there says it is required.
 
-- The file is missing → stop, and ask the user to run `/setup-mstack env`. An optional resource alone (`kb`, `refs`) is skipped with a note instead, per `resources.md`.
+- The file is missing → stop, and ask the user to run `/setup-mstack env`. An optional resource alone (`kb`, `wavescope`, `refs`) is skipped with a note instead, per `resources.md`.
 - A fact you need is `not set` → stop, and ask the user for it or to rerun `/setup-mstack env`. Do not guess a host, a container, or a remote.
 - A fact looks stale (a container that no longer exists, a different arch) → run the **verify-gpu-kernel** doctor, then ask the user to rerun `/setup-mstack env`.
 

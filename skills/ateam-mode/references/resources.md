@@ -24,6 +24,7 @@ use it                  required?  ──yes──► stop, ask for `/setup-msta
 | `repos` | The domain git repos (aiter, FlyDSL, triton). Per repo: path, push remote, PR target, container, path in container | GPU runs, worktrees, PRs, SHA records | Yes, for a GPU run, a worktree, or a PR | `## Repos` |
 | `skills` | The directory of domain skills that the ports bind. `$MSTACK_SKILLS_DIR` overrides it | Every step that names a port (`ports.md`) | Yes, for a port | `## Skills` |
 | `kb` | A knowledge base the user points to. Root, index file, remote if any, and a map from roles to folders inside it (KB roles) | Read by role before research and before a lever search. Receives a lesson through `kb.capture` | No | `## KB` |
+| `wavescope` | A WaveScope checkout. Path, and whether its CLI runs | The human verifies trace findings in it, and replies in `notes.json` (`trace.annotate`). Its capture profiles serve `trace.capture` | No | `## WaveScope` |
 | `refs` | A list of extra reference-doc sources. Each has a name, a path, and topics such as `peaks`, `roofline`, `numerics` | Cited for a peak, a roofline, or a numerics fact | No | `## Refs` |
 | `tickets` | The root under which the `<KEY>/` ticket folders live | `<tickets>/<KEY>/` holds the artifacts of ticket work | Yes, for ticket work | `## Tickets` |
 
@@ -80,6 +81,17 @@ index file of the KB ──► index of the role's folder ──► note
 ```
 
 Cite the note. Re-derive only what it does not cover. Pick the role that fits the topic. A reference to a file deeper than the role's folder index is a leak, because a note can be renamed.
+
+## Reading the `wavescope` resource
+
+The `wavescope` resource is usable when its row is present, its path exists, and its CLI runs. The check is `node <path>/src/cli/att.js` with no arguments. Setup asks for the path and detects nothing by name.
+
+When `wavescope` is not set, or the `trace.annotate` skill is missing, every WaveScope step changes in one way:
+
+- Deliver the trace findings in the reply or the ticket folder.
+- Skip the `notes.json` loop.
+- Write `skipped wavescope: not set`.
+- Ask once per session whether the user uses WaveScope.
 
 ## Reading the `refs` resource
 
