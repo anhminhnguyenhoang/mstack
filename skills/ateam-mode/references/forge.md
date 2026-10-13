@@ -15,7 +15,15 @@ built-in PR tool ─► gh ─► GitHub MCP namespace ─► stop
 3. The GitHub MCP namespace that the Forge table of `~/.cursor/mstack/env.md` maps to the repo's host or org.
 4. No path resolves → stop and report. The env file is missing, or its Forge row is `not set` → stop and ask the user to run `/setup-mstack env`.
 
-Push is always `git push` over the remote that the Repos table of the env file names. No forge path changes that.
+Push is always `git push` over the remote that the Repos table of the env file names, SSH or HTTPS. No forge path changes that.
+
+Rules for push.
+
+- Use the remote and the scheme the env file records. Never switch a remote's scheme on the user's behalf.
+- SSH: git uses the user's key.
+- HTTPS: git uses the configured credential helper (`git config --get-all credential.helper`), or `gh` when `gh` is the helper.
+- A push that prompts, or fails on auth → stop and report the remote name, its scheme, and the error. Do not retry in a loop. Do not put a token in the URL. Do not fall back to the other scheme.
+- Run a push with `GIT_TERMINAL_PROMPT=0` so it fails instead of waiting for input.
 
 A playbook names the `gh` form. On an MCP path, use the matching tool from the table below.
 

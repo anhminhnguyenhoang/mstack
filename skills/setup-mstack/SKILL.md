@@ -99,8 +99,8 @@ A row that carries the marker `(probe)` names a default location to look in. It 
 | The user's containers | `docker ps -a --format '{{.Names}}\t{{.Image}}\t{{.Status}}'`, then `docker inspect --format '{{.Name}} {{range .Mounts}}{{.Source}}:{{.Destination}} {{end}}' <name>`. Keep only containers with a mount under `$HOME`. Every other container belongs to someone else. List it nowhere |
 | Tickets | Probe `~/*/ticket-raw.md`, `~/*/ticket-description.md`, and `~/*/ticket-description.txt` (probe). The older two names are the last load of a folder from before mstack. The common parent of the folders that hold any of the three is the root candidate, confirmed by the user in step 9 |
 | Ticket containers | `<tickets>/*/.devcontainer/devcontainer.json`: the `--name=` entry in `runArgs`, and `workspaceMount`. Skipped when `tickets` is not found |
-| Repos | Probe `~/aiter`, `~/FlyDSL`, and `~/triton` (probe). For each that exists: `git -C <path> remote -v` and the current branch |
-| Forge | `gh auth status`, `timeout 15 ssh -o BatchMode=yes -T git@github.com`, and `get_me` on each GitHub MCP namespace in the session. Per host or org, push path is the SSH remote that works. PR path is `gh` when `gh auth status` succeeds, or the MCP namespace whose sign-in covers that host or org. The order of use is in [`references/forge.md`](../ateam-mode/references/forge.md) |
+| Repos | Probe `~/aiter`, `~/FlyDSL`, and `~/triton` (probe). For each that exists: `git -C <path> remote -v`, the current branch, and for each remote its push URL (`git -C <path> remote get-url --push <remote>`). Record the scheme of that URL: `ssh` for `git@host:` and `ssh://`, `https` for `https://`. Never assume `ssh`. Never change a remote's URL |
+| Forge | `gh auth status`, and `get_me` on each GitHub MCP namespace in the session. Per push remote, test push reachability read-only for its scheme. All schemes: `GIT_TERMINAL_PROMPT=0 timeout 15 git -C <path> ls-remote --heads <remote>`, so it never waits on a credential prompt. `ssh` only: `timeout 15 ssh -o BatchMode=yes -T git@<host>`. `https` only: note which credential path answers, a helper from `git config --get-all credential.helper` or `gh` when `gh auth status` succeeds. A public repo answers `ls-remote` without credentials, so `ls-remote` alone does not prove push for `https`: record `no helper` when no credential path exists. Never read, print, or store a token, and never put one in a URL. Per host or org, the push remote is the remote and scheme that pass. PR path is `gh` when `gh auth status` succeeds, or the MCP namespace whose sign-in covers that host or org. The order of use is in [`references/forge.md`](../ateam-mode/references/forge.md) |
 | Jira sites | The `JIRA_URL` of each server in `~/.cursor/mcp.json`, and each remote Atlassian MCP namespace in the session. Seed project prefixes from the URL and `**Site:**` lines in `<tickets>/*/ticket-raw.md`: the key prefix maps to that site |
 | GPU picker | `test -f <skills>/<pr.validate skill>/pick-idle-gpu.py`. `<skills>` is the directory of the `skills` resource, and `<pr.validate skill>` is the skill that `ports.md` binds to `pr.validate`. Skipped when `skills` is not found |
 | `kb` | Probe `~/knowledge-base/README.md` (probe). Record the path, the git remote (`git -C <path> remote get-url origin`), and whether all four areas exist (`test -f <path>/<area>/README.md` for `hardware`, `kernel-optimization`, `papers`, `dsl`). A missing area is `not set` |
@@ -113,12 +113,12 @@ Ask once, in one AskQuestion form. Offer the detected values as options, plus `n
 
 - The SSH alias or aliases for this host, as other machines reach it.
 - Other GPU hosts, one per arch not present here (for example `gfx942` when this host is `gfx950`). For each: SSH alias, default container, and repo path. `none` is a valid answer.
-- For each repo: the remote to push branches to, and the upstream PRs target.
+- For each repo: the remote to push branches to (name and scheme), and the upstream PRs target.
 - For each repo: the default container and its mount path, when no ticket names one.
 - The GPU lock convention. The default is `flock /tmp/gpu-<id>.lock` with the picker that the `pr.validate` port's skill ships. Offer `team convention` as free text.
 - For each resource that detection did not find or confirm (`repos`, `skills`, `kb`, `refs`, `tickets`), ask in this same form, with the same wording: "Do you have a knowledge base / reference docs / a ticket root / a skills dir? Give the path, or skip." For `refs`, ask for a name, a path, and topics (`peaks`, `roofline`, `numerics`) per source. Allow more than one source. Check that each path the user gives exists. For `kb`, check for a `README.md` at its root. Ask again for a path that fails, or record `not set`.
 - The Jira MCP namespace for each site it cannot map, and the project prefixes for each site it has no ticket for. A prefix maps to exactly one site.
-- The PR path for each GitHub host or org (`gh` or an MCP namespace name), when detection finds none or more than one. The push path is the SSH remote, asked only when SSH detection fails.
+- The PR path for each GitHub host or org (`gh` or an MCP namespace name), when detection finds none or more than one. The push remote is asked only when its reachability test fails or an `https` remote has no credential path. Show the remote URL without any credential, the scheme, and the failing test. Never offer to switch the scheme.
 
 A fact or a resource the user skips is written as `not set`. A skill that needs a `not set` required fact stops and asks. A step that wants a `not set` optional resource skips it with a note (`references/resources.md`). Nothing ever guesses.
 
@@ -136,10 +136,10 @@ Overwrite `~/.cursor/mstack/env.md` in full, so a rerun stays idempotent. Every 
 | Container | Image | Status | Mounts (host:container) | Use | Source |
 
 ## Repos
-| Repo | Path | Push remote | PR target | Default container | Path in container | Source |
+| Repo | Path | Push remote (name, scheme) | PR target | Default container | Path in container | Source |
 
 ## Forge
-| Host or org | Push path (SSH remote) | PR path (`gh` or MCP namespace) | Source |
+| Host or org | Push remote (name, scheme) | PR path (`gh` or MCP namespace) | Source |
 
 ## Jira
 | Site | MCP namespace | Project prefixes | Source |
