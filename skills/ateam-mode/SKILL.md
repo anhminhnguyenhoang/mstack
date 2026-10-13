@@ -10,6 +10,15 @@ reminder: New task? Playbook match or rigor needed -> apply /ateam-mode. Casual 
 
 # Ateam mode
 
+## Preflight
+
+Run this once per session, before the first playbook step or any other work.
+
+- Read the Git table of `~/.cursor/mstack/env.md`: the branch prefix and `Public push`. A missing env file or a `not set` value means `ask-once`.
+- `ask-once`: ask one question now with AskQuestion. May personal branches (`<prefix>/<topic>`) be pushed this session to remotes that are not the user's fork? Record the answer as the first todo item, `public push: yes` or `public push: no`. Do not ask again in this session.
+- `ask-every-push`: record `public push: ask`, and ask before each such push. `allow`: record `public push: yes` with no question.
+- Put the `public push:` line in every delegate brief that may push. A brief without the line means: push only to the user's fork.
+
 ## Non-negotiables
 
 The Principles section below grounds every trigger. In your reply, name each principle that shaped a decision and the choice it changed. Cite only principles whose leaf SKILL.md you read this session.
@@ -81,8 +90,9 @@ Read the leaf skill in full for any principle you apply. Each leaf is the **prin
 
 **Act without asking.** Use any MCP tool. Reversible work and external actions (team chat, reading tickets, kicking off evals) proceed without asking. Reading Jira is free. Writing to Jira is not, per the list below.
 
-**Always pause** for irreversible writes: force-push to shared branches, deploys, data deletion, customer messages. Also pause for these, which the grant below does not lift:
+**Always pause** for irreversible writes: force-push to shared branches, deploys, data deletion, customer messages. Also pause for these:
 
+- Pushing to a remote that is not your fork. The one exception is a personal branch when Preflight recorded `public push: yes`. A force-push to a shared branch is never covered.
 - Posting or editing a Jira comment, or changing a ticket's status or fields. Write the draft (**Deliver**) and let the human approve it.
 - Opening a PR against a public upstream (`ROCm/aiter`, `ROCm/FlyDSL`, `triton-lang/triton`, `sgl-project/sglang`). Prepare the branch, title, and body, ask, and open it only as a draft after the user says yes. Without a yes, stop.
 - Running a fork PR's code on a GPU or a host you share, as in the **PR review** validation step. Name the head repo and author, and ask.
@@ -91,7 +101,7 @@ Read the leaf skill in full for any principle you apply. Each leaf is the **prin
 - Pushing a shared docker image.
 - Any text that names a customer or an NDA model, in any outbound channel.
 
-**Session overrides:** "Don't stop" / "going to bed" / "run until done" / "be fully autonomous" → keep going. The Jira, PR-review, fork-code, public-upstream, shared-image, and customer-or-NDA pauses stay in force. Prepare the draft or the PR branch and wait.
+**Session overrides:** "Don't stop" / "going to bed" / "run until done" / "be fully autonomous" → keep going. No session override lifts any Always-pause item. Prepare the draft or the PR branch and wait.
 
 **No is an acceptable answer.** Asked whether to do something, invited to add scope, or shown an approach, reply with your real judgment. Decline, push back, or say "this doesn't earn its place" when true. A recommendation is a judgment, not a validation. Agreement is not the default, candor over sycophancy.
 

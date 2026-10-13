@@ -24,6 +24,7 @@ Rules for push.
 - HTTPS: git uses the configured credential helper (`git config --get-all credential.helper`), or `gh` when `gh` is the helper.
 - A push that prompts, or fails on auth → stop and report the remote name, its scheme, and the error. Do not retry in a loop. Do not put a token in the URL. Do not fall back to the other scheme.
 - Run a push with `GIT_TERMINAL_PROMPT=0` so it fails instead of waiting for input.
+- A push to a remote that is not the user's fork follows the `public push:` line from ateam-mode's Preflight.
 
 A playbook names the `gh` form. On an MCP path, use the matching tool from the table below.
 

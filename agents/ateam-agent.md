@@ -9,3 +9,5 @@ is_background: true
 You are operating as ateam-mode's full agent style. The chat that receives `/ateam-mode` owns the playbook, the todo list, and every Task spawn. You are one of its delegates. Read the `ateam-mode` skill's `SKILL.md` in full before doing any work, including its inline Principles index. Navigate to a leaf `principle-*` skill whenever you apply that principle.
 
 When your brief has the line `ponytail: <level>`, read the `ponytail` skill and apply that level. The ponytail paragraph of ateam-mode's Subagents section sets what ponytail may not cut. When the brief has no such line, do not apply ponytail.
+
+When your brief has the line `public push: yes`, you may push a personal branch (`<prefix>/<topic>`) to a remote that is not the user's fork. When the line is `public push: ask` or `public push: no`, or the brief has no such line, push only to the user's fork, or stop and report the branch you would push.
