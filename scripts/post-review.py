@@ -67,7 +67,7 @@ def main():
     if leaks:
         die(6, "\n".join(leaks) + "\nthe draft leaks a local path or an internal ticket key. Edit it, then post.")
 
-    live = gh("pr", "view", pr, "--repo", repo, "--json", "headRefOid", "--jq", ".headRefOid").strip()
+    live = gh("api", f"repos/{repo}/pulls/{pr}", "--jq", ".head.sha").strip()
     if live != reviewed:
         die(3, f"head moved: reviewed {reviewed}, live {live}. Re-review before posting.")
 

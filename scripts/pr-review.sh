@@ -12,7 +12,8 @@ GH=${GH:-gh}
 
 case "${1:-}" in */*#*) repo=${1%#*} pr=${1##*#} ;; *) pr=${1:-} repo=${2:-ROCm/aiter} ;; esac
 [[ $repo =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ && $pr =~ ^[0-9]+$ ]] || { echo "usage: pr-review.sh <owner/repo#N | N [owner/repo]> [report]" >&2; exit 2; }
-"$GH" auth status >/dev/null 2>&1 || { echo "gh is not signed in: run gh auth login" >&2; exit 4; }
+grep -q baseRefOid <<<"$("$GH" pr view --help 2>&1)" || { echo "gh is too old for the review's fetch step: install gh 2.24 or later" >&2; exit 4; }
+"$GH" auth status >/dev/null 2>&1 || { echo "gh is not signed in: run gh auth login, or set GH_TOKEN" >&2; exit 4; }
 
 port_skill() { sed -n "s/^| \`pr\.$1\` |[^|]*| \`\([^\`]*\)\`.*/\1/p" "$PORTS"; }
 main_checkout() { dirname "$(git -C "$1" rev-parse --path-format=absolute --git-common-dir)"; }

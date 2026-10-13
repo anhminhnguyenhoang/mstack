@@ -274,6 +274,7 @@ twenty short skills, one principle each. `ateam-mode` indexes them inline and re
 
 ## pr review caveats
 
+- **pr review needs `gh` 2.24 or later, signed in.** the review's fetch step reads the pr through `gh`, and git or the github mcp cannot stand in from a script. a distro package can be too old (ubuntu 22.04 ships 2.4.0), so install a [release binary](https://github.com/cli/cli/releases) if needed. sign in with `gh auth login`, or set `GH_TOKEN` to a token that can read pull requests, and write them if you want mstack to post reviews.
 - **nda model names are optional.** before a review posts, `scripts/post-review.py` blocks local paths and internal ticket keys. it can also block nda model names, but mstack ships no list, because a list in this repo would leak the names. to add one, prompt your agent: "add these model names to `~/.cursor/mstack/leak-patterns.txt`, one case-insensitive regex per line." the file stays on your machine, and a plugin update never overwrites it.
 - **triton is not fully compatible yet.** a triton pr gets the same rule set, gates, panel, and conventions check as aiter and flydsl, in a snapshot of your triton checkout. two gaps remain:
   - the `pr.validate` port's skill does not recognize triton's repo layout, so the gpu base-vs-head check always reports `INCONCLUSIVE`. runtime evidence comes from the pr's own tests through the `bench.run` port, and it is advisory.

@@ -18,9 +18,10 @@ export HOME="$H" MSTACK_SKILLS_DIR="$T/skills" XDG_CACHE_HOME="$T/cache" GH="$T/
 cat > "$T/gh" <<'EOF'
 #!/usr/bin/env bash
 case "$*" in
+  "pr view --help"*) if [ "${OLD_GH:-0}" = 0 ]; then echo "  baseRefOid"; fi ;;
   "auth status"*) exit "${GH_AUTH_RC:-0}" ;;
   *isCrossRepository*) echo "${FORK:-false} forker bob" ;;
-  "pr view"*) echo "$LIVE_HEAD" ;;
+  *"pulls/7 "*) echo "$LIVE_HEAD" ;;
   "api user"*) echo me ;;
   *"--method POST"*) while [ $# -gt 0 ]; do if [ "$1" = --input ]; then cp "$2" "$FAKE_LOG"; fi; shift; done; echo https://example/review ;;
   *pulls/7/files*) printf '%s\n' '["src/a.py","@@ -1,2 +1,4 @@\n ctx\n+new1\n+new2\n ctx2\n@@ -8,1 +10,2 @@\n ctx3\n+new3"]' ;;
@@ -110,6 +111,7 @@ set +e
 "$ROOT/scripts/pr-review.sh" o/k#7 >/dev/null 2>&1; [ $? -eq 7 ] || fail "picked one of two checkouts of o/k"
 "$ROOT/scripts/pr-review.sh" o/missing#7 >/dev/null 2>&1; [ $? -eq 7 ] || fail "ran with no checkout of the repo"
 GH_AUTH_RC=1 "$ROOT/scripts/pr-review.sh" o/r#7 >/dev/null 2>&1; [ $? -eq 4 ] || fail "ran without gh auth"
+OLD_GH=1 "$ROOT/scripts/pr-review.sh" o/r#7 >/dev/null 2>&1; [ $? -eq 4 ] || fail "ran on a gh without baseRefOid"
 "$ROOT/scripts/pr-review.sh" 'o/r#7;x' >/dev/null 2>&1; [ $? -eq 2 ] || fail "accepted a bad PR ref"
 set -e
 mkdir -p "$H/.cursor/mstack"
