@@ -40,7 +40,7 @@ A playbook step names the port, as in "the `isa.diff` port". Resolve it here whe
 | `style.gate` | Before a commit or a push: the repo's CI style gate | `format-code` | No | Only binding. Each repo's own gate commands are in its row of the Opening a PR table (`../playbooks/opening-a-pr.md`). |
 | `env.build` | Build FlyDSL, or a ROCm image with aiter and FlyDSL | `build-flydsl`, `build-rocm-image` | No | FlyDSL into an existing container or host: `build-flydsl`. A new image on a remote host: `build-rocm-image`. Pushing a shared image pauses for the human, per Autonomy. |
 | `opus.build` | The first-call JIT build wall of an aiter opus module, or a new opus module | `opus-module-build-optimization` | No | Only binding. Template compile time inside one kernel is `kernel.write`. |
-| `kb.capture` | Save a durable lesson to the `kb` resource: a lever with its root cause, a hardware fact, or a method | `kb-add-topic` | No | Only binding. Needs the `kb` resource. Offer it, and run it only after the user says yes. |
+| `kb.capture` | Save a durable lesson to the `kb` resource: a lever with its root cause, a hardware fact, or a method | `kb-add-topic` | Yes | Only binding. Needs the `kb` resource. Offer it, and run it only after the user says yes. When `kb` is not set, skip it and write `skipped kb: not set`. |
 
 ## Order of checks for a perf change
 
@@ -63,7 +63,7 @@ trace.capture ──► trace.analyze ──► lever.menu ──► next lever
 - A skill bound to one kernel and one arch applies only there. For any other kernel, run Kernel hillclimb (`../playbooks/kernel-hillclimb.md`) and borrow its levers. Confirm the arch before you trust a number from it.
 - Correctness gates every perf number (**principle-correctness-before-speed**).
 - A required port whose skill is missing or malformed, or a `skills` resource that is `not set`, stops the step. Tell the user and point them at `/setup-mstack env`. Do not work around it.
-- An optional port whose skill is missing, or whose resource is `not set`, skips the step. Write the skip note, and ask once per session. The `trace.annotate` port is the optional one.
+- An optional port whose skill is missing, or whose resource is `not set`, skips the step. Write the skip note, and ask once per session. The `trace.annotate` and `kb.capture` ports are the optional ones.
 
 ## Ignored
 

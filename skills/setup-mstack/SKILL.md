@@ -206,7 +206,7 @@ mstack machine facts (hosts, containers, forge, Jira sites, GPU lock) and local 
 
 ### 11. Report
 
-Show the env file as a short table per section. List each fact that is `not set`, and which skill stops on it. List each resource that is `not set` and what skipping it costs: `kb` and `refs` lose cited notes and peaks, `wavescope` loses the annotation loop (trace findings go in the reply or the ticket folder), a KB role that is `not set` loses its notes only, `tickets` stops ticket work, `repos` stops GPU runs and PRs, `skills` stops every port. List each Skills row that is not `ok` or has a warning, and the port it breaks. Show what changed since the last run.
+Show the env file as a short table per section. List each fact that is `not set`, and which skill stops on it. List each resource that is `not set` and what skipping it costs: `kb` and `refs` lose cited notes and peaks, `kb` also loses `kb.capture`, `wavescope` loses the annotation loop (trace findings go in the reply or the ticket folder), a KB role that is `not set` loses its notes only, `tickets` stops ticket work, `repos` stops GPU runs and PRs, `skills` stops every port. List each Skills row that is not `ok` or has a warning, and the port it breaks. Show what changed since the last run.
 
 ## Part C. Verification
 

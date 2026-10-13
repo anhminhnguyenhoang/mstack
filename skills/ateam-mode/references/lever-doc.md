@@ -98,7 +98,7 @@ Verdict is `keep` when the marginal gain is past noise, and `drop` when it is in
 
 One line per retired lever: `<ID>: <class>. <root cause>. Evidence: <path>. Retry if: <condition>.` It goes into the Deliver finding unchanged.
 
-A retired lever whose root cause is general is a candidate for the `kb.capture` port. General means true for any kernel with that mechanism, not tied to this ticket's shapes or machine. Mark those lines `KB candidate`, and offer them in Deliver. Run the port only after the user says yes. The numbers, shapes, and SHAs stay in this doc.
+A retired lever whose root cause is general is a candidate for the `kb.capture` port. General means true for any kernel with that mechanism, not tied to this ticket's shapes or machine. Mark those lines `KB candidate`, and offer them in Deliver. Run the port only after the user says yes. When `kb` is not set, skip the offer and write `skipped kb: not set`. The numbers, shapes, and SHAs stay in this doc.
 
 ## WaveScope notes
 
