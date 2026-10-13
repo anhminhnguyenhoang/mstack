@@ -1,19 +1,22 @@
 #!/usr/bin/env bash
-# usage: sync-upstream-skills.sh <checkout>... | --review-ports
+# usage: sync-upstream-skills.sh [--no-links] <checkout>... | --review-ports
 # Checks out origin's default branch of each checkout into a per-commit snapshot and points
 # the skills-dir links into it. A review already running keeps the snapshot it started on.
 # Links into a feature worktree are a deliberate pin and are left alone. --review-ports
-# syncs the checkouts that ship the pr.review and pr.validate skills.
+# syncs the checkouts that ship the pr.review and pr.validate skills. --no-links only
+# makes the snapshot. The last field of each output line is the snapshot path.
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 SKILLS=${MSTACK_SKILLS_DIR:-$HOME/.claude/skills}
 CACHE=${XDG_CACHE_HOME:-$HOME/.cache}/mstack/upstream
 mkdir -p "$CACHE"
 exec 9>"$CACHE/.lock"
-flock -n 9 || { echo "another sync is running"; exit 0; }
+flock -w 300 9 || { echo "sync lock busy for 300 s" >&2; exit 1; }
 
 main_checkout() { dirname "$(git -C "$1" rev-parse --path-format=absolute --git-common-dir)"; }
 
+links=1
+if [ "${1:-}" = --no-links ]; then links=0; shift; fi
 if [ "${1:-}" = --review-ports ]; then
   set --
   for s in $(sed -n 's/^| `pr\.\(review\|validate\)` |[^|]*| `\([^`]*\)`.*/\2/p' "$ROOT/skills/ateam-mode/references/ports.md"); do
@@ -36,7 +39,7 @@ for repo in "$@"; do
   [ -d "$wt" ] || git -C "$repo" worktree add -q --detach "$wt" "$sha"
 
   for link in "$SKILLS"/*; do
-    [ -L "$link" ] || continue
+    [ "$links" = 1 ] && [ -L "$link" ] || continue
     tgt=$(readlink -f "$link") || continue
     top=$(git -C "$tgt" rev-parse --show-toplevel 2>/dev/null) || continue
     [ "$(git -C "$top" rev-parse --path-format=absolute --git-common-dir)" = "$common" ] || continue
