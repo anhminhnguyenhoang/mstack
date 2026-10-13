@@ -23,7 +23,7 @@ use it                  required?  ──yes──► stop, ask for `/setup-msta
 |---|---|---|---|---|
 | `repos` | The domain git repos (aiter, FlyDSL, triton). Per repo: path, push remote, PR target, container, path in container | GPU runs, worktrees, PRs, SHA records | Yes, for a GPU run, a worktree, or a PR | `## Repos` |
 | `skills` | The directory of domain skills that the ports bind. `$MSTACK_SKILLS_DIR` overrides it | Every step that names a port (`ports.md`) | Yes, for a port | `## Skills` |
-| `kb` | A knowledge base the user points to. Root, index file, remote if any, and a map from roles to folders inside it (KB roles) | Read by role before research and before a lever search. Receives a lesson through `kb.capture` | No | `## KB` |
+| `kb` | A knowledge base, in any layout and under any name. Root, index file, remote if any, and a map from roles to folders inside it (KB roles) | Read by role before research and before a lever search. Receives a lesson through `kb.capture` | No | `## KB` |
 | `wavescope` | A WaveScope checkout. Path, and whether its CLI runs | The human verifies trace findings in it, and replies in `notes.json` (`trace.annotate`). Its capture profiles serve `trace.capture` | No | `## WaveScope` |
 | `refs` | A list of extra reference-doc sources. Each has a name, a path, and topics such as `peaks`, `roofline`, `numerics` | Cited for a peak, a roofline, or a numerics fact | No | `## Refs` |
 | `tickets` | The root under which the `<KEY>/` ticket folders live | `<tickets>/<KEY>/` holds the artifacts of ticket work | Yes, for ticket work | `## Tickets` |
@@ -36,7 +36,7 @@ The values live only in `~/.cursor/mstack/env.md`. `/setup-mstack env` writes th
 - Name KB content by role, as in "the `levers` role of the `kb` resource". Never write a folder of the KB in mstack text.
 - Resolve the value from `~/.cursor/mstack/env.md` when the step runs. Never from memory or from a default.
 - A resource is usable only when its row is present and its value is not `not set`.
-- Never guess a path. A path you did not read from the env file does not exist for mstack.
+- Never guess a path. A path you did not read from the env file does not exist for mstack. Setup fills the env file by signature, as in Finding a resource.
 - An optional resource that is missing or `not set`: do the step without it. Write one line in the reply: `skipped <key>: not set`. In ticket work, write the same line in the decision log or in `STATUS.md`.
 - Ask once per session, after the skip, whether the user has that resource. Ask in one sentence, and offer `/setup-mstack env` to add it. Do not ask again in the same session.
 - A required resource that is missing or `not set`: stop the step. Name the key, and ask the user for the value or for `/setup-mstack env`. A port whose skill is missing is the `skills` case (`ports.md`).
@@ -44,9 +44,33 @@ The values live only in `~/.cursor/mstack/env.md`. `/setup-mstack env` writes th
 
 `python3 scripts/check.py` enforces the rules. It fails on a home-directory path, a real ticket key, or a folder of the `kb` resource in mstack text. That covers the legacy folder names, a path token in a sentence that names the `kb` resource, and any path that the KB role table of the env file records. Only a line that carries the `(probe)` marker in `skills/setup-mstack/SKILL.md` may name a default location, and only as a guess to test. Cursor's own config paths and the upstream `~/Library/Application` line are exempt. With no `skills` directory configured, the check skips the skills checks with a note.
 
+## Finding a resource
+
+Look it up first. Ask the human only when you cannot find it. Setup finds each resource by what it contains, never by its name or its location. A name or a location is not evidence.
+
+```
+find by signature ──► one match ───────► record it, report how it was identified
+        │
+        ├──► several matches ─────► ask: which one?
+        ├──► no match ────────────► optional: ask once, may skip
+        │                           required: ask
+        └──► match fails its check ► show the failing test, ask again
+```
+
+| Key | Signature |
+|---|---|
+| `repos` | A git checkout whose remote URL ends in `ROCm/aiter`, `ROCm/FlyDSL`, or `triton-lang/triton`. Several checkouts of one repo are ambiguous |
+| `skills` | `$MSTACK_SKILLS_DIR`, else a folder Cursor loads user skills from that holds `*/SKILL.md` with valid frontmatter. The one that resolves the most `ports.md` bindings wins |
+| `kb` | A directory whose root index file links to subfolders that have their own index files, with notes that carry `name` and `description` frontmatter. Skills dirs and detected repos are excluded |
+| `wavescope` | A git checkout whose remote URL ends in `/WaveScope`, or a directory that holds `src/cli/att.js`, and `node <path>/src/cli/att.js` runs |
+| `tickets` | Folders that hold `ticket-raw.md`, `ticket-description.md`, or `ticket-description.txt`. The root is their common parent |
+| `refs` | Markdown in a detected repo's docs or in the detected KB that covers peaks, roofline, or numerics |
+
+The search is read-only and bounded. It stays inside the user's home, to depth 4, with a time limit per search. It skips `.git` internals, `node_modules`, caches, build outputs, and linked git worktrees. It reads only what identifies a thing: remote URLs, index files, frontmatter, and file names. Only `refs` reads a file body.
+
 ## KB roles
 
-No two knowledge bases share one layout. mstack never assumes a folder name, a root name, or a location. It asks for a role, and the env file maps that role to a folder.
+No two knowledge bases share one layout. mstack never assumes a folder name, a root name, or a location. It asks for a role, and the env file maps that role to a folder. Setup maps a role by the text of the folder indexes, and asks only for a role that matches several folders or none.
 
 | Role | What it holds |
 |---|---|
@@ -62,7 +86,7 @@ user's KB                      env file, ## KB              mstack text
 ├─ folder A      ──setup──►    levers  → <path in KB>  ◄──  "the `levers` role
 ├─ folder B/sub  maps roles    hardware → <path in KB>       of the `kb` resource"
 └─ README        (user         papers  → not set
-   (index file)   confirms)
+   (index file)   asks only if unclear)
 ```
 
 - A role maps to a folder or a subfolder.
@@ -84,7 +108,7 @@ Cite the note. Re-derive only what it does not cover. Pick the role that fits th
 
 ## Reading the `wavescope` resource
 
-The `wavescope` resource is usable when its row is present, its path exists, and its CLI runs. The check is `node <path>/src/cli/att.js` with no arguments. Setup asks for the path and detects nothing by name.
+The `wavescope` resource is usable when its row is present, its path exists, and its CLI runs. The check is `node <path>/src/cli/att.js` with no arguments. Setup finds it by signature, or the user gives the path.
 
 When `wavescope` is not set, or the `trace.annotate` skill is missing, every WaveScope step changes in one way:
 

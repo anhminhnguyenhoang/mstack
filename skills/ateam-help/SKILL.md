@@ -36,7 +36,7 @@ When the model rule is missing and it matters, ask whether the user wants to pic
 ## Get set up
 
 1. Install with `/add-plugin mstack` in chat, or from Customize in the sidebar.
-2. Run [`/setup-mstack`](../setup-mstack/SKILL.md). It asks for a reasoning budget, maps a model to each role, and writes a rule. Then it maps the machine (hosts, containers, forge, Jira sites, GPU lock) and any local resources you have (repos, skills dir, an optional knowledge base you point to, optional WaveScope, reference docs, ticket root) into `~/.cursor/mstack/env.md` and asks for what it cannot detect. Both apply to new chats.
+2. Run [`/setup-mstack`](../setup-mstack/SKILL.md). It asks for a reasoning budget, maps a model to each role, and writes a rule. Then it maps the machine (hosts, containers, forge, Jira sites, GPU lock) and any local resources you have (repos, skills dir, ticket root, reference docs, and the optional knowledge base and WaveScope) into `~/.cursor/mstack/env.md`. It looks each one up by what it contains and asks only for what it did not find. Both apply to new chats.
 3. Start a real task with `/ateam-mode`, a goal, and a check that can pass or fail.
 
 Installing changes nothing until the user invokes a skill. Only `/setup-mstack` loads from the user's words. The [README](../../README.md) and [guide page 1](../../docs/guide/01-setup.md) have the details. Offer to word their first prompt with them, per [`references/prompting.md`](references/prompting.md).

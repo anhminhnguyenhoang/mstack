@@ -82,13 +82,22 @@ Machine facts live in `~/.cursor/mstack/env.md`, never in the plugin. The plugin
 
 ### 7. Load current state
 
-If `~/.cursor/mstack/env.md` exists, read it. A fact marked `user` is the user's answer. Keep it unless detection now contradicts it, and then show both values and ask. A fact marked `detected` is refreshed by step 8.
+If `~/.cursor/mstack/env.md` exists, read it. A fact marked `user` is the user's answer. Keep it unless detection now contradicts it, and then show both values and ask. A fact marked `detected` is refreshed by step 8. A resource value that no longer passes its check is treated as not found.
 
 ### 8. Detect
 
 Run these and keep the raw output for step 10. A command that fails or is missing is a fact too. Record it as `absent`.
 
-A row that carries the marker `(probe)` names a default location to look in. It is a guess to test, never a fact. Record a path only after the test passes and, for a probe, only after the user confirms it in step 9. Run the Tickets row before the rows that read the ticket folders.
+Look it up before you ask. Run `python3 <plugin>/scripts/find-resources.py`, where `<plugin>` is the mstack plugin root, two directories above this SKILL.md. It finds each local resource by what it contains, never by its name or location. It prints each resource as `found`, `ambiguous`, or `not found`, with the signature that matched. `--json` prints the same data.
+
+Search policy.
+
+- Read-only. Never write, never run a repo's code. The one exception is the WaveScope CLI check.
+- Bounded. Search only the user's home, to depth 4, with a time limit per search (`--time-limit`). A search that hits the limit says so, and the resource is asked in step 9.
+- Skip `.git` internals, `node_modules`, caches, build outputs, linked git worktrees (a `.git` file, not a directory), and every path outside the user's home. Do not follow a symlink out of it.
+- Read only what identifies a thing: remote URLs, index files, frontmatter, and file names under a candidate. Read a file body only for `refs`.
+
+A row that carries the marker `(probe)` names a conventional tool location, such as a folder Cursor loads skills from. It is a guess to test, never a fact. Record a path only after the test passes. Run the Tickets row before the rows that read the ticket folders.
 
 | Fact | Command |
 |---|---|
@@ -97,57 +106,62 @@ A row that carries the marker `(probe)` names a default location to look in. It 
 | Host ROCm | `readlink -f /opt/rocm` |
 | Host torch | `python3 -c 'import torch'` (expected `absent`: runs go in a container) |
 | The user's containers | `docker ps -a --format '{{.Names}}\t{{.Image}}\t{{.Status}}'`, then `docker inspect --format '{{.Name}} {{range .Mounts}}{{.Source}}:{{.Destination}} {{end}}' <name>`. Keep only containers with a mount under `$HOME`. Every other container belongs to someone else. List it nowhere |
-| Tickets | None. The root is a path the user gives. Take it from the env file, or from step 9. No root: `not set` |
+| Tickets | The finder: folders that hold `ticket-raw.md`, `ticket-description.md`, or `ticket-description.txt`. The last two names are a load from before mstack. The root is the common parent of those folders. Folders under several parents: `ambiguous`. None: `not found` |
 | Ticket containers | `<tickets>/*/.devcontainer/devcontainer.json`: the `--name=` entry in `runArgs`, and `workspaceMount`. Skipped when `tickets` is `not set` |
-| Repos | None to find. The user names each checkout path. Take the paths from the env file, or from step 9. For each path: `git -C <path> remote -v`, the current branch, and for each remote its push URL (`git -C <path> remote get-url --push <remote>`). Record the scheme of that URL: `ssh` for `git@host:` and `ssh://`, `https` for `https://`. Never assume `ssh`. Never change a remote's URL. No path: `not set` |
+| Repos | The finder: a git checkout, a `.git` directory, whose remote URL ends in `ROCm/aiter`, `ROCm/FlyDSL`, or `triton-lang/triton`, with or without `.git`. The folder name does not count. Several checkouts of one repo: `ambiguous`. For each repo path, confirmed or given: `git -C <path> remote -v`, the current branch, and for each remote its push URL (`git -C <path> remote get-url --push <remote>`). Record the scheme of that URL: `ssh` for `git@host:` and `ssh://`, `https` for `https://`. Never assume `ssh`. Never change a remote's URL. None: `not found` |
 | Forge | `gh auth status`, and `get_me` on each GitHub MCP namespace in the session. Per push remote, test push reachability read-only for its scheme. All schemes: `GIT_TERMINAL_PROMPT=0 timeout 15 git -C <path> ls-remote --heads <remote>`, so it never waits on a credential prompt. `ssh` only: `timeout 15 ssh -o BatchMode=yes -T git@<host>`. `https` only: note which credential path answers, a helper from `git config --get-all credential.helper` or `gh` when `gh auth status` succeeds. A public repo answers `ls-remote` without credentials, so `ls-remote` alone does not prove push for `https`: record `no helper` when no credential path exists. Never read, print, or store a token, and never put one in a URL. Per host or org, the push remote is the remote and scheme that pass. PR path is `gh` when `gh auth status` succeeds, or the MCP namespace whose sign-in covers that host or org. The order of use is in [`references/forge.md`](../ateam-mode/references/forge.md) |
 | Jira sites | The `JIRA_URL` of each server in `~/.cursor/mcp.json`, and each remote Atlassian MCP namespace in the session. Seed project prefixes from the URL and `**Site:**` lines in `<tickets>/*/ticket-raw.md`: the key prefix maps to that site |
-| GPU picker | `test -f <skills>/<pr.validate skill>/pick-idle-gpu.py`. `<skills>` is the directory of the `skills` resource, and `<pr.validate skill>` is the skill that `ports.md` binds to `pr.validate`. Skipped when `skills` is not found |
-| `kb` | Detects nothing by name. Runs only after the user gives a root in step 9. Read-only: `git -C <root> remote get-url origin`, `ls <root>`, the root index file, and the first lines of the index of each top-level folder. A path that does not exist is `not set` |
-| `wavescope` | Detects nothing by name. Runs only after the user gives a checkout path in step 9. `node <path>/src/cli/att.js` with no arguments: `runs` when it prints usage, `does not run` when it fails or `node` is absent |
-| `skills` | The directory is `$MSTACK_SKILLS_DIR` when set, else the path the user gives in step 9. In that ask, offer the folders Cursor loads user skills from, `~/.claude/skills` and `~/.cursor/skills` (probe), as options the user confirms or replaces. Never pick one silently. Then run `MSTACK_SKILLS_DIR=<dir> python3 <plugin>/scripts/check.py --skills-only`, where `<plugin>` is the mstack plugin root, two directories above this SKILL.md. It resolves every binding in [`references/ports.md`](../ateam-mode/references/ports.md), checks each bound skill's frontmatter, names each installed skill that no port binds, and prints the Skills table. A symlinked skill's row carries its repo and checked-out branch. Exit 1 means at least one row is not `ok`. Record the rows either way. No skills dir: record the section as `not set` |
-| `refs` | None to find. The user names each source in step 9: a name, a path, and its topics (`peaks`, `roofline`, `numerics`). Only on the user's request, search a directory the user names for candidate docs, and the user confirms each hit. No source: `not set` |
+| GPU picker | `test -f <skills>/<pr.validate skill>/pick-idle-gpu.py`. `<skills>` is the directory of the `skills` resource, and `<pr.validate skill>` is the skill that `ports.md` binds to `pr.validate`. Skipped when `skills` is `not found` |
+| `kb` | The finder: a directory whose root index file, whatever it is called, links to subfolders that have their own index files, with notes that carry YAML frontmatter (`name`, `description`). It excludes skills dirs and the detected repos. Several: `ambiguous`. None: `not found`. The finder also reads the git remote and proposes the role map (see Map the knowledge base) |
+| `wavescope` | The finder: a git checkout whose remote URL ends in `/WaveScope`, or a directory that holds `src/cli/att.js`. Then `node <path>/src/cli/att.js` with no arguments: `runs` when it prints usage, `does not run` when it fails or `node` is absent. Several: `ambiguous`. None: `not found` |
+| `skills` | `$MSTACK_SKILLS_DIR` when set. Else the folders Cursor loads user skills from, `~/.claude/skills` and `~/.cursor/skills` (probe), whichever hold `*/SKILL.md` with valid frontmatter. The one that resolves the most bindings in [`references/ports.md`](../ateam-mode/references/ports.md) wins. A tie: `ambiguous`. Then run `MSTACK_SKILLS_DIR=<dir> python3 <plugin>/scripts/check.py --skills-only`. It resolves every binding, checks each bound skill's frontmatter, names each installed skill that no port binds, and prints the Skills table. A symlinked skill's row carries its repo and checked-out branch. Exit 1 means at least one row is not `ok`. Record the rows either way. None: `not found` |
+| `refs` | The finder: markdown under the `docs` folder of each detected repo, and under the detected KB, that mentions peaks (`TB/s`, `TFLOPS`, `peak`), roofline, or numerics at least twice. Each hit is a proposed source with those topics. None: `not found` |
 
 ### 9. Ask what detection cannot settle
 
-Ask once, in one AskQuestion form. Offer the detected values as options, plus `none` or `skip` where it applies. Ask only what is unknown or contradicted:
+Look it up first, and ask the human only when you cannot find it. Step 8 already looked. Ask only for a resource that was `not found`, is `ambiguous`, or failed its check. A `found` resource is not asked. It is reported in step 11, and the user corrects it by rerunning `/setup-mstack env`.
+
+Ask once, in one AskQuestion form. Offer the detected values as options, plus `none` or `skip` where it applies. Never guess a name or a location. Ask only what is unknown or contradicted:
 
 - The SSH alias or aliases for this host, as other machines reach it.
-- Which repos the user works in, and where each checkout is: a path per repo, or `skip`. Never guess a name or a location. Check that each path is a git checkout (`git -C <path> rev-parse --show-toplevel`), then run the Repos and Forge rows on it. Ask again for a path that fails.
-- The ticket root: a path, or `skip`. Check that the path exists. Ask again for a path that fails, or record `not set`.
-- Search help, only when the user asks for it. Do not offer it unprompted, and never search a directory the user did not name.
-  - Repos: ask for a directory. List git checkouts under it, read-only: `find <dir> -maxdepth 4 -name .git -prune`, then `git -C <checkout> remote -v`. Identify a checkout by its remote URL, never by its folder name. A URL that ends in `ROCm/aiter`, `ROCm/FlyDSL`, or `triton-lang/triton` (with or without `.git`) marks that repo. The user confirms each hit.
-  - Tickets: ask for a directory. List folders under it that hold `ticket-raw.md`, `ticket-description.md`, or `ticket-description.txt`, read-only: `find <dir> -maxdepth 3 \( -name ticket-raw.md -o -name ticket-description.md -o -name ticket-description.txt \)`. The last two names are a load from before mstack. Propose the common parent of those folders as the root. The user confirms it.
+- A required resource that was `not found`, as a path or `skip`:
+  - `repos`: the checkout path of each repo the user works in, for GPU runs and PRs.
+  - `skills`: the skills dir, for ports. `$MSTACK_SKILLS_DIR` also sets it.
+  - `tickets`: the ticket root, for ticket work.
+- An `ambiguous` resource: show the candidates and let the user pick one, or say none. That covers several checkouts of one repo, several skills dirs that tie, several knowledge bases, several WaveScope checkouts, and ticket folders under several parents.
+- An optional module that was `not found`, once, and it may be skipped. Ask in this same form: "Do you have a knowledge base? Where?", "Do you use WaveScope? Where is its checkout?", and "Do you have reference docs? Where?". For `refs`, ask for a name, a path, and topics (`peaks`, `roofline`, `numerics`) per source, and allow more than one source. mstack works without any of them.
+- A value that failed its check: a path that is not a git checkout (`git -C <path> rev-parse --show-toplevel`), a path that does not exist, or a WaveScope CLI that does not run. Show the failing test. Ask again, or record `not set`.
+- A search that hit its time limit. Ask for the path directly.
 - Other GPU hosts, one per arch not present here (for example `gfx942` when this host is `gfx950`). For each: SSH alias, default container, and repo path. `none` is a valid answer.
 - For each confirmed repo: the remote to push branches to (name and scheme), and the upstream PRs target.
 - For each repo: the default container and its mount path, when no ticket names one.
 - The GPU lock convention. The default is `flock /tmp/gpu-<id>.lock` with the picker that the `pr.validate` port's skill ships. Offer `team convention` as free text.
-- For `skills` and `refs`, ask in this same form: "Where is your skills dir?" and "Do you have reference docs? Give the path, or skip." For `refs`, ask for a name, a path, and topics (`peaks`, `roofline`, `numerics`) per source. Allow more than one source. Check that each path the user gives exists. Ask again for a path that fails, or record `not set`.
-- The knowledge base and WaveScope are independent and optional. mstack works without them. Ask in this same form: "Do you have a knowledge base? Where is it? Give the path, or skip." And: "Do you use WaveScope? Where is its checkout? Give the path, or skip." Use no default name and no default location. Check that each path exists, and ask again for one that fails.
-- Only when the user asks for help finding a knowledge base, offer a read-only search. List directories under `$HOME`, to depth 3, that are a git repo or hold a top-level `README.md` that indexes subfolders. Show the candidates. The user picks one, or says none.
 - The Jira MCP namespace for each site it cannot map, and the project prefixes for each site it has no ticket for. A prefix maps to exactly one site.
 - The PR path for each GitHub host or org (`gh` or an MCP namespace name), when detection finds none or more than one. The push remote is asked only when its reachability test fails or an `https` remote has no credential path. Show the remote URL without any credential, the scheme, and the failing test. Never offer to switch the scheme.
 
-**Map the knowledge base.** Run this after the user gives a root. A knowledge base has its own layout, so map it before you record anything.
+When the user gives a path, run the same signature test on it. A path that fails the test is asked again.
+
+**Map the knowledge base.** Run this once the root is found or given. A knowledge base has its own layout, so map it before you record anything.
 
 ```
-root given ──► list top-level folders ──► read each folder's index ──► propose role → folder
-                 (read-only)               (read-only)                          │
-                                                                                ▼
-                                       user confirms or changes ──► record in the env file
+root found ──► read root index and each folder index ──► score each role per folder
+                         (read-only)                                  │
+                                                one folder clearly ◄──┴──► several or none
+                                                    │                          │
+                                              map it, no ask             ask the user
 ```
 
-1. List the top-level folders. Read the root index file, whatever it is called, and the index of each folder.
-2. Propose a role-to-folder map for the roles in [`references/resources.md`](../ateam-mode/references/resources.md): `hardware`, `method`, `levers`, `failure-modes`, `papers`, `dsl`.
-3. A role may map to a subfolder. Several roles may share one folder. A role with no match is `not set`. Do not rename or require any folder.
-4. Show the map as a table and ask the user to accept it or change specific roles. Prefer AskQuestion over free text.
-5. Record the root, the index file, and the git remote if any, with the confirmed map, in step 10.
+1. The finder lists the top-level folders. It reads the root index file and the index of each folder, and scores each role in [`references/resources.md`](../ateam-mode/references/resources.md) against that text.
+2. A role that one folder clearly matches is mapped without a question. A role may map to a subfolder. Several roles may share one folder.
+3. A role that matches several folders, or none, is asked in the same form, with the candidates as options. A role with no match that the user does not supply is `not set`.
+4. Do not rename or require any folder.
+5. Record the root, the index file, and the git remote if any, with the map, in step 10. The report in step 11 shows the map, so the user can change any role.
 
 A fact or a resource the user skips is written as `not set`. A skill that needs a `not set` required fact stops and asks. A step that wants a `not set` optional resource skips it with a note (`references/resources.md`). Nothing ever guesses.
 
 ### 10. Write the env file
 
-Overwrite `~/.cursor/mstack/env.md` in full, so a rerun stays idempotent. Every row ends with its source: `detected <date>` or `user <date>`. Use this shape:
+Overwrite `~/.cursor/mstack/env.md` in full, so a rerun stays idempotent. Every row ends with its source: `detected <date>` or `user <date>`. A detected resource records the signature that matched, as in `detected <date>, remote ROCm/aiter`. Use this shape:
 
 ```
 # mstack environment (machine-local, written by /setup-mstack env)
@@ -206,7 +220,13 @@ mstack machine facts (hosts, containers, forge, Jira sites, GPU lock) and local 
 
 ### 11. Report
 
-Show the env file as a short table per section. List each fact that is `not set`, and which skill stops on it. List each resource that is `not set` and what skipping it costs: `kb` and `refs` lose cited notes and peaks, `kb` also loses `kb.capture`, `wavescope` loses the annotation loop (trace findings go in the reply or the ticket folder), a KB role that is `not set` loses its notes only, `tickets` stops ticket work, `repos` stops GPU runs and PRs, `skills` stops every port. List each Skills row that is not `ok` or has a warning, and the port it breaks. Show what changed since the last run.
+List every resource with its value and how it was identified, so the user can correct any of them by rerunning `/setup-mstack env`. Use one table.
+
+```
+| Resource | Value | Identified by |
+```
+
+The `Identified by` cell is the signature that matched and `detected <date>`, or `user <date>` for a path the user gave, or `not set`. Show the KB role map under the table. Then show the env file as a short table per section. List each fact that is `not set`, and which skill stops on it. List each resource that is `not set` and what skipping it costs: `kb` and `refs` lose cited notes and peaks, `kb` also loses `kb.capture`, `wavescope` loses the annotation loop (trace findings go in the reply or the ticket folder), a KB role that is `not set` loses its notes only, `tickets` stops ticket work, `repos` stops GPU runs and PRs, `skills` stops every port. List each Skills row that is not `ok` or has a warning, and the port it breaks. Show what changed since the last run.
 
 ## Part C. Verification
 
