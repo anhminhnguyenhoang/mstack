@@ -193,7 +193,9 @@ def resolve(name):
         if os.path.islink(where):
             top = git(os.path.realpath(where), "rev-parse", "--show-toplevel")
             repo, branch = (tilde(top), git(top, "branch", "--show-current") or "detached") if top else (tilde(os.path.realpath(where)), "-")
-            if top and branch != "main":
+            if branch == "detached" and top and git(top, "rev-parse", "HEAD") == git(top, "rev-parse", "origin/HEAD"):
+                branch = "origin/HEAD"
+            if top and branch not in ("main", "origin/HEAD"):
                 warn = f"{repo} is on {branch}, not main, and the link follows the checked-out branch"
     if not os.path.isdir(where):
         return "missing", "no skill directory", repo, branch, warn
