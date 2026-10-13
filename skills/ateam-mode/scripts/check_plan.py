@@ -338,8 +338,11 @@ def self_test():
 def main(argv):
     if len(argv) > 1 and argv[1] == "--self-test":
         return self_test()
-    if len(argv) < 2:
+    if len(argv) < 2 or argv[1] in ("-h", "--help"):
         print("Usage: python3 check_plan.py <plan.md> | --self-test", file=sys.stderr)
+        return 0 if len(argv) > 1 else 2
+    if not os.path.isfile(argv[1]):
+        print(f"error: no such file: {argv[1]}", file=sys.stderr)
         return 2
     report, count, problems = check(argv[1])
     for line in report:
