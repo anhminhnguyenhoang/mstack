@@ -18,12 +18,46 @@ It is a fork of [pstack](https://github.com/cursor/plugins/tree/main/pstack) (se
 
 two steps:
 
-1. run [`/setup-mstack`](./skills/setup-mstack/SKILL.md), pick a reasoning budget, and choose which models you want. it then maps this machine (gpu hosts, your containers, forge, jira sites, gpu lock) and your local resources into `~/.cursor/mstack/env.md` and asks for what it cannot detect. the resources are your repos, your skills dir, a knowledge base, reference docs, and a ticket root. each is optional until a step needs it. a step that only benefits from one skips it with a note and asks once whether you have it. a step that requires one stops and asks. see [`resources.md`](./skills/ateam-mode/references/resources.md).
+1. run [`/setup-mstack`](./skills/setup-mstack/SKILL.md), pick a reasoning budget, and choose which models you want. it then maps this machine (gpu hosts, your containers, forge, jira sites, gpu lock) into `~/.cursor/mstack/env.md`. it also looks up your local resources and optional modules by what they contain, and asks only for what it did not find. see [local resources and optional modules](#local-resources-and-optional-modules).
 2. use [`/ateam-mode`](./skills/ateam-mode/SKILL.md) whenever you're doing anything that requires rigor.
 
 new here? the [mstack guide](./docs/guide/README.md) walks you through a first real task, from setup and prompting through verification and overnight runs. stuck, or unsure which skill fits? ask [`/ateam-help`](./skills/ateam-help/SKILL.md).
 
 that's it. the other skills are situational; the mode skill uses them for you as needed. out of the box the mode splits work by model strength: code delegates (feature, refactoring, bug fix, perf, hillclimb) go to sonnet 5.5, while the hardest changes, prose, and judgment go to opus 5.5. the default panel is opus 5.5 / sonnet 5.5. [`/setup-mstack`](./skills/setup-mstack/SKILL.md) changes any of it.
+
+## local resources and optional modules
+
+setup looks first and asks second. it finds each thing by what it contains, never by its name or location. it asks only when it finds nothing, finds several, or cannot verify what it found.
+
+```
+/setup-mstack env
+   │
+   ▼
+read-only search of your home  (bounded depth, time limit, no .git internals)
+   │
+   ├── one match ────────► recorded, listed in the report
+   ├── several matches ──► asks which one
+   ├── no match ─────────► required: asks     optional: asks once, may skip
+   └── check fails ──────► shows the failing test, asks again
+   │
+   ▼
+~/.cursor/mstack/env.md   (outside the plugin, an update never overwrites it)
+```
+
+| resource | what it enables | required | how setup finds it | without it |
+|---|---|---|---|---|
+| `repos` | gpu runs, worktrees, prs, sha records | for a gpu run, a worktree, or a pr | a git checkout whose remote url ends in `ROCm/aiter`, `ROCm/FlyDSL`, or `triton-lang/triton`. several checkouts of one repo: it asks which | gpu runs and prs stop |
+| `skills` | every port. the domain skills dir | for a port | `$MSTACK_SKILLS_DIR`, else a folder cursor loads user skills from that holds `*/SKILL.md` with valid frontmatter, the one that resolves the most port bindings. link each skill from its repo so it stays current | ports stop |
+| `tickets` | ticket folders for jira work | for ticket work | folders that hold `ticket-raw.md`, `ticket-description.md`, or `ticket-description.txt`. the root is their common parent | ticket work stops |
+| `refs` | cited peaks, rooflines, numerics | no | markdown in your repos' docs or your kb that covers peaks, roofline, or numerics. setup proposes the topics | peaks come from public sources |
+| `kb` | cited notes, and `kb.capture` for lessons. any name, any layout | no | a directory whose root index links to subfolders that have their own index files, with notes that carry `name` and `description` frontmatter. setup maps its folders to roles, and asks only about a role it cannot match | no cited notes, no `kb.capture` |
+| `wavescope` | the trace annotation loop. an independent checkout with a node cli | no | a checkout whose remote url ends in `/WaveScope`, or a directory that holds `src/cli/att.js`, and the cli runs | trace findings go in the reply or the ticket folder |
+
+the knowledge base and wavescope are independent, optional modules. mstack works without them.
+
+if setup missed one, answer its question with a path, or rerun `/setup-mstack env`. for the skills dir, you can also set `$MSTACK_SKILLS_DIR`. the report at the end lists every resource, its value, and how it was identified, so you can correct any of them.
+
+pushing works over ssh or https with the credentials you already have. setup reads each repo's remote scheme, tests it read-only, and never changes a remote or stores a token.
 
 ## usage
 
