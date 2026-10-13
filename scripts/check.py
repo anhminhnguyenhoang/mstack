@@ -65,6 +65,7 @@ ap.add_argument("root", nargs="?", default=os.path.dirname(os.path.dirname(os.pa
 mode = ap.add_mutually_exclusive_group()
 mode.add_argument("--no-skills", action="store_true", help="skip the checks that read the skills dir")
 mode.add_argument("--skills-only", action="store_true", help="run only the port and skills-dir checks, and print the Skills table")
+ap.add_argument("--no-tests", action="store_true", help="skip tests/test_scripts.sh")
 args = ap.parse_args()
 os.chdir(os.path.abspath(args.root))
 home = os.path.expanduser("~")
@@ -432,6 +433,13 @@ if not args.skills_only:
                     print(f"SLOP (unslop rule {rule}) {path}:{n}: {m.group(0)}")
     fail += slop
     summary.append(f"slop {slop}")
+
+if not args.no_tests and not args.skills_only:
+    r = subprocess.run(["bash", "tests/test_scripts.sh"], capture_output=True, text=True)
+    if r.returncode:
+        print(r.stdout + r.stderr, end="")
+        fail += 1
+    summary.append(f"script tests {'ok' if r.returncode == 0 else 'FAIL'}")
 
 print(" | ".join(summary))
 print("RESULT", "PASS" if fail == 0 else f"FAIL ({fail})")
