@@ -94,6 +94,41 @@ for how in var cwd; do
 done
 echo "ok hook"
 
+# --- climb-gate.py: the harness lock, and the plugin stop hook that checks it
+CG="$ROOT/scripts/climb-gate.py" R="$T/climb" TK="$T/ticket"
+g init -q "$R"; echo k0 > "$R/kernel.py"; g -C "$R" add -A; g -C "$R" commit -qm pre
+g -C "$R" worktree add -q -b old "$T/climb-old"
+echo h1 > "$R/test_x.py"; echo k1 > "$R/kernel.py"; g -C "$R" add -A; g -C "$R" commit -qm B
+g -C "$R" worktree add -q -b L1 "$T/climb-L1"
+stop() { printf '{"conversation_id":"%s","status":"%s"}' "$1" "${2:-completed}" | python3 "$CG" hook; }
+env -u CURSOR_CONVERSATION_ID python3 "$CG" freeze "$TK" "$R" test_x.py | grep -q "^NOTE stop hook off" || fail "freeze without a chat id did not say the hook is off"
+CURSOR_CONVERSATION_ID=c1 python3 "$CG" freeze "$TK" "$R" test_x.py >/dev/null
+python3 "$CG" check "$TK" >/dev/null || fail "check red on an unchanged harness"
+[ "$(stop c1)" = '{}' ] || fail "stop hook fired on an unchanged harness, or on a worktree that does not descend from B"
+echo k2 > "$T/climb-L1/kernel.py"
+[ "$(stop c1)" = '{}' ] || fail "stop hook fired on a kernel edit"
+echo h2 > "$T/climb-L1/test_x.py"
+python3 "$CG" check "$TK" 2>/dev/null && fail "check passed a harness edited in a lever worktree"
+stop c1 | grep -q "climb-L1/test_x.py" || fail "stop hook missed a harness edit in a lever worktree"
+[ "$(stop c2)" = '{}' ] || fail "stop hook fired for another chat"
+[ "$(stop c1 aborted)" = '{}' ] || fail "stop hook fired on an aborted stop"
+[ "$(stop ../climbs/c1)" = '{}' ] || fail "stop hook followed a path in the chat id"
+[ "$(echo garbage | python3 "$CG" hook)" = '{}' ] || fail "stop hook did not fail open on bad input"
+rm "$T/climb-L1/test_x.py"
+stop c1 | grep -q "test_x.py (missing)" || fail "stop hook missed a harness file deleted from a lever worktree"
+g -C "$T/climb-L1" checkout -q -- test_x.py
+echo h3 > "$R/test_x.py"
+shook=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["hooks"]["stop"][0]["command"])' "$ROOT/hooks/hooks.json")
+ev='{"conversation_id":"c1","status":"completed"}'
+(cd /tmp && echo "$ev" | CURSOR_PLUGIN_ROOT="$ROOT" sh -c "$shook") | grep -q followup_message || fail "plugin stop hook did not run (var)"
+(cd "$ROOT" && echo "$ev" | env -u CURSOR_PLUGIN_ROOT sh -c "$shook") | grep -q followup_message || fail "plugin stop hook did not run (cwd)"
+CURSOR_CONVERSATION_ID=c1 python3 "$CG" done "$TK" >/dev/null
+[ "$(stop c1)" = '{}' ] || fail "stop hook fired after done"
+CURSOR_CONVERSATION_ID=c3 python3 "$CG" freeze "$T/ticket3" "$R" test_x.py >/dev/null
+rm -rf "$T/ticket3"
+[ "$(stop c3)" = '{}' ] && [ ! -e "$T/cache/mstack/climbs/c3" ] || fail "stop hook kept the registration of a deleted ticket"
+echo "ok climb-gate"
+
 # --- check.py: a snapshot whose skill matches origin/HEAD is not a branch warning; a stale one is
 echo unrelated2 > "$T/seed-r/README"; g -C "$T/seed-r" commit -qam unrelated2; g -C "$T/seed-r" push -q origin main
 "$ROOT/scripts/sync-upstream-skills.sh" --review-ports >/dev/null
