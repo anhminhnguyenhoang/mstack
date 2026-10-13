@@ -13,9 +13,9 @@ GEMM perf lets a kernel author measure a GEMM kernel against a reference on one 
 
 ## How to get to it (user POV)
 
-- Run the frozen bench harness through the `bench.run` port.
-- Run the op test and read its perf table, through the `bench.run` port.
-- Compare two revisions through the `pr.validate` port.
+- Run the frozen bench harness through the `bench.run` skill function.
+- Run the op test and read its perf table, through the `bench.run` skill function.
+- Compare two revisions through the `pr.validate` skill function.
 
 ## Driving it with bench.run
 
@@ -33,11 +33,11 @@ Preconditions:
 - **Percent of peak.** Compute TFLOPS as `2*M*N*K` over the median time. State it as a percent of the MFMA peak for the arch and dtype, and cite where the peak comes from. Follow **principle-explain-the-number**.
 - **Explain the number.** For any speedup or regression, name what limits it and rule out a measurement artifact. Follow **principle-explain-the-number**.
 - **Artifact.** Read the JSON that `bench.run` wrote. It holds the arch, the GPU index, the SHAs, the exact command, a `perf` row for each shape and each `side` with `us_median`, `runs`, `min_us`, `max_us`, and `regime`, and the path to the saved stdout.
-- **Revision compare.** Run the `pr.validate` port for the base and the head. Do not compare two separate hand runs.
+- **Revision compare.** Run the `pr.validate` skill function for the base and the head. Do not compare two separate hand runs.
 
 ## Gotchas
 
-- A busy GPU gives a meaningless number. The `bench.run` port reports `NO_GPU` instead, and the feature stays unproved.
+- A busy GPU gives a meaningless number. The `bench.run` skill function reports `NO_GPU` instead, and the feature stays unproved.
 - A JSON file typed by hand is not evidence. It must come from the run.
 - Changing the harness during a hillclimb breaks the comparison. Freeze it and record its hash.
 - Cold-L2, warm, and `hipGraph` runs differ. State the regime on every row. Follow **benchmark-checklist**.

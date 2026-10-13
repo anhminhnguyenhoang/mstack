@@ -7,7 +7,7 @@ set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 SKILLS=${MSTACK_SKILLS_DIR:-$HOME/.claude/skills}
 ENV_FILE=${MSTACK_ENV:-$HOME/.cursor/mstack/env.md}
-PORTS="$ROOT/skills/ateam-mode/references/ports.md"
+SKILL_FUNCTIONS="$ROOT/skills/ateam-mode/references/skill-functions.md"
 GH=${GH:-gh}
 
 case "${1:-}" in */*#*) repo=${1%#*} pr=${1##*#} ;; *) pr=${1:-} repo=${2:-ROCm/aiter} ;; esac
@@ -15,7 +15,7 @@ case "${1:-}" in */*#*) repo=${1%#*} pr=${1##*#} ;; *) pr=${1:-} repo=${2:-ROCm/
 grep -q baseRefOid <<<"$("$GH" pr view --help 2>&1)" || { echo "gh is too old for the review's fetch step: install gh 2.24 or later" >&2; exit 4; }
 "$GH" auth status >/dev/null 2>&1 || { echo "gh is not signed in: run gh auth login, or set GH_TOKEN" >&2; exit 4; }
 
-port_skill() { sed -n "s/^| \`pr\.$1\` |[^|]*| \`\([^\`]*\)\`.*/\1/p" "$PORTS"; }
+function_skill() { sed -n "s/^| \`pr\.$1\` |[^|]*| \`\([^\`]*\)\`.*/\1/p" "$SKILL_FUNCTIONS"; }
 main_checkout() { dirname "$(git -C "$1" rev-parse --path-format=absolute --git-common-dir)"; }
 origin_is() { local u; u=$(git -C "$1" remote get-url origin 2>/dev/null) || return 1; u=${u,,}; u=${u%.git}; [[ $u == *[:/]"${2,,}" ]]; }
 
@@ -34,8 +34,8 @@ checkout_of() {
   return 7
 }
 
-"$ROOT/scripts/sync-upstream-skills.sh" --review-ports >&2
-review=$(port_skill review) validate=$(port_skill validate)
+"$ROOT/scripts/sync-upstream-skills.sh" --review-functions >&2
+review=$(function_skill review) validate=$(function_skill validate)
 skill_top=$(git -C "$(readlink -f "$SKILLS/$review")" rev-parse --show-toplevel)
 checkout=$(checkout_of "$repo") || exit 7
 

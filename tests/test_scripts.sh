@@ -6,9 +6,9 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 T=$(mktemp -d)
 trap 'rm -rf "$T"' EXIT
 fail() { echo "FAIL $*" >&2; exit 1; }
-PORTS="$ROOT/skills/ateam-mode/references/ports.md"
-S=$(sed -n 's/^| `pr.review` |[^|]*| `\([^`]*\)`.*/\1/p' "$PORTS")
-V=$(sed -n 's/^| `pr.validate` |[^|]*| `\([^`]*\)`.*/\1/p' "$PORTS")
+SKILL_FUNCTIONS="$ROOT/skills/ateam-mode/references/skill-functions.md"
+S=$(sed -n 's/^| `pr.review` |[^|]*| `\([^`]*\)`.*/\1/p' "$SKILL_FUNCTIONS")
+V=$(sed -n 's/^| `pr.validate` |[^|]*| `\([^`]*\)`.*/\1/p' "$SKILL_FUNCTIONS")
 [ -n "$S" ] && [ -n "$V" ] || fail "no skill bound to pr.review or pr.validate"
 g() { git -c user.name=t -c user.email=t@t -c init.defaultBranch=main -c advice.detachedHead=false "$@"; }
 H="$T/home" C="$T/cache/mstack/upstream"
@@ -60,27 +60,29 @@ grep -q v2 "$T/skills/$S/SKILL.md" || fail "link not at origin latest"
 [ "$(git -C "$H/checkout" rev-parse HEAD)" = "$local_head" ] || fail "user checkout moved"
 
 push v3
-"$ROOT/scripts/sync-upstream-skills.sh" --review-ports >/dev/null
-grep -q v3 "$T/skills/$S/SKILL.md" || fail "--review-ports did not advance"
+"$ROOT/scripts/sync-upstream-skills.sh" --review-functions >/dev/null
+grep -q v3 "$T/skills/$S/SKILL.md" || fail "--review-functions did not advance"
 grep -q v2 "$snap1/.claude/skills/$S/SKILL.md" || fail "superseded snapshot changed under a running review"
 touch -d '2 days ago' "$snap1/.superseded"
-"$ROOT/scripts/sync-upstream-skills.sh" --review-ports >/dev/null
+"$ROOT/scripts/sync-upstream-skills.sh" --review-functions >/dev/null
 [ ! -d "$snap1" ] || fail "day-old superseded snapshot not pruned"
-[ "$(readlink "$T/skills/kskill")" = "$H/kcheckout/.claude/skills/kskill" ] || fail "--review-ports moved a link of another repo"
+[ "$(readlink "$T/skills/kskill")" = "$H/kcheckout/.claude/skills/kskill" ] || fail "--review-functions moved a link of another repo"
 snap3=$(snap_of "$S")
 echo unrelated > "$T/seed-r/README"; g -C "$T/seed-r" add README; g -C "$T/seed-r" commit -qm unrelated; g -C "$T/seed-r" push -q origin main
-"$ROOT/scripts/sync-upstream-skills.sh" --review-ports >/dev/null
+"$ROOT/scripts/sync-upstream-skills.sh" --review-functions >/dev/null
 [ "$(snap_of "$S")" = "$snap3" ] || fail "new snapshot although the skills did not change"
 mkdir -p "$H/other"; g clone -q "$T/remotes/o/k.git" "$H/other/checkout"
 osnap=$("$ROOT/scripts/sync-upstream-skills.sh" --no-links "$H/other/checkout" | tail -1); osnap=${osnap##*: }
 push v4
-"$ROOT/scripts/sync-upstream-skills.sh" --review-ports >/dev/null
+"$ROOT/scripts/sync-upstream-skills.sh" --review-functions >/dev/null
 grep -q v4 "$T/skills/$S/SKILL.md" || fail "skills change did not make a new snapshot"
 [ -d "$osnap" ] && [ ! -e "$osnap/.superseded" ] || fail "prune touched a snapshot of another repo with the same name"
 
 mkdir "$T/empty"
-out=$(MSTACK_SKILLS_DIR="$T/empty" "$ROOT/scripts/sync-upstream-skills.sh" --review-ports)
+out=$(MSTACK_SKILLS_DIR="$T/empty" "$ROOT/scripts/sync-upstream-skills.sh" --review-functions)
 [ "$out" = "no pr.review or pr.validate skill is linked in $T/empty" ] || fail "empty skills dir: $out"
+out=$(MSTACK_SKILLS_DIR="$T/empty" "$ROOT/scripts/sync-upstream-skills.sh" --review-ports)
+[ "$out" = "no pr.review or pr.validate skill is linked in $T/empty" ] || fail "old --review-ports alias: $out"
 echo "ok sync"
 
 # --- plugin hook: runs from the plugin root, with or without CURSOR_PLUGIN_ROOT
@@ -151,7 +153,7 @@ echo "ok climb-gate"
 
 # --- check.py: a snapshot whose skill matches origin/HEAD is not a branch warning; a stale one is
 echo unrelated2 > "$T/seed-r/README"; g -C "$T/seed-r" commit -qam unrelated2; g -C "$T/seed-r" push -q origin main
-"$ROOT/scripts/sync-upstream-skills.sh" --review-ports >/dev/null
+"$ROOT/scripts/sync-upstream-skills.sh" --review-functions >/dev/null
 [ "$(git -C "$(snap_of "$S")" rev-parse HEAD)" != "$(git -C "$H/checkout" rev-parse origin/main)" ] || fail "fixture: snapshot should trail origin"
 out=$(cd "$ROOT" && python3 scripts/check.py --no-tests 2>&1 || true)
 echo "$out" | grep -q "^WARN $S:" && fail "check.py warns on a snapshot whose skill matches origin/HEAD"

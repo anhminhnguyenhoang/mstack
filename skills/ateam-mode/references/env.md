@@ -19,7 +19,7 @@ Rules.
 - The host has no torch. Run every test and benchmark in the container, never on the bare host.
 - A container sees only its bind mounts. A path outside a mount is invisible to it. Make worktrees inside the mount.
 - Touch only the user's containers, as listed in the env file. Never `docker exec`, stop, or remove anyone else's.
-- Pick, lock, and isolate the GPU per the `bench.run` port (**verify-gpu-kernel**, Lock one idle GPU). A container's default GPU is not necessarily idle.
+- Pick, lock, and isolate the GPU per the `bench.run` skill function (**verify-gpu-kernel**, Lock one idle GPU). A container's default GPU is not necessarily idle.
 - Run in the worktree, with `-w <wt>` and `PYTHONPATH` set to it, per **verify-gpu-kernel**. A script in `op_tests/` otherwise imports the installed checkout.
 - Check the arch from inside the container (`rocminfo | grep -m1 gfx`) before you trust a number.
 - A ticket's scripts, artifacts, and notes live in `<tickets>/<KEY>/`, mounted in its container.

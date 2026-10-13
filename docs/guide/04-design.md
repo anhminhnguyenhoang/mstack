@@ -53,7 +53,7 @@ The `arena runners` list comes from your [`/setup-mstack`](../../skills/setup-ms
 ## Cover slices and races with a fan-out
 
 ```text
-/ateam-mode check every kernel under aiter/ops/flydsl/ with the isa.diff port. one worker per kernel. one report.
+/ateam-mode check every kernel under aiter/ops/flydsl/ with the isa.diff skill function. one worker per kernel. one report.
 ```
 
 The router's fan-out rule spawns N local workers in one message. Each worker gets its own scope, the exact SHAs, and a method, then reports `PASS`, `ISSUES`, or `BLOCKED`. GPU runs queue on one locked GPU. The parent returns one table with the issues and the gaps. A gap is not a pass.

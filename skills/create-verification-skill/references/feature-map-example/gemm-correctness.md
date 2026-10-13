@@ -15,7 +15,7 @@ GEMM correctness lets a kernel author prove that a GEMM kernel matches an fp32 r
 
 - Run `python3 op_tests/test_gemm.py` in the container, from the library root.
 - Run `python3 -m pytest tests/kernels/test_gemm.py -q` in the container, when the library has a pytest target.
-- Ask for a new test through the `test.author` port when none exists for the op.
+- Ask for a new test through the `test.author` skill function when none exists for the op.
 
 ## Driving it with bench.run
 
@@ -23,7 +23,7 @@ Preconditions:
 
 - The container is up, and the library is at the revision under test.
 - The `bench.run` doctor reports the expected arch, an idle GPU, and the repo SHA.
-- `op_tests/test_gemm.py` exists. If it does not, write it through the `test.author` port first. It needs a torch reference, an `allclose` gate, and a final table.
+- `op_tests/test_gemm.py` exists. If it does not, write it through the `test.author` skill function first. It needs a torch reference, an `allclose` gate, and a final table.
 - No other run holds the GPU lock.
 
 - **Doctor.** Run the `bench.run` doctor. The output shows the arch, one idle GPU, and a clean repo at the expected SHA.
@@ -41,6 +41,6 @@ Preconditions:
 - A tolerance loose enough to pass every shape is a defect. Record `rtol` and `atol` in the artifact and compare them with the dtype's known tolerance.
 - `allclose` can pass when both sides are NaN, depending on its flags. Count NaN separately.
 - The first run compiles the kernel and is slow. Give the run its own JIT cache directory, and do not read perf from it.
-- A shape with a tuned config may run a different kernel than an untuned shape. Log which path ran. Duplicate shape rows are the `config.tune` port.
+- A shape with a tuned config may run a different kernel than an untuned shape. Log which path ran. Duplicate shape rows are the `config.tune` skill function.
 - A partial-tile shape that the kernel refuses is not a pass. The test must show a refusal or a correct result.
 - A pass on the wrong arch proves nothing for the arch you ship. Check the arch in the artifact.

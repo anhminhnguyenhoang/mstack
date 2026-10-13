@@ -6,7 +6,7 @@ It is a fork of [pstack](https://github.com/cursor/plugins/tree/main/pstack) (se
 
 **mstack ends in a deliverable, not always a PR.** A ticket can end in a PR, a Jira comment draft, or both. A human approves every Jira post.
 
-**mstack routes kernel work through ports.** A playbook names a capability, such as `lever.menu` or `isa.diff`. One file, [`ports.md`](./skills/ateam-mode/references/ports.md), binds each port to the matching skill in your skills dir, the `skills` resource. `python3 scripts/check.py` keeps that file in step with the installed skills.
+**mstack routes kernel work through skill functions.** A playbook names a skill function, such as `lever.menu` or `isa.diff`. One file, [`skill-functions.md`](./skills/ateam-mode/references/skill-functions.md), binds each skill function to the matching skill in your skills dir, the `skills` resource. `python3 scripts/check.py` keeps that file in step with the installed skills.
 
 ## install
 
@@ -14,7 +14,7 @@ It is a fork of [pstack](https://github.com/cursor/plugins/tree/main/pstack) (se
 /add-plugin mstack
 ```
 
-the plugin ships two hooks ([`hooks/hooks.json`](./hooks/hooks.json)). the `sessionStart` hook syncs the skills that the `pr.review` and `pr.validate` ports bind to their repo's latest `origin`, in the background, so a session never waits on it. the `stop` hook acts only in a chat that froze a hillclimb harness with `scripts/climb-gate.py freeze`. it sends the turn back, at most 3 times in a row, when a frozen file changed in a worktree of the climb, or when the current best (S\* or B) has no bench artifact with correctness passed at its HEAD. `climb-gate.py pause` lets one stop pass, with a reason.
+the plugin ships two hooks ([`hooks/hooks.json`](./hooks/hooks.json)). the `sessionStart` hook syncs the skills that the `pr.review` and `pr.validate` skill functions bind to their repo's latest `origin`, in the background, so a session never waits on it. the `stop` hook acts only in a chat that froze a hillclimb harness with `scripts/climb-gate.py freeze`. it sends the turn back, at most 3 times in a row, when a frozen file changed in a worktree of the climb, or when the current best (S\* or B) has no bench artifact with correctness passed at its HEAD. `climb-gate.py pause` lets one stop pass, with a reason.
 
 ## get started
 
@@ -49,7 +49,7 @@ read-only search of your home  (bounded depth, time limit, no .git internals)
 | resource | what it enables | required | how setup finds it | without it |
 |---|---|---|---|---|
 | `repos` | gpu runs, worktrees, prs, sha records | for a gpu run, a worktree, or a pr | a git checkout whose remote url ends in `ROCm/aiter`, `ROCm/FlyDSL`, or `triton-lang/triton`. several checkouts of one repo: it asks which | gpu runs and prs stop |
-| `skills` | every port. the domain skills dir | for a port | `$MSTACK_SKILLS_DIR`, else a folder cursor loads user skills from that holds `*/SKILL.md` with valid frontmatter, the one that resolves the most port bindings. link each skill from its repo so it stays current | ports stop |
+| `skills` | every skill function. the domain skills dir | for a skill function | `$MSTACK_SKILLS_DIR`, else a folder cursor loads user skills from that holds `*/SKILL.md` with valid frontmatter, the one that resolves the most skill function bindings. link each skill from its repo so it stays current | skill functions stop |
 | `tickets` | ticket folders for jira work | for ticket work | folders that hold `ticket-raw.md`, `ticket-description.md`, or `ticket-description.txt`. the root is their common parent | ticket work stops |
 | `refs` | cited peaks, rooflines, numerics | no | markdown in your repos' docs, outside the kb, that covers peaks, roofline, or numerics. setup proposes the topics | peaks come from public sources |
 | `kb` | cited notes, and `kb.capture` for lessons. any name, any layout | no | a directory whose root index links to subfolders that have their own index files, with notes that carry `name` and `description` frontmatter. setup maps its folders to roles, and asks only about a role it cannot match | no cited notes, no `kb.capture` |
@@ -87,7 +87,7 @@ morning.
 | [investigation](./skills/ateam-mode/playbooks/investigation.md) | a read-only question. how does x work, why was y built this way, are we sure. |
 | [bug fix](./skills/ateam-mode/playbooks/bug-fix.md) | reproduce a defect, root-cause it, and fix with runtime evidence. |
 | [perf](./skills/ateam-mode/playbooks/perf-issue.md) | trace a measured slowness and improve it against a baseline. |
-| [kernel hillclimb](./skills/ateam-mode/playbooks/kernel-hillclimb.md) | sustained improvement of one metric against a target, mostly a gpu kernel: correctness-gated harness, isa resource pre-check before any benchmark, benchmarks queued on one locked gpu, levers named from the `lever.menu` port, one commit per accepted win. other metrics use its non-kernel section. |
+| [kernel hillclimb](./skills/ateam-mode/playbooks/kernel-hillclimb.md) | sustained improvement of one metric against a target, mostly a gpu kernel: correctness-gated harness, isa resource pre-check before any benchmark, benchmarks queued on one locked gpu, levers named from the `lever.menu` skill function, one commit per accepted win. other metrics use its non-kernel section. |
 | [bound probe](./skills/ateam-mode/playbooks/bound-probe.md) | before a redesign, measure the ceiling cheaply (analytic bound, copy roofline, remove-one-piece diagnostic, staged copy, in-model share) and decide go, no-go, or re-target. a probe proves a ceiling, never a speedup. |
 | [repro audit](./skills/ateam-mode/playbooks/repro-audit.md) | verify someone else's claim, number, or bug report on the real gpu: pin the environment, reproduce as stated, vary one axis, and give each claim a verdict. |
 | [runtime forensics](./skills/ateam-mode/playbooks/runtime-forensics.md) | diagnose a live symptom (a hang, wrong results, nan, a slowdown, a gpu stuck busy, or a host-side leak) from instrumentation. |
@@ -214,7 +214,7 @@ trace:             /ateam-mode here is an att trace of the slow kernel. where do
 refactor:          /ateam-mode clean up this aiter kernel without changing its isa.
 arena:             /arena take my prompt to the arena verbatim. i want to compare their proposals
                    with yours.
-fan-out:           /ateam-mode check every kernel under aiter/ops/flydsl/ with the isa.diff port.
+fan-out:           /ateam-mode check every kernel under aiter/ops/flydsl/ with the isa.diff skill function.
                    one worker per kernel. one report.
 interrogate:       /interrogate review this branch.
 tdd:               /tdd implement
@@ -278,14 +278,14 @@ twenty short skills, one principle each. `ateam-mode` indexes them inline and re
 - **the review-group steps need local cursor transcripts.** `scripts/review-group-gate.py` reads each reviewer's reply from its own subagent transcript under the workspace's `agent-transcripts/` directory, so a pr review runs in a local chat, not a cloud agent.
 - **the merge gate depends on the review skill's layout.** it re-runs the bash block under that skill's `## Step 8` heading. if upstream reshapes that section, the gate fails closed and reviews stop until mstack is updated.
 - **triton is not fully compatible yet.** a triton pr gets the same rule set, gates, review group, and conventions check as aiter and flydsl, in a snapshot of your triton checkout. two gaps remain:
-  - the `pr.validate` port's skill does not recognize triton's repo layout, so the gpu base-vs-head check always reports `INCONCLUSIVE`. runtime evidence comes from the pr's own tests through the `bench.run` port, and it is advisory.
+  - the `pr.validate` skill function's skill does not recognize triton's repo layout, so the gpu base-vs-head check always reports `INCONCLUSIVE`. runtime evidence comes from the pr's own tests through the `bench.run` skill function, and it is advisory.
   - the review rules come from aiter's review history. their triton families target triton kernels (`tl.load` masks, launch configs, accumulator precision), not the compiler's c++ and mlir passes, which get only the generic rules.
 
 ## not shipped here
 
 a few things `ateam-mode` references but doesn't bundle:
 
-- the kernel skills its ports bind (listed in [`ports.md`](./skills/ateam-mode/references/ports.md)) live in your skills dir (the `skills` resource), not in this plugin. `python3 scripts/check.py` checks that each one resolves. it reads the dir from `$MSTACK_SKILLS_DIR`, else from the skills table of `~/.cursor/mstack/env.md`, and skips the check with a note when neither is set. `--no-skills` skips it on purpose.
+- the kernel skills its skill functions bind (listed in [`skill-functions.md`](./skills/ateam-mode/references/skill-functions.md)) live in your skills dir (the `skills` resource), not in this plugin. `python3 scripts/check.py` checks that each one resolves. it reads the dir from `$MSTACK_SKILLS_DIR`, else from the skills table of `~/.cursor/mstack/env.md`, and skips the check with a note when neither is set. `--no-skills` skips it on purpose.
 - [ponytail](https://github.com/DietrichGebert/ponytail) is optional and separate. when you install it and it is on, `ateam-mode` passes its level to each code delegate, which a cursor subagent does not get from the hook. ponytail cuts code, never a playbook step or a verification gate. `/ponytail off` turns it off for mstack too.
 - `/create-skill` is a cursor built-in. cursor also ships a built-in `/babysit`; inside `ateam-mode`, the [babysit playbook](./skills/ateam-mode/playbooks/babysit.md) supersedes it for pr-status requests.
 

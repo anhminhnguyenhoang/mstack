@@ -11,7 +11,7 @@ GEMM ISA resources lets a kernel author check, without a GPU, that a change did 
 
 ## How to get to it (user POV)
 
-- Run the `isa.diff` port with the GEMM test command and the target arch.
+- Run the `isa.diff` skill function with the GEMM test command and the target arch.
 - Run it before any benchmark, as the first check of a perf change.
 
 ## Driving it with isa.diff

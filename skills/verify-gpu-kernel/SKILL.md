@@ -1,11 +1,11 @@
 ---
 name: verify-gpu-kernel
-description: "Run one command on one locked AMD GPU in the right container, and write a correctness-and-perf JSON artifact into the ticket folder. The command is an aiter op_test, a FlyDSL pytest target, or a bench harness, which may interleave A and B itself. Use for /verify-gpu-kernel, whenever a playbook says to verify, reproduce, or benchmark on the real surface for aiter, FlyDSL, or Triton kernels on MI300X or MI355X. Comparing two git revisions is the pr.validate port, not this skill."
+description: "Run one command on one locked AMD GPU in the right container, and write a correctness-and-perf JSON artifact into the ticket folder. The command is an aiter op_test, a FlyDSL pytest target, or a bench harness, which may interleave A and B itself. Use for /verify-gpu-kernel, whenever a playbook says to verify, reproduce, or benchmark on the real surface for aiter, FlyDSL, or Triton kernels on MI300X or MI355X. Comparing two git revisions is the pr.validate skill function, not this skill."
 ---
 
 # Verify GPU kernel
 
-The control skill for kernel work, bound to the `bench.run` port. The surface is a GPU in a container on a shared host. Kernels run in a container. The host has no torch.
+The control skill for kernel work, bound to the `bench.run` skill function. The surface is a GPU in a container on a shared host. Kernels run in a container. The host has no torch.
 
 ## Scope
 
@@ -15,7 +15,7 @@ host ──► container ──► one locked GPU ──► one command ──�
 
 - One command, on one GPU, under one lock, with one artifact.
 - The command may interleave A and B itself, as a frozen hillclimb harness does. This skill runs it once and records what it prints.
-- Comparing two git revisions, such as the base and the head of a PR, is the `pr.validate` port. Do not rebuild that comparison here. Ports resolve in [`ports.md`](../ateam-mode/references/ports.md).
+- Comparing two git revisions, such as the base and the head of a PR, is the `pr.validate` skill function. Do not rebuild that comparison here. Skill functions resolve in [`skill-functions.md`](../ateam-mode/references/skill-functions.md).
 
 ## Resolve the host
 
@@ -39,7 +39,7 @@ Prefer the container the ticket already names. Look in this order:
 1. `<tickets>/<KEY>/.devcontainer/devcontainer.json`, when the `tickets` resource is set. The `--name=` entry in `runArgs` is the container name, and `workspaceMount` is the bind mount.
 2. The repo's default container and mount path in the Repos table of `~/.cursor/mstack/env.md`.
 3. `docker ps --format '{{.Names}}\t{{.Image}}\t{{.Status}}'` for a running container in the env file's Containers table. Match by ticket key or image tag.
-4. If none exists, or the default is `not set`, ask the user which container or image to use, or build one through the `env.build` port. Do not pick an unrelated container.
+4. If none exists, or the default is `not set`, ask the user which container or image to use, or build one through the `env.build` skill function. Do not pick an unrelated container.
 
 Only the containers in the env file's Containers table are the user's. Every other container belongs to another user or another task. Never `docker exec` into it, stop it, or remove it. A stopped container of the user's may be started only with the user's OK.
 
@@ -81,7 +81,7 @@ PICK=$(<Picker cell>)
 - Give the run its own `AITER_JIT_DIR`, and each worktree its own. A command that interleaves A and B gives each side its own.
 - Run both sides of a comparison on the same GPU id.
 - The host is shared. A lock file coordinates only runs that use the same convention. Treat a busy GPU as taken, lock or no lock.
-- If no GPU stays idle, stop and report `NO_GPU`. Do not benchmark on a busy GPU. A compile-only check (the `isa.diff` port) still works.
+- If no GPU stays idle, stop and report `NO_GPU`. Do not benchmark on a busy GPU. A compile-only check (the `isa.diff` skill function) still works.
 
 ## Check the import
 
@@ -99,12 +99,12 @@ Run the repo's own test target. Do not rewrite it.
 
 | Repo | Command (inside the container, in `<wt>`, with the `PYTHONPATH` above) |
 |---|---|
-| aiter | `python3 op_tests/test_<op>.py` with the test's own `-d`, `-b`, `-s` flags. It prints a correctness-and-perf markdown table per the `test.author` port |
+| aiter | `python3 op_tests/test_<op>.py` with the test's own `-d`, `-b`, `-s` flags. It prints a correctness-and-perf markdown table per the `test.author` skill function |
 | FlyDSL | `python3 -m pytest tests/kernels/<test>.py -q` |
 | Triton kernel in aiter | The same `op_tests` script. Set `AITER_USE_SYSTEM_TRITON` as the container env sets it |
 | Bench harness or one-off script | `python3 <script>`. It may interleave A and B itself, as a frozen hillclimb harness does |
 
-Set `GPU_ARCHS` (for example `gfx950`) when `aiter` import would otherwise call `rocminfo`. Clear JIT caches for a cold-compile run, per **benchmark-checklist**. For a tuned-config shape, follow the `config.tune` port.
+Set `GPU_ARCHS` (for example `gfx950`) when `aiter` import would otherwise call `rocminfo`. Clear JIT caches for a cold-compile run, per **benchmark-checklist**. For a tuned-config shape, follow the `config.tune` skill function.
 
 Read the tables the test prints. Copy numbers from the output, not from memory.
 

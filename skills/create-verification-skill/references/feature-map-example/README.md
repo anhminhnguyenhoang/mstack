@@ -18,8 +18,8 @@ The example assumes a library with an op test, `op_tests/test_gemm.py`, that tak
 - Start every recipe from a clean checkout of the revision under test. Record its SHA.
 - Treat every command as literal. Keep flags and shapes unchanged.
 - Run correctness before perf. A perf row next to a failed or unchecked correctness row is not a result.
-- Write a missing op test through the `test.author` port. Do not hand-roll its table.
-- Compare two revisions through the `pr.validate` port. Do not rerun by hand and compare.
+- Write a missing op test through the `test.author` skill function. Do not hand-roll its table.
+- Compare two revisions through the `pr.validate` skill function. Do not rerun by hand and compare.
 - Clear the JIT cache for a cold-compile run. State the regime of every perf row.
 - Remove the run's scratch files and JIT directory after the run. Do not remove proof artifacts.
 

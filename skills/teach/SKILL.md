@@ -16,7 +16,7 @@ orient ──► how (data flow, mapping, waits) ──┐
 ## Steps
 
 1. Pick the few things the reader must understand. Read their goal from the conversation: about to change it, reviewing it, debugging it, or new to it. Skip what they know.
-2. Orient. Read the kernel source, the tile constants, the dtype, and the arch (`gfx942` or `gfx950`). For an API fact, read the reference of the `kernel.write` port. Do not recall API facts from memory.
+2. Orient. Read the kernel source, the tile constants, the dtype, and the arch (`gfx942` or `gfx950`). For an API fact, read the reference of the `kernel.write` skill function. Do not recall API facts from memory.
 3. Run `how` for the data flow and `why` for the design reasons. Run them in parallel. Narrow `why` in the ask, for example the tile size, the stage count, or the swizzle. Widen it only when the reasons are the point. Keep its confidence words. A hedge reports real uncertainty.
 4. Draw the data flow as a build-up series. Draw one part per diagram. See Diagrams.
 5. Explain the numbers. See Numbers.
@@ -52,7 +52,7 @@ State each number on one line: value, unit, run count, range. Then say what it m
 - Peak source. Read the `refs` resource, in the source whose topics include `peaks` or `roofline`. Cite the source name and the file you read. Cite a note of the `hardware` role of the `kb` resource only when that role's folder index points to it. When a resource is not set, write `skipped <key>: not set`, and state the peak with its public source.
 - The limit. Name what limits the number: memory, MFMA issue, LDS conflicts, a wait, low occupancy. Rule out a measurement artifact. Follow **principle-explain-the-number**.
 - Resource numbers. Explain VGPR, spills, LDS bytes, and waves per SIMD as a budget: what one wave takes, and how many waves fit. A reader who needs the terms in plain words gets `/bro`.
-- A trace. For a captured trace, hand the analysis to the `trace.analyze` port. Explain its hotspot plan. Do not re-derive it.
+- A trace. For a captured trace, hand the analysis to the `trace.analyze` skill function. Explain its hotspot plan. Do not re-derive it.
 
 ## HTML page
 

@@ -30,8 +30,8 @@ Answer from the checkout. Ask the user only for what you cannot observe.
   - Triton kernels in aiter: the same `op_tests` scripts.
 - **Correctness gate.** For each family, find the torch reference and its dtype, the `rtol` and `atol`, the shapes, the edge cases (small M, partial tiles, dtypes), and how the test counts NaN.
 - **Perf.** For each family, find the frozen harness or the perf table of the op test, the reference side (torch, Triton, or a vendor library), the regime (cold-L2, warm, `hipGraph`), and the run count.
-- **Resources.** For each family, find the test command that dumps ISA, for the `isa.diff` port.
-- **Gaps.** An op with no test is a gap. Write the test through the `test.author` port, or list the gap in the map.
+- **Resources.** For each family, find the test command that dumps ISA, for the `isa.diff` skill function.
+- **Gaps.** An op with no test is a gap. Write the test through the `test.author` skill function, or list the gap in the map.
 
 If the checkout does not build or import as it is, fix that first or report it exactly. A skill written against a broken base teaches wrong steps.
 
@@ -39,7 +39,7 @@ If the checkout does not build or import as it is, fix that first or report it e
 
 Write `.cursor/skills/verify-<lib>/SKILL.md`. The frontmatter has `name: verify-<lib>` and a `description` that names the library, the op families, and when to use it. Without frontmatter the skill never registers. Each section below comes from what the interview found. Leave no placeholder.
 
-- **Launch.** There is no server. Launch means take one GPU lock and build the kernel once inside its container, through the `bench.run` port. Cite the port. Do not restate its lock rule.
+- **Launch.** There is no server. Launch means take one GPU lock and build the kernel once inside its container, through the `bench.run` skill function. Cite the skill function. Do not restate its lock rule.
 - **Doctor.** Cite the `bench.run` doctor. Add the checks that belong to the library: the repo SHA, the build is present, and the arch matches the gate of each op.
 - **Drive.** Write real commands from this repo for each family: test paths, flags, and shapes. Prefer stable handles (flags, test IDs, shape lists) over positions.
 - **Evidence.** Each run writes its artifact through `bench.run`. Write it to the ticket folder when the `tickets` resource is set and the work has a ticket. Write it to the work dir otherwise. State the proof standards:
@@ -64,7 +64,7 @@ op family ──┬─► <family>-correctness.md   allclose gate, edge cases, N
 - Each file has the four H2s of the example: `Sub-features`, `How to get to it (user POV)`, `Driving it with <harness>`, and `Gotchas`.
 - A correctness file keeps a negative control that must fail. A gate that cannot fail tests nothing.
 - A perf file keeps the reference side in the same run, and freezes the harness with its hash.
-- An ISA file runs the `isa.diff` port. It compiles only and needs no GPU. A GPU run still goes through `bench.run`.
+- An ISA file runs the `isa.diff` skill function. It compiles only and needs no GPU. A GPU run still goes through `bench.run`.
 - If the seed lacks a precondition, the journey reports a failure, and the reason goes in that file's `Gotchas`. Never weaken a journey to make it pass.
 
 The map is the maintained source. A proof that drives one entry point is incomplete when the map lists others.

@@ -34,7 +34,7 @@ import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INTERROGATE = os.path.join(ROOT, "skills", "interrogate", "references")
-PORTS = os.path.join(ROOT, "skills", "ateam-mode", "references", "ports.md")
+SKILL_FUNCTIONS = os.path.join(ROOT, "skills", "ateam-mode", "references", "skill-functions.md")
 MODELS_RULE = os.path.expanduser(os.environ.get("MSTACK_MODELS_RULE", "~/.cursor/rules/mstack-models.mdc"))
 DEFAULT_REVIEWERS = ["claude-opus-5-5-xhigh", "claude-sonnet-5-5-high"]
 FINDING = re.compile(r"^\s*(?:[-*+]\s+)?(🔴|⚠|📝)")
@@ -313,7 +313,7 @@ def merge(work, draft, no_review_group):
             errs.append(f"the draft's `{key}...` line differs from the card's; the review group adds judgment, never evidence")
 
     # Coupled to the upstream skill's `## Step 8` bash block. If upstream reshapes it, this fails closed.
-    skill = re.search(r"^\| `pr\.review` \|[^|]*\| `([^`]*)`", read(PORTS), re.M).group(1)
+    skill = re.search(r"^\| `pr\.review` \|[^|]*\| `([^`]*)`", read(SKILL_FUNCTIONS), re.M).group(1)
     m = re.search(r"git -C (\S+) show", open(os.path.join(work, "merge_target.txt"), encoding="utf-8").read()) if os.path.isfile(os.path.join(work, "merge_target.txt")) else None
     root = m and m.group(1)
     doc = os.path.join(root or "", ".claude", "skills", skill, "SKILL.md")

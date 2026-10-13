@@ -22,7 +22,7 @@ use it                  required?  ──yes──► stop, ask for `/setup-msta
 | Key | What it is | How a step uses it | Required | Value lives in |
 |---|---|---|---|---|
 | `repos` | The domain git repos (aiter, FlyDSL, triton). Per repo: path, push remote, PR target, container, path in container | GPU runs, worktrees, PRs, SHA records | Yes, for a GPU run, a worktree, or a PR | `## Repos` |
-| `skills` | The directory of domain skills that the ports bind. `$MSTACK_SKILLS_DIR` overrides it | Every step that names a port (`ports.md`) | Yes, for a port | `## Skills` |
+| `skills` | The directory of domain skills that the skill functions bind. `$MSTACK_SKILLS_DIR` overrides it | Every step that names a skill function (`skill-functions.md`) | Yes, for a skill function | `## Skills` |
 | `kb` | A knowledge base, in any layout and under any name. Root, index file, remote if any, and a map from roles to folders inside it (KB roles) | Read by role before research and before a lever search. Receives a lesson through `kb.capture` | No | `## KB` |
 | `wavescope` | A WaveScope checkout. Path, and whether its CLI runs | The human verifies trace findings in it, and replies in `notes.json` (`trace.annotate`). Its capture profiles serve `trace.capture` | No | `## WaveScope` |
 | `refs` | A list of extra reference-doc sources. Each has a name, a path, and topics such as `peaks`, `roofline`, `numerics` | Cited for a peak, a roofline, or a numerics fact | No | `## Refs` |
@@ -39,7 +39,7 @@ The values live only in `~/.cursor/mstack/env.md`. `/setup-mstack env` writes th
 - Never guess a path. A path you did not read from the env file does not exist for mstack. Setup fills the env file by signature, as in Finding a resource.
 - An optional resource that is missing or `not set`: do the step without it. Write one line in the reply: `skipped <key>: not set`. In ticket work, write the same line in the decision log or in `STATUS.md`.
 - Ask once per session, after the skip, whether the user has that resource. Ask in one sentence, and offer `/setup-mstack env` to add it. Do not ask again in the same session.
-- A required resource that is missing or `not set`: stop the step. Name the key, and ask the user for the value or for `/setup-mstack env`. A port whose skill is missing is the `skills` case (`ports.md`).
+- A required resource that is missing or `not set`: stop the step. Name the key, and ask the user for the value or for `/setup-mstack env`. A skill function whose skill is missing is the `skills` case (`skill-functions.md`).
 - A resource row can be present and wrong, such as a path that no longer exists. Treat that as missing. Say so, and point at `/setup-mstack env`.
 
 `python3 scripts/check.py` enforces the rules. It fails on a home-directory path, a real ticket key, or a folder of the `kb` resource in mstack text. That covers the legacy folder names, a path token in a sentence that names the `kb` resource, and any path that the KB role table of the env file records. Only a line that carries the `(probe)` marker in `skills/setup-mstack/SKILL.md` may name a default location, and only as a guess to test. Cursor's own config paths and the upstream `~/Library/Application` line are exempt. With no `skills` directory configured, the check skips the skills checks with a note.
@@ -60,7 +60,7 @@ find by signature ──► one match ───────► record it, report
 | Key | Signature |
 |---|---|
 | `repos` | A git checkout whose remote URL ends in `ROCm/aiter`, `ROCm/FlyDSL`, or `triton-lang/triton`. Several checkouts of one repo are ambiguous |
-| `skills` | `$MSTACK_SKILLS_DIR`, else a folder Cursor loads user skills from that holds `*/SKILL.md` with valid frontmatter. The one that resolves the most `ports.md` bindings wins |
+| `skills` | `$MSTACK_SKILLS_DIR`, else a folder Cursor loads user skills from that holds `*/SKILL.md` with valid frontmatter. The one that resolves the most `skill-functions.md` bindings wins |
 | `kb` | A directory whose root index file links to subfolders that have their own index files, with notes that carry `name` and `description` frontmatter. Skills dirs and detected repos are excluded |
 | `wavescope` | A git checkout whose remote URL ends in `/WaveScope`, or a directory that holds `src/cli/att.js`, and `node <path>/src/cli/att.js` runs |
 | `tickets` | Folders that hold `ticket-raw.md`, `ticket-description.md`, or `ticket-description.txt`. The root is their common parent |

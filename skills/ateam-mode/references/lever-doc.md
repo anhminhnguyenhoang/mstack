@@ -21,7 +21,7 @@ One row per lever. IDs are `L1`, `L2`, and so on, or the owner's own scheme.
 ```
 
 - **ID.** Stable. Never reused.
-- **Lever.** The name from the `lever.menu` port and the knob or edit, in one line.
+- **Lever.** The name from the `lever.menu` skill function and the knob or edit, in one line.
 - **Screen Δ vs B.** Median change against B with the spread, in the harness metric. For a lever added in Phase 3, the change against the S* of that time, marked `vs S*1`, `vs S*2`.
 - **Class.** Empty for a winner. A failure class for a loser.
 - **In S\*.** `yes`, `no`, or `-` when not yet decided.
@@ -82,7 +82,7 @@ Rules.
 - One combo branch, `<topic>/combo`. One kept lever is one commit, `perf(<kernel>): <ID> <lever>`. Stage files by name.
 - Ablation is a revert. Branch `<topic>/ablate-<ID>` from the head of S*, then `git revert` the lever's commit. A conflicting revert means the levers edit the same lines. Record it.
 - Subsets matter, not order. Build both orders only when two levers edit the same lines.
-- Each combo branch gets its own JIT cache, per the `bench.run` port.
+- Each combo branch gets its own JIT cache, per the `bench.run` skill function.
 
 ## Ablation table
 
@@ -98,13 +98,13 @@ Verdict is `keep` when the marginal gain is past noise, and `drop` when it is in
 
 One line per retired lever: `<ID>: <class>. <root cause>. Evidence: <path>. Retry if: <condition>.` It goes into the Deliver finding unchanged.
 
-A retired lever whose root cause is general is a candidate for the `kb.capture` port. General means true for any kernel with that mechanism, not tied to this ticket's shapes or machine. Mark those lines `KB candidate`, and offer them in Deliver. Run the port only after the user says yes. When `kb` is not set, skip the offer and write `skipped kb: not set`. The numbers, shapes, and SHAs stay in this doc.
+A retired lever whose root cause is general is a candidate for the `kb.capture` skill function. General means true for any kernel with that mechanism, not tied to this ticket's shapes or machine. Mark those lines `KB candidate`, and offer them in Deliver. Run the skill function only after the user says yes. When `kb` is not set, skip the offer and write `skipped kb: not set`. The numbers, shapes, and SHAs stay in this doc.
 
 ## WaveScope notes
 
 This section applies only when the `wavescope` resource is set. When `wavescope` is not set, or the `trace.annotate` skill is missing, deliver the trace findings in the reply or the ticket folder instead, skip the `notes.json` loop, write `skipped wavescope: not set`, and ask once per session whether the user uses WaveScope.
 
-The `trace.annotate` port publishes trace findings as `annotations.json`, and the human verifies them in WaveScope. The human replies in `notes.json` beside the trace. When a `notes.json` exists for a trace of B or S*, read it before the next phase, as the port's skill says.
+The `trace.annotate` skill function publishes trace findings as `annotations.json`, and the human verifies them in WaveScope. The human replies in `notes.json` beside the trace. When a `notes.json` exists for a trace of B or S*, read it before the next phase, as the skill function's skill says.
 
 ```
 annotations.json ──► human reads in WaveScope ──► notes.json ──► lever doc ──► next phase
@@ -117,7 +117,7 @@ Each open note maps to one change in this doc.
 | --- | --- |
 | `rejected` | Retire the lever it names, and add its row if none exists. Choose the class and the root cause from the note's evidence. The Evidence cell is the note id. `Retry if` is new evidence that answers the note. Never re-propose the lever without that evidence. |
 | `constraint` | Add a line to `Hard limits` in the header. Every lever respects it, in every phase. A lever that would break it is not built. |
-| `question` | Add it to "For the human" in `<tickets>/<KEY>/STATUS.md`. Answer it with an annotation through the `trace.annotate` port. |
+| `question` | Add it to "For the human" in `<tickets>/<KEY>/STATUS.md`. Answer it with an annotation through the `trace.annotate` skill function. |
 | `problem`, `hypothesis` | Queue a lever or open an investigation. Verify it against the trace before you write its premise. |
 
 Other kinds, and notes that are not open, follow the `trace.annotate` skill.

@@ -67,13 +67,13 @@ Use `candidate` for one or two examples. Use `recurring` after multiple real dis
 
 ## GPU kernel findings
 
-Default to `fix`. Bugbot findings in these classes are usually real, and a wrong kernel can pass a lenient test. Each entry names what settles the finding. Run that check on the PR tip before you classify. Run the check through the ports in [`ports.md`](./ports.md).
+Default to `fix`. Bugbot findings in these classes are usually real, and a wrong kernel can pass a lenient test. Each entry names what settles the finding. Run that check on the PR tip before you classify. Run the check through the skill functions in [`skill-functions.md`](./skill-functions.md).
 
 ### Numerics drift
 
 - Confidence: candidate
 - Real by default when: The diff changes the accumulation order (split-k, a new reduction tree, an atomic add), narrows a dtype before the accumulate or the store, enables fast-math or a lower-precision intrinsic, or changes how NaN or inf flows (a dropped max-subtract, a changed mask value).
-- Settled by: The op test's `allclose` gate at the dtype's tolerance, on shapes that hit the changed path, against an fp32 reference. Add the NaN and inf count on adversarial input: large magnitudes and fully masked rows. Run it through the `bench.run` port.
+- Settled by: The op test's `allclose` gate at the dtype's tolerance, on shapes that hit the changed path, against an fp32 reference. Add the NaN and inf count on adversarial input: large magnitudes and fully masked rows. Run it through the `bench.run` skill function.
 - Dismiss only when: The order or dtype change is the stated goal and the gate passes on the same run with the tolerance unchanged.
 - Example signal: "accumulates in bf16", "reduction order differs from the reference", "`-inf` row yields NaN".
 
@@ -81,7 +81,7 @@ Default to `fix`. Bugbot findings in these classes are usually real, and a wrong
 
 - Confidence: candidate
 - Real by default when: The change raises VGPR, AGPR, or LDS use, or adds a spill or scratch, and the new total crosses a waves-per-SIMD step.
-- Settled by: The before and after resource table from the `isa.diff` port. It is compile-only and needs no GPU. Benchmark only when a step is crossed.
+- Settled by: The before and after resource table from the `isa.diff` skill function. It is compile-only and needs no GPU. Benchmark only when a step is crossed.
 - Dismiss only when: Both sides sit in the same waves-per-SIMD bucket with no new spill, or the kernel trades occupancy on purpose and a benchmark shows the win.
 - Example signal: "increases register pressure", "larger tile may reduce occupancy", "LDS allocation grows".
 
@@ -89,7 +89,7 @@ Default to `fix`. Bugbot findings in these classes are usually real, and a wrong
 
 - Confidence: candidate
 - Real by default when: A load or store address depends on a tile index with no mask, or the mask or buffer limit ignores a partial tile (M, N, or K not a multiple of the tile), a varlen batch, or an empty group (zero tokens or zero rows).
-- Settled by: A test at the failing shape: a tail of 1, M below one tile, an empty group, and a varlen batch with a zero-length sequence. Run it with the `kernel.debug` port. An illegal address or a wrong value in the tail confirms it.
+- Settled by: A test at the failing shape: a tail of 1, M below one tile, an empty group, and a varlen batch with a zero-length sequence. Run it with the `kernel.debug` skill function. An illegal address or a wrong value in the tail confirms it.
 - Dismiss only when: The shape is excluded by a check before launch that the diff shows, and a test covers the check.
 - Example signal: "reads past the end when M is not divisible", "no guard for empty expert", "mask uses the padded length".
 
@@ -105,7 +105,7 @@ Default to `fix`. Bugbot findings in these classes are usually real, and a wrong
 
 - Confidence: candidate
 - Real by default when: The code uses an instruction, an MFMA shape, an fp8 format, or an LDS size that exists on one arch (`gfx942` or `gfx950`) but runs on the other, or a gate tests the wrong arch string.
-- Settled by: Reading the gate against the arch string, then compiling for both targets. The `isa.diff` port compiles with `--arch`. A run on each arch settles a runtime difference.
+- Settled by: Reading the gate against the arch string, then compiling for both targets. The `isa.diff` skill function compiles with `--arch`. A run on each arch settles a runtime difference.
 - Dismiss only when: The dispatcher refuses the other arch before this path, and a test covers the refusal.
 - Example signal: "instruction not available on gfx942", "fp8 format differs between archs", "assumes the larger LDS".
 
@@ -113,7 +113,7 @@ Default to `fix`. Bugbot findings in these classes are usually real, and a wrong
 
 - Confidence: candidate
 - Real by default when: A boundary uses `<` where `<=` is meant, a threshold tuned on one arch or dtype applies to another, a tuned-config lookup miss falls to a slow default, or a config row duplicates a shape.
-- Settled by: A sweep at the boundary (threshold minus 1, the threshold, and threshold plus 1) that logs which kernel ran and times both kernels there. Use the `bench.run` port. Duplicate shape rows are the `config.tune` port.
+- Settled by: A sweep at the boundary (threshold minus 1, the threshold, and threshold plus 1) that logs which kernel ran and times both kernels there. Use the `bench.run` skill function. Duplicate shape rows are the `config.tune` skill function.
 - Dismiss only when: The sweep shows the same kernel is faster or equal on both sides of the boundary.
 - Example signal: "off-by-one at the threshold", "falls through to the default kernel", "threshold copied from another arch".
 

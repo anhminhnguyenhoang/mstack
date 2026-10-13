@@ -3,7 +3,7 @@
   "hooks": {
     "sessionStart": [
       {
-        "command": "mkdir -p \"$HOME/.cache/mstack/upstream\" && nohup \"${CURSOR_PLUGIN_ROOT:-.}/scripts/sync-upstream-skills.sh\" --review-ports > \"$HOME/.cache/mstack/upstream/sync.log\" 2>&1 & echo '{}'",
+        "command": "mkdir -p \"$HOME/.cache/mstack/upstream\" && nohup \"${CURSOR_PLUGIN_ROOT:-.}/scripts/sync-upstream-skills.sh\" --review-functions > \"$HOME/.cache/mstack/upstream/sync.log\" 2>&1 & echo '{}'",
         "timeout": 5
       }
     ],

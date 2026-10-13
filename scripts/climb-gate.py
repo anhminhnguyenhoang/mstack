@@ -161,7 +161,7 @@ def proof_message(ticket, lock):
     state = "has uncommitted changes" if dirty else f"has no bench_*.json with correctness passed at {head[:12]}"
     return "\n".join([
         f"mstack stop gate: {what} in {target} {state}, in {ticket}.",
-        "Commit it and measure it through the bench.run port before you end the turn.",
+        "Commit it and measure it through the bench.run skill function before you end the turn.",
         f'To stop on purpose first, such as NO_GPU or a question for the human, log the reason in decision.tsv, run `python3 {me} pause {ticket} "<reason>"`, and end the turn.',
     ])
 

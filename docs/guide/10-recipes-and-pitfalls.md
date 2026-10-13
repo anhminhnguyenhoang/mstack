@@ -47,7 +47,7 @@ Your current design becomes one candidate among several, and the synthesis tells
 ## Check independent slices in parallel
 
 ```text
-/ateam-mode check every kernel under aiter/ops/flydsl/ with the isa.diff port. one worker per kernel. one report.
+/ateam-mode check every kernel under aiter/ops/flydsl/ with the isa.diff skill function. one worker per kernel. one report.
 ```
 
 Each worker owns one kernel. The parent waits for every slice and returns one `PASS`, `ISSUES`, or `BLOCKED` report instead of raw worker dumps.

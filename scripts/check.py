@@ -25,8 +25,8 @@ RETIRED_PRINCIPLES = [
     "laziness-protocol",
     "foundational-thinking",
 ]
-PORTS = "skills/ateam-mode/references/ports.md"
-NAME_EXEMPT = {PORTS, "skills/setup-mstack/SKILL.md", "scripts/check.py"}
+SKILL_FUNCTIONS = "skills/ateam-mode/references/skill-functions.md"
+NAME_EXEMPT = {SKILL_FUNCTIONS, "skills/setup-mstack/SKILL.md", "scripts/check.py"}
 NAME_EXEMPT_DIRS = ("archive/",)
 STALE = re.compile(
     r"poteto-mode|poteto-agent|poteto-help|setup-pstack|pstack-models|cursor-team-kit|/deslop|smci355|silotiger-1164-mhc|mi355x-tritoners|fhuizing",
@@ -65,7 +65,7 @@ ap = argparse.ArgumentParser(
 ap.add_argument("root", nargs="?", default=os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 mode = ap.add_mutually_exclusive_group()
 mode.add_argument("--no-skills", action="store_true", help="skip the checks that read the skills dir")
-mode.add_argument("--skills-only", action="store_true", help="run only the port and skills-dir checks, and print the Skills table")
+mode.add_argument("--skills-only", action="store_true", help="run only the skill function and skills-dir checks, and print the Skills table")
 ap.add_argument("--no-tests", action="store_true", help="skip tests/test_scripts.sh")
 args = ap.parse_args()
 os.chdir(os.path.abspath(args.root))
@@ -146,23 +146,23 @@ def env_skills_dir():
     return None
 
 
-def parse_ports():
-    text = open(PORTS, encoding="utf-8").read()
+def parse_skill_functions():
+    text = open(SKILL_FUNCTIONS, encoding="utf-8").read()
     lines = text.splitlines()
-    head = next((i for i, line in enumerate(lines) if cells(line)[:5] == ["Port", "When", "Skill", OPTIONAL_COLUMN, "Selection rule"]), None)
+    head = next((i for i, line in enumerate(lines) if cells(line)[:5] == ["Skill function", "When", "Skill", OPTIONAL_COLUMN, "Selection rule"]), None)
     if head is None:
-        raise ValueError(f"no | Port | When | Skill | {OPTIONAL_COLUMN} | Selection rule | table")
+        raise ValueError(f"no | Skill function | When | Skill | {OPTIONAL_COLUMN} | Selection rule | table")
     bindings = []
     for line in lines[head + 2:]:
         if not line.startswith("|"):
             break
         row = cells(line)
-        ports = re.findall(r"`([^`]+)`", row[0])
+        functions = re.findall(r"`([^`]+)`", row[0])
         skills = re.findall(r"`([^`]+)`", row[2]) if len(row) > 2 else []
         optional = row[3].strip().lower() if len(row) > 3 else ""
-        if len(ports) != 1 or not skills or optional not in ("yes", "no"):
-            raise ValueError(f"row needs one port, at least one skill, and Optional Yes or No: {line}")
-        bindings.append((ports[0], skills, optional == "yes"))
+        if len(functions) != 1 or not skills or optional not in ("yes", "no"):
+            raise ValueError(f"row needs one skill function, at least one skill, and Optional Yes or No: {line}")
+        bindings.append((functions[0], skills, optional == "yes"))
     m = re.search(r"^## Ignored[ \t]*\n(.*?)(?=^## |\Z)", text, re.M | re.S)
     if not m:
         raise ValueError("no ## Ignored section")
@@ -260,32 +260,32 @@ if not args.skills_only:
     summary.append(f"links {links} broken {broken} | SKILL.md {len(glob.glob('skills/*/SKILL.md'))} bad {bad_fm} | plugin.json ok {plugin_ok} | playbook files {len(pb_files)}")
 
 try:
-    bindings, ignored = parse_ports()
+    bindings, ignored = parse_skill_functions()
 except Exception as e:
     fail += 1
-    print(f"BAD PORTS FILE {PORTS}: {e}")
+    print(f"BAD SKILL FUNCTIONS FILE {SKILL_FUNCTIONS}: {e}")
     bindings, ignored = [], []
-port_names = [p for p, _, _ in bindings]
-for p in sorted({p for p in port_names if port_names.count(p) > 1}):
+function_names = [p for p, _, _ in bindings]
+for p in sorted({p for p in function_names if function_names.count(p) > 1}):
     fail += 1
-    print(f"PORT BOUND TWICE {p}")
+    print(f"SKILL FUNCTION BOUND TWICE {p}")
 bound = {s for _, skills, _ in bindings for s in skills}
 required_bound = {s for _, skills, optional in bindings if not optional for s in skills}
 own = set(os.listdir("skills"))
 
 if not args.no_skills and not skip_skills:
     rows, bad, optional_missing = [], {"missing": 0, "malformed": 0}, 0
-    for port, skills, optional in bindings:
+    for function, skills, optional in bindings:
         for s in skills:
             status, why, repo, branch, warn = resolve(s)
             skippable = status == "missing" and optional and s not in required_bound
-            rows.append((f"`{port}`", f"`{s}`", status, repo, branch, "optional port: its step is skipped" if skippable else warn))
+            rows.append((f"`{function}`", f"`{s}`", status, repo, branch, "optional skill function: its step is skipped" if skippable else warn))
             if skippable:
                 optional_missing += 1
-                print(f"NOTE optional skill missing {port} -> {s}: {why}. The step is skipped with a note.")
+                print(f"NOTE optional skill missing {function} -> {s}: {why}. The step is skipped with a note.")
             elif status != "ok":
                 bad[status] += 1
-                print(f"BOUND SKILL {status.upper()} {port} -> {s}: {why}")
+                print(f"BOUND SKILL {status.upper()} {function} -> {s}: {why}")
             if warn:
                 print(f"WARN {s}: {warn}")
     fail += bad["missing"] + bad["malformed"]
@@ -301,23 +301,23 @@ if not args.no_skills and not skip_skills:
         status, why, repo, branch, warn = resolve(s)
         rows.append(("-", f"`{s}`", "unbound", repo, branch, warn))
     if unbound:
-        print(f"UNBOUND SKILLS (bind each in a port, or list it under Ignored in {PORTS}): " + ", ".join(unbound))
+        print(f"UNBOUND SKILLS (bind each in a skill function, or list it under Ignored in {SKILL_FUNCTIONS}): " + ", ".join(unbound))
     stale_ignored = [s for s in ignored if s not in installed]
     if stale_ignored:
-        print(f"IGNORED BUT NOT INSTALLED (remove from Ignored in {PORTS}): " + ", ".join(stale_ignored))
+        print(f"IGNORED BUT NOT INSTALLED (remove from Ignored in {SKILL_FUNCTIONS}): " + ", ".join(stale_ignored))
     both = sorted(bound & set(ignored))
     if both:
         print("BOTH BOUND AND IGNORED: " + ", ".join(both))
     fail += len(unbound) + len(stale_ignored) + len(both)
 
     if args.skills_only:
-        print("| Port | Skill | Status | Repo | Branch | Warning |")
+        print("| Skill function | Skill | Status | Repo | Branch | Warning |")
         print("|---|---|---|---|---|---|")
         for row in rows:
             print("| " + " | ".join(row) + " |")
-    summary.append(f"ports {len(port_names)} bindings {sum(len(s) for _, s, _ in bindings)} | skills {len(installed)} missing {bad['missing']} optional missing {optional_missing} malformed {bad['malformed']} unbound {len(unbound)}")
+    summary.append(f"skill functions {len(function_names)} bindings {sum(len(s) for _, s, _ in bindings)} | skills {len(installed)} missing {bad['missing']} optional missing {optional_missing} malformed {bad['malformed']} unbound {len(unbound)}")
 else:
-    summary.append(f"ports {len(port_names)} bindings {sum(len(s) for _, s, _ in bindings)} | skills skipped")
+    summary.append(f"skill functions {len(function_names)} bindings {sum(len(s) for _, s, _ in bindings)} | skills skipped")
 
 if not args.skills_only:
     names = sorted((bound | set(ignored) | set(REMOVED)) - own, key=len, reverse=True)
@@ -329,7 +329,7 @@ if not args.skills_only:
         for n, line in enumerate(text.splitlines(), 1):
             for m in pattern.finditer(line):
                 leaks += 1
-                print(f"SKILL NAME OUTSIDE PORTS {path}:{n}: {m.group(1)}")
+                print(f"SKILL NAME OUTSIDE SKILL FUNCTIONS {path}:{n}: {m.group(1)}")
     fail += leaks
     summary.append(f"name leaks {leaks}")
 

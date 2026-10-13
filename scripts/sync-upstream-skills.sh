@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# usage: sync-upstream-skills.sh [--no-links] <checkout>... | --review-ports
+# usage: sync-upstream-skills.sh [--no-links] <checkout>... | --review-functions
 # Checks out origin's default branch of each checkout into a per-commit snapshot and points
 # the skills-dir links into it. The snapshot is kept while the linked skill folders match. A review already running keeps the snapshot it started on.
-# Links into a feature worktree are a deliberate pin and are left alone. --review-ports
-# syncs the checkouts that ship the pr.review and pr.validate skills. --no-links only
+# Links into a feature worktree are a deliberate pin and are left alone. --review-functions
+# (alias: --review-ports) syncs the checkouts that ship the pr.review and pr.validate skills. --no-links only
 # makes the snapshot. The last field of each output line is the snapshot path.
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -17,9 +17,9 @@ main_checkout() { dirname "$(git -C "$1" rev-parse --path-format=absolute --git-
 
 links=1
 if [ "${1:-}" = --no-links ]; then links=0; shift; fi
-if [ "${1:-}" = --review-ports ]; then
+if [ "${1:-}" = --review-functions ] || [ "${1:-}" = --review-ports ]; then
   set --
-  for s in $(sed -n 's/^| `pr\.\(review\|validate\)` |[^|]*| `\([^`]*\)`.*/\2/p' "$ROOT/skills/ateam-mode/references/ports.md"); do
+  for s in $(sed -n 's/^| `pr\.\(review\|validate\)` |[^|]*| `\([^`]*\)`.*/\2/p' "$ROOT/skills/ateam-mode/references/skill-functions.md"); do
     if [ -L "$SKILLS/$s" ]; then set -- "$@" "$(main_checkout "$(readlink -f "$SKILLS/$s")")"; fi
   done
   mapfile -t repos < <(printf '%s\n' "$@" | sed '/^$/d' | sort -u)

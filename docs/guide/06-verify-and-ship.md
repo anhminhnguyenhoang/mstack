@@ -58,7 +58,7 @@ For a kernel, [`/verify-gpu-kernel`](../../skills/verify-gpu-kernel/SKILL.md) is
 
 [`/create-verification-skill`](../../skills/create-verification-skill/SKILL.md) interviews the repository, not you. It inventories the op families and their test entry points (op tests, pytest targets), and maps each family to a correctness gate, a perf run against the reference, and an ISA resource check. It asks you only what the code can't answer.
 
-It writes `.cursor/skills/verify-<lib>/`, agent-facing instructions plus a feature map under `features/` with one file per op family and the result that proves it works. The skill ships a [worked feature-map example](../../skills/create-verification-skill/references/feature-map-example/) with a README index and one file per feature using the four required H2s. Before handing it over, the generator proves the skill once on one locked GPU through the `bench.run` port: doctor, one feature, the artifact. If that proof fails, don't use the output.
+It writes `.cursor/skills/verify-<lib>/`, agent-facing instructions plus a feature map under `features/` with one file per op family and the result that proves it works. The skill ships a [worked feature-map example](../../skills/create-verification-skill/references/feature-map-example/) with a README index and one file per feature using the four required H2s. Before handing it over, the generator proves the skill once on one locked GPU through the `bench.run` skill function: doctor, one feature, the artifact. If that proof fails, don't use the output.
 
 From then on, "verify it in the app" is a step any agent can execute, in this repo, with no setup conversation. Name it in the prompt when you want the proof in a specific form:
 

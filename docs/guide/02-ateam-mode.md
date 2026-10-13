@@ -96,7 +96,7 @@ A long chat accumulates context from the last task. When you change subjects, sa
 
 ## Give parallel work its own worktree
 
-If you run several agents against one repository on one computer, they will conflict over the working tree, the ports, and the build output. Give each agent its own worktree, and for GPU repos make it inside the container mount. Each agent then has its own branch and build output, and the container still sees it.
+If you run several agents against one repository on one computer, they will conflict over the working tree, the skill functions, and the build output. Give each agent its own worktree, and for GPU repos make it inside the container mount. Each agent then has its own branch and build output, and the container still sees it.
 
 Ask for a worktree up front:
 

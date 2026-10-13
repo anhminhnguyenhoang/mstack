@@ -37,7 +37,7 @@ Edit only the verification skill's own directory: its `SKILL.md`, `features/`, a
 | New arch gate | A test or an op that now runs only on `gfx942` or only on `gfx950` | Record the gate in the family file. Mark the feature unreachable on the other arch |
 | Stale reference baseline | The reference side or the recorded numbers differ from a fresh run | Re-measure the reference in the same run. Update only from a run |
 | Harness drift | The hash of the frozen harness differs from the recorded hash | Report it. A change breaks the comparison with old numbers. Re-baseline both sides |
-| Resource baseline | The ISA table of the base differs from the recorded one | Re-capture through the `isa.diff` port |
+| Resource baseline | The ISA table of the base differs from the recorded one | Re-capture through the `isa.diff` skill function |
 
 ## Pass
 
@@ -55,7 +55,7 @@ Edit only the verification skill's own directory: its `SKILL.md`, `features/`, a
 
 3. **Reconcile.** Merge the recipes into as few states as practical. Spot-check each cited drift. Do not re-prove a clean claim. Sweep the churn of the test directories and the config files for an op that has no family. Require a concrete path before you call one missing.
 
-4. **Live pass.** Required even when the source looks clean. Re-prove each feature through the `bench.run` port, on one locked GPU, one command at a time. The ISA features go through the `isa.diff` port. Three rules hold for the whole pass:
+4. **Live pass.** Required even when the source looks clean. Re-prove each feature through the `bench.run` skill function, on one locked GPU, one command at a time. The ISA features go through the `isa.diff` skill function. Three rules hold for the whole pass:
    - Run the `bench.run` doctor before the first run and after any failed run. A busy GPU or a wrong arch stops the run.
    - Artifacts survive every cleanup. Check them at their named location.
    - Each run removes its own scratch files and JIT directory. That includes failed attempts.

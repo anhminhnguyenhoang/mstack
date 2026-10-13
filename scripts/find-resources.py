@@ -37,7 +37,7 @@ ap.add_argument("--plugin", default=os.path.dirname(os.path.dirname(os.path.absp
 ap.add_argument("--json", action="store_true")
 args = ap.parse_args()
 ROOT = os.path.realpath(args.root)
-PORTS = os.path.join(args.plugin, "skills/ateam-mode/references/ports.md")
+SKILL_FUNCTIONS = os.path.join(args.plugin, "skills/ateam-mode/references/skill-functions.md")
 
 
 def inside(path):
@@ -120,12 +120,12 @@ def skills_valid(directory):
     return names
 
 
-def port_skills():
-    text = read(PORTS, 1 << 20)
+def function_skills():
+    text = read(SKILL_FUNCTIONS, 1 << 20)
     names = set()
     lines = text.splitlines()
     for i, line in enumerate(lines):
-        if line.startswith("| Port |"):
+        if line.startswith("| Skill function |"):
             for row in lines[i + 2:]:
                 if not row.startswith("|"):
                     break
@@ -263,7 +263,7 @@ result["repos"] = {
     for repo, v in by_repo.items()
 }
 
-bound = port_skills()
+bound = function_skills()
 cands = []
 env_dir = os.environ.get("MSTACK_SKILLS_DIR")
 if env_dir:
@@ -274,12 +274,12 @@ scored = []
 for d, why in cands:
     if os.path.isdir(d):
         have = skills_valid(d)
-        scored.append({"path": d, "skills": len(have), "ports_resolved": len(have & bound), "signature": why + " with */SKILL.md of valid frontmatter"})
+        scored.append({"path": d, "skills": len(have), "functions_resolved": len(have & bound), "signature": why + " with */SKILL.md of valid frontmatter"})
 scored = [s for s in scored if s["skills"]]
-scored.sort(key=lambda s: -s["ports_resolved"])
+scored.sort(key=lambda s: -s["functions_resolved"])
 if not scored:
     result["skills"] = {"status": "not found"}
-elif env_dir or len(scored) == 1 or scored[0]["ports_resolved"] > scored[1]["ports_resolved"]:
+elif env_dir or len(scored) == 1 or scored[0]["functions_resolved"] > scored[1]["functions_resolved"]:
     result["skills"] = {"status": "found", **scored[0]}
 else:
     result["skills"] = {"status": "ambiguous", "candidates": scored}
@@ -345,7 +345,7 @@ for key in ("repos", "skills", "kb", "wavescope", "tickets", "refs"):
     elif v["status"] == "ambiguous":
         print(f"{key}: ambiguous: " + "; ".join(short(c.get("path") or c.get("root")) for c in v["candidates"]))
     elif key == "skills":
-        print(f"skills: found: {short(v['path'])} ({v['skills']} skills, {v['ports_resolved']} bound by ports.md) [{v['signature']}]")
+        print(f"skills: found: {short(v['path'])} ({v['skills']} skills, {v['functions_resolved']} bound by skill-functions.md) [{v['signature']}]")
     elif key == "kb":
         print(f"kb: found: {short(v['path'])} index={v['index']} remote={v['remote']} [{v['signature']}]")
         for role, folder in v["roles"].items():
