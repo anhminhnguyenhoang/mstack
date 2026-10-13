@@ -1,6 +1,6 @@
 # Verify the result and open a PR
 
-"It compiles" is not evidence. The [Prove It Works principle](../../skills/principle-prove-it-works/SKILL.md) makes the agent check the real artifact before it reports success, and your job is to make "the real artifact" checkable. This page covers stating a finish condition, vetting a measured number, generating a verification skill for a non-kernel surface, opening the PR, and driving it to merged.
+"It compiles" is not evidence. The [Prove It Works principle](../../skills/principle-prove-it-works/SKILL.md) makes the agent check the real artifact before it reports success, and your job is to make "the real artifact" checkable. This page covers stating a finish condition, vetting a measured number, generating a verification skill for a kernel library, opening the draft PR, and driving it to ready for your review.
 
 Verification is the slowest step in most agent work, because it's the step that usually waits on a human. Make the agent able to do it, and you stop being the bottleneck. Skip it, and running more agents only gets you more unchecked work to review.
 
@@ -50,15 +50,15 @@ The verdict comes back as faster, slower, no measurable difference, or inconclus
 
 ## Create a project verification skill
 
-For a kernel, [`/verify-gpu-kernel`](../../skills/verify-gpu-kernel/SKILL.md) is the scripted way. It resolves the host and container, locks one idle GPU, runs the op test, and writes a JSON artifact. For any other surface, such as a CLI, a service, or a UI, the agent needs a scripted way to drive it. If your project has one, great. If not, run:
+For a kernel, [`/verify-gpu-kernel`](../../skills/verify-gpu-kernel/SKILL.md) is the scripted way. It resolves the host and container, locks one idle GPU, runs the op test, and writes a JSON artifact. It runs one command. It does not know which commands prove a whole kernel library. For that map, run:
 
 ```text
 /create-verification-skill
 ```
 
-[`/create-verification-skill`](../../skills/create-verification-skill/SKILL.md) interviews the repository, not you. It works out what a user touches, how the app launches locally, what can drive it (an existing harness first: op tests, pytest targets, expect scripts, PTY helpers, or curl-able endpoints), what evidence proves behavior, and whether two instances can run side by side. It asks you only what the code can't answer.
+[`/create-verification-skill`](../../skills/create-verification-skill/SKILL.md) interviews the repository, not you. It inventories the op families and their test entry points (op tests, pytest targets), and maps each family to a correctness gate, a perf run against the reference, and an ISA resource check. It asks you only what the code can't answer.
 
-It writes `.cursor/skills/verify-<app>/`, agent-facing instructions with exact Launch, Doctor, Drive, Evidence, and Cleanup sections, plus a feature map under `features/` that indexes what the app does and what result proves each feature works. The skill ships a [worked feature-map example](../../skills/create-verification-skill/references/feature-map-example/) with a README index and one file per feature using the four required H2s. Before handing it over, the generator proves the skill once end to end: launch, doctor check, drive one feature, capture evidence, clean up. If that proof fails, don't use the output.
+It writes `.cursor/skills/verify-<lib>/`, agent-facing instructions plus a feature map under `features/` with one file per op family and the result that proves it works. The skill ships a [worked feature-map example](../../skills/create-verification-skill/references/feature-map-example/) with a README index and one file per feature using the four required H2s. Before handing it over, the generator proves the skill once on one locked GPU through the `bench.run` port: doctor, one feature, the artifact. If that proof fails, don't use the output.
 
 From then on, "verify it in the app" is a step any agent can execute, in this repo, with no setup conversation. Name it in the prompt when you want the proof in a specific form:
 
@@ -81,17 +81,17 @@ Treat the verification skill as infrastructure, not a one-off. Commit it, so eve
 - Rich `--help` text.
 - Machine-readable output, such as JSON.
 
-While you're there, make the dev setup repeatable too: seeded data, test users, and one command that brings the environment up the same way every time.
+While you're there, make the setup repeatable too: one container image, pinned repo SHAs, and one command per op family.
 
 ## Keep the verification skill honest
 
-Apps change and feature maps rot. Run this at least once a day, ideally from a scheduled automation so nobody has to remember:
+Op tests change, tolerances move, and feature maps rot. Run this at least once a day, ideally from a scheduled automation so nobody has to remember:
 
 ```text
 /maintain-verification-skill
 ```
 
-[`/maintain-verification-skill`](../../skills/maintain-verification-skill/SKILL.md) audits the generated skill: one read-only source reader per feature in parallel, then one live pass that drives every mapped feature. It ends in exactly one of three outcomes. `clean` means full coverage and nothing to ship. `changed` means one PR of proven corrections, confined to the verification skill's own directory. `blocked` names the blocker. It never edits product code. If the live pass catches a product regression, it reports the regression instead of papering over it in docs.
+[`/maintain-verification-skill`](../../skills/maintain-verification-skill/SKILL.md) audits the generated skill: one read-only source reader per op family in parallel, then one live pass on one locked GPU that re-proves every mapped feature. It ends in exactly one of three outcomes. `clean` means full coverage and nothing to ship. `changed` means one PR of proven corrections, confined to the verification skill's own directory. `blocked` names the blocker. It never edits kernel code. If the live pass catches a kernel regression, it reports the regression instead of papering over it in docs.
 
 ## Open the PR
 

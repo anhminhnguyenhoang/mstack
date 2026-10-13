@@ -48,7 +48,7 @@ Use ASCII or Mermaid. Use a generated picture only for a spatial idea that text 
 
 State each number on one line: value, unit, run count, range. Then say what it means.
 
-- Percent of peak. Compute it from the median time. For GEMM, TFLOPS is `2*M*N*K` over the time. State it as a percent of the MFMA peak or the HBM peak for the arch and dtype. Follow **principle-respect-the-roofline**.
+- Percent of peak. Compute it from the median time. For GEMM, TFLOPS is `2*M*N*K` over the time. State it as a percent of the MFMA peak or the HBM peak for the arch and dtype. Follow **principle-explain-the-number**.
 - Peak source. Read the `refs` resource, in the source whose topics include `peaks` or `roofline`. Cite the source name and the file you read. Cite a `kb` note only when the area `README.md` points to it. When a resource is not set, write `skipped <key>: not set`, and state the peak with its public source.
 - The limit. Name what limits the number: memory, MFMA issue, LDS conflicts, a wait, low occupancy. Rule out a measurement artifact. Follow **principle-explain-the-number**.
 - Resource numbers. Explain VGPR, spills, LDS bytes, and waves per SIMD as a budget: what one wave takes, and how many waves fit. A reader who needs the terms in plain words gets `/bro`.

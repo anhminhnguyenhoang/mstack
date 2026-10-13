@@ -40,9 +40,9 @@ It writes `~/.cursor/mstack/env.md`, outside the plugin, so an update never over
 
 ## Accept the verification offer, or don't
 
-At the end of setup, `/setup-mstack` looks for a way to prove behavior in your project, either a `verify-*` skill or an existing harness. If it finds neither, it offers once to generate one with [`/create-verification-skill`](../../skills/create-verification-skill/SKILL.md).
+At the end of setup, `/setup-mstack` checks each repo in your `repos` resource for a `verify-<lib>` skill. If a repo has none, it offers once to generate one with [`/create-verification-skill`](../../skills/create-verification-skill/SKILL.md).
 
-Say yes and it writes `.cursor/skills/verify-<app>/`, a project-local skill that teaches agents to run your project the way a user does, whether it is a kernel library, a CLI, or a service. It proves the skill works once before handing it over. Say no and setup moves on. You can run `/create-verification-skill` yourself any time. [Verify and ship](./06-verify-and-ship.md#create-a-project-verification-skill) covers it in depth.
+Say yes and it writes `.cursor/skills/verify-<lib>/`, a repo-local skill that maps each op family to its correctness, perf, and ISA checks, all run on one locked GPU through the `bench.run` port. It proves the skill works once before handing it over. Say no and setup moves on. You can run `/create-verification-skill` yourself any time. [Verify and ship](./06-verify-and-ship.md#create-a-project-verification-skill) covers it in depth.
 
 If you're new to mstack, say yes. An agent that can check its own work keeps going until the check passes. An agent that can't hands every result back to you to check by hand. Of everything in this guide, the verification skill pays off the most.
 

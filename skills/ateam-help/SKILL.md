@@ -26,7 +26,7 @@ Check the state that changes the answer, and mention it only when it does:
 
 - No `~/.cursor/rules/mstack-models.mdc` means `/setup-mstack` hasn't run for this user, so every role uses its default model.
 - No `~/.cursor/mstack/env.md` means the machine is not mapped, so every GPU run, container exec, and PR stops and asks. Give them `/setup-mstack env`. A `not set` optional resource (`kb`, `refs`) only skips cited notes and peaks, and `/setup-mstack env` adds it.
-- No `verify-*` skill or other app harness in the project means agents have no scripted way to drive a non-kernel surface. Mention `/create-verification-skill` when the question is about proving such a change works. For a kernel, `/verify-gpu-kernel` is the scripted way.
+- `/verify-gpu-kernel` runs one command on one locked GPU. A kernel library with no `verify-<lib>` skill has no map of what to run per op family. Mention `/create-verification-skill` when the question is about proving a library's ops work.
 
 When the model rule is missing and it matters, ask whether the user wants to pick a model for each role and a reasoning budget now. It matters when the user is new, the question is about setup or cost, or the answer depends on which models run. Ask at most once per chat. If the need is also unclear, ask both questions together. Offer two choices:
 
@@ -66,7 +66,7 @@ The default answer is `/ateam-mode`, which runs most of the others when its step
 | Do any non-trivial task with rigor | [`/ateam-mode`](../ateam-mode/SKILL.md) |
 | Know how code works now, or where new code should live | [`/how`](../how/SKILL.md) |
 | Know why code is shaped this way, or where a number came from | [`/why`](../why/SKILL.md) |
-| Understand a change or subsystem, explained plainly | [`/teach`](../teach/SKILL.md) |
+| Understand a kernel or a kernel change, explained plainly | [`/teach`](../teach/SKILL.md) |
 | Catch up on their own recent work on a topic | [`/recall`](../recall/SKILL.md) |
 | Catch up on everything in this chat since their last message, with enough context to decide each action item | [`/ketchup`](../ketchup/SKILL.md) |
 | Know what a small diff could break outside itself | [`/blast-radius`](../blast-radius/SKILL.md) |
@@ -78,9 +78,9 @@ The default answer is `/ateam-mode`, which runs most of the others when its step
 | Strip comments before review, using a reviewer that didn't write them | [`/no-comments`](../no-comments/SKILL.md) |
 | Clean AI tells out of prose | [`/unslop`](../unslop/SKILL.md) |
 | Write docs, an RFC, a README, a PR description, or a commit message to a standard | [`/technical-writing`](../technical-writing/SKILL.md) |
-| Hear the last reply again in plain words | [`/bro`](../bro/SKILL.md) |
-| Give agents a scripted way to drive a non-kernel surface and prove behavior | [`/create-verification-skill`](../create-verification-skill/SKILL.md) |
-| Bring a verification skill and its feature map back in line with its surface | [`/maintain-verification-skill`](../maintain-verification-skill/SKILL.md) |
+| Hear the last reply again without kernel jargon | [`/bro`](../bro/SKILL.md) |
+| Give a kernel library a scripted way to prove its ops (correctness, perf, ISA) | [`/create-verification-skill`](../create-verification-skill/SKILL.md) |
+| Bring a kernel library's verification skill and its feature map back in line with its tests | [`/maintain-verification-skill`](../maintain-verification-skill/SKILL.md) |
 | Start from a Jira ticket key and set up its ticket folder | [`/ticket-init`](../ticket-init/SKILL.md) |
 | Run, reproduce, or benchmark a kernel on the real GPU | [`/verify-gpu-kernel`](../verify-gpu-kernel/SKILL.md) |
 | Vet a performance number before reporting or acting on it | [`/benchmark-checklist`](../benchmark-checklist/SKILL.md) |

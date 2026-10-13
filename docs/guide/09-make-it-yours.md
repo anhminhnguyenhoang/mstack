@@ -59,7 +59,7 @@ When you already know the workflow you want to capture:
 
 Writing a skill matches the [Authoring or modifying a skill playbook](../../skills/ateam-mode/playbooks/authoring-a-skill.md), which routes through Cursor's built-in `create-skill`, validates the frontmatter and links, and ships the result through the Opening a PR playbook. Agent-facing prose has a higher bar than human prose, because an unhelpful sentence becomes an instruction some future agent follows. Let the playbook hold that bar rather than writing a `SKILL.md` freehand.
 
-One special case has its own generator. A skill that must drive a non-kernel surface and prove behavior is a verification skill, so use [`/create-verification-skill`](../../skills/create-verification-skill/SKILL.md) and [`/maintain-verification-skill`](../../skills/maintain-verification-skill/SKILL.md) instead. For kernels, [`/verify-gpu-kernel`](../../skills/verify-gpu-kernel/SKILL.md) already does it. [Verify and ship](./06-verify-and-ship.md#create-a-project-verification-skill) covers both.
+One special case has its own generator. A skill that maps a kernel library's op families to the checks that prove them is a verification skill, so use [`/create-verification-skill`](../../skills/create-verification-skill/SKILL.md) and [`/maintain-verification-skill`](../../skills/maintain-verification-skill/SKILL.md) instead. [`/verify-gpu-kernel`](../../skills/verify-gpu-kernel/SKILL.md) runs each of its checks. [Verify and ship](./06-verify-and-ship.md#create-a-project-verification-skill) covers both.
 
 ## Write docs to a standard with `/technical-writing`
 

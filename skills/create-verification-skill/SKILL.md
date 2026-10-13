@@ -46,7 +46,7 @@ Write `.cursor/skills/verify-<lib>/SKILL.md`. The frontmatter has `name: verify-
   - Correctness comes before perf. A perf row without a passing correctness row on the same run is not a result.
   - Copy every number from the saved stdout.
   - State the perf regime on every row.
-  - State a speedup or a percent of peak with its source (**principle-respect-the-roofline**, **principle-explain-the-number**).
+  - State a speedup or a percent of peak with its source (**principle-explain-the-number**, **principle-explain-the-number**).
 - **Cleanup.** Remove only what the run created: scratch files, its own JIT directory, its own worktrees. Never remove the artifacts. Never kill by process name.
 - **Helpers.** Any script that the skill ships is executable. Its invocation is shown in the skill body.
 

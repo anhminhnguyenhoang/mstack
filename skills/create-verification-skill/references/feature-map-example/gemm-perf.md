@@ -30,14 +30,14 @@ Preconditions:
 - **Harness run.** Run `python3 <harness>` inside the container, with the harness path from the repo. It prints one row for each shape and each side. Exit code `0`.
 - **Reference side.** Read the rows of the reference side. Each shape has a reference row from the same process, run in the same interleaved loop as the kernel row.
 - **Repeat.** Run the harness 7 times. Report the median, the run count, and the range for each shape, for example `p50 41 us, median of 7 runs, range 40 to 43 us`.
-- **Percent of peak.** Compute TFLOPS as `2*M*N*K` over the median time. State it as a percent of the MFMA peak for the arch and dtype, and cite where the peak comes from. Follow **principle-respect-the-roofline**.
+- **Percent of peak.** Compute TFLOPS as `2*M*N*K` over the median time. State it as a percent of the MFMA peak for the arch and dtype, and cite where the peak comes from. Follow **principle-explain-the-number**.
 - **Explain the number.** For any speedup or regression, name what limits it and rule out a measurement artifact. Follow **principle-explain-the-number**.
 - **Artifact.** Read the JSON that `bench.run` wrote. It holds the arch, the GPU index, the SHAs, the exact command, a `perf` row for each shape and each `side` with `us_median`, `runs`, `min_us`, `max_us`, and `regime`, and the path to the saved stdout.
 - **Revision compare.** Run the `pr.validate` port for the base and the head. Do not compare two separate hand runs.
 
 ## Gotchas
 
-- A busy GPU gives a meaningless number. With no idle GPU, report `NO_GPU` and stop. Do not benchmark.
+- A busy GPU gives a meaningless number. The `bench.run` port reports `NO_GPU` instead, and the feature stays unproved.
 - A JSON file typed by hand is not evidence. It must come from the run.
 - Changing the harness during a hillclimb breaks the comparison. Freeze it and record its hash.
 - Cold-L2, warm, and `hipGraph` runs differ. State the regime on every row. Follow **benchmark-checklist**.
