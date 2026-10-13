@@ -21,9 +21,9 @@ Invoked by Deliver (`playbooks/deliver.md`) when the output is code.
 - `## Scope`: always. 1 to 3 short items on what it covers and what it deliberately leaves out (a follow-up, a known gap). No symbols, paths, or file-by-file essay.
 - `## Tradeoffs`: only rejected alternatives a reviewer would otherwise ask about. Skip when there was no real choice.
 - `## Blast Radius`: 1 to 2 sentences on who or what it touches and why that is safe or risky. If main is red, state the cost of leaving it red.
-- `## Verification`: 1 to 3 bullets, each a real run path and its outcome. Perf: one primary number with its unit, `before → after`, and a link to the arena or swarm directory for the rest. No sample-size methodology, swarm recitals, or metric tables.
+- `## Verification`: 1 to 3 bullets, each a real run path and its outcome. Perf: one primary number with its unit, `before → after`, and a link to the arena or fan-out directory for the rest. No sample-size methodology, fan-out recitals, or metric tables.
 
-After the sections, attach videos or screenshots when they prove a claim. Full SHAs, swarm or arena lane recitals, lever-correction essays, file-by-file checklists, and "CLEAN" verdicts go in a linked artifact, not the body.
+After the sections, attach videos or screenshots when they prove a claim. Full SHAs, fan-out or arena lane recitals, lever-correction essays, file-by-file checklists, and "CLEAN" verdicts go in a linked artifact, not the body.
 
 **Per-repo conventions.** Find the repo by name in the table and follow its row. Its path is in the `repos` resource. The row replaces the Titles and Descriptions defaults above. Ports in the rows resolve in `../references/ports.md`. Keep the briefing rules: why it exists, what it leaves out, what it could break, and one verified number. Neither aiter nor FlyDSL has a PR template file under `.github/`. Both use the ROCm PR template, without its Submission Checklist: `## Motivation` (the Why), `## Technical Details` (what changed, scope, tradeoffs, blast radius), `## Test Plan` (the commands, shapes, dtypes, arch, and baselines), and `## Test Result` (the correctness gate, then the numbers with units, before and after). Fold the extra sections of their `CONTRIBUTE.md` or `CONTRIBUTING.md` into those four. No internal ticket keys, ticket targets, rejected ideas, or test harness scripts in the body.
 

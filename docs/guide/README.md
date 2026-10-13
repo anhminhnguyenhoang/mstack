@@ -7,7 +7,7 @@ Here's what you'll learn:
 1. [Set up mstack](./01-setup.md). Install the plugin and pick your models.
 2. [Route work through `/ateam-mode`](./02-ateam-mode.md). Give it a goal and watch it pick a playbook.
 3. [Understand the code](./03-understand.md). A read-only investigation, then `/how`, `/why`, `/teach`, and `/recall` before you edit anything.
-4. [Design the change](./04-design.md). `/architect`, `/arena`, `/swarm`, `/interrogate`, prototypes, and plans before code locks in a shape.
+4. [Design the change](./04-design.md). `/architect`, `/arena`, `/interrogate`, prototypes, and plans before code locks in a shape.
 5. [Build and clean the change](./05-build-and-clean.md). The build playbooks, `/tdd`, `/unslop`, and `/no-comments`.
 6. [Verify and ship](./06-verify-and-ship.md). Prove behavior on the real GPU, vet numbers with `/benchmark-checklist`, then open a focused PR and drive it to merged.
 7. [Run work while you sleep](./07-overnight.md). Trust before loops, an overnight contract, a decision log you can audit, and Projects and automations that scale past one agent.

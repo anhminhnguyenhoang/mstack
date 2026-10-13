@@ -72,7 +72,7 @@ The default answer is `/ateam-mode`, which runs most of the others when its step
 | Know what a small diff could break outside itself | [`/blast-radius`](../blast-radius/SKILL.md) |
 | Settle types and module shape before code that crosses a function boundary | [`/architect`](../architect/SKILL.md) |
 | Get several attempts at one brief, merged into the best one | [`/arena`](../arena/SKILL.md) |
-| Run parallel checks over slices, or race workers, as cloud agents | [`/swarm`](../swarm/SKILL.md) |
+| Run parallel checks over slices, or race workers, locally | `/ateam-mode`, which fans out per its parallel fan-out rule |
 | Have different models review a diff and try to break it | [`/interrogate`](../interrogate/SKILL.md) |
 | Review someone's aiter, FlyDSL, or Triton PR by number or URL, with GPU evidence, and post it with line comments after approval | `/ateam-mode review PR 123`, the [PR review](../ateam-mode/playbooks/pr-review.md) playbook |
 | Fix a bug test-first when a cheap local test exists | [`/tdd`](../tdd/SKILL.md) |
@@ -100,7 +100,7 @@ If a skill directory next to this one is missing from the table, read its frontm
 Close calls:
 
 - `/how` explains what the code does. `/why` explains the reasons. `/teach` runs one or both and explains the result plainly.
-- `/arena` gives every worker the same brief and merges the best parts. `/swarm` splits work into slices or a race and returns one report.
+- `/arena` gives every worker the same brief and merges the best parts. `/ateam-mode` fans out local workers over slices or a race and returns one table of issues and gaps.
 - `/architect` implements right after it settles the design. Add "with checkpoint" to review the design before it writes code.
 - `/interrogate` reviews a local diff with a model panel. The PR review playbook reviews a PR by number: repo rules and GPU evidence, then the same panel, then a draft the human posts. `/blast-radius` looks for breakage outside the diff and proves the one fact that makes the change safe.
 - `/recall` rebuilds context across recent chats. `/ketchup` covers only this chat since the user's last message. Resuming one specific chat or branch is the Session pickup playbook.

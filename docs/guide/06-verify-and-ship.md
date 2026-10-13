@@ -70,7 +70,7 @@ From then on, "verify it in the app" is a step any agent can execute, in this re
 /ateam-mode repro this kernel failure with /verify-gpu-kernel on gfx950. if it repros on main, fix it and show me the artifact JSON as proof.
 ```
 
-Once the verify skill works, a [`/swarm`](../../skills/swarm/SKILL.md) can split a full pass by feature-map entry and aggregate the results. A swarm of verifiers also confirms a perf win over a big enough sample, or fuzzes the interface for regressions before a PR ships.
+Once the verify skill works, a fan-out from `/ateam-mode` can split a full pass by feature-map entry and aggregate the results. A fan-out of verifiers also confirms a perf win over a big enough sample, or fuzzes the interface for regressions before a PR ships.
 
 Treat the verification skill as infrastructure, not a one-off. Commit it, so every person and every agent on the team runs the project the same way. Then [build the lever](../../skills/principle-build-the-lever/SKILL.md). When agents keep writing throwaway scripts to click through the app, ask for a small control CLI that the skill calls instead. Agents spend fewer tokens, and every run becomes repeatable. A CLI that agents use well has these traits:
 

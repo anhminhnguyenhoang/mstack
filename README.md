@@ -101,7 +101,7 @@ morning.
 | [babysit](./skills/ateam-mode/playbooks/babysit.md) | drive a pr or a stack to merge-ready: conflicts, review threads, ci. |
 | [shipping](./skills/ateam-mode/playbooks/shipping.md) | independently verify a green stack, then land the contiguous verified run bottom-up through the resolved forge. |
 | [autonomous run](./skills/ateam-mode/playbooks/autonomous-run.md) | drive a long task to completion without stopping. |
-| [autopilot-full](./skills/ateam-mode/playbooks/autopilot-full.md) | run independent prs to merged with one owner per pr and a root swarm verdict on each round, from the code-ready head on. |
+| [autopilot-full](./skills/ateam-mode/playbooks/autopilot-full.md) | run independent prs to merged with one owner per pr and a root fan-out verdict on each round, from the code-ready head on. |
 | [autopilot-stack](./skills/ateam-mode/playbooks/autopilot-stack.md) | build and verify one linear base-branch stack for the operator to review and land. |
 | [session pickup](./skills/ateam-mode/playbooks/session-pickup.md) | resume or take over a prior agent's in-flight work. |
 | [pause safely](./skills/ateam-mode/playbooks/pause-safely.md) | suspend in-flight work cleanly so it can be resumed later. |
@@ -129,7 +129,7 @@ to keep [`/ateam-mode`](./skills/ateam-mode/SKILL.md) on across turns, pick it f
 
 ## skills
 
-[`/ateam-mode`](./skills/ateam-mode/SKILL.md) runs most of these for you when a step needs them (`how`, `why`, `architect`, `arena`, `swarm`, `interrogate`, `unslop`, `no-comments`, `technical-writing`, `tdd`, and the principles). the table below is for when you want one directly:
+[`/ateam-mode`](./skills/ateam-mode/SKILL.md) runs most of these for you when a step needs them (`how`, `why`, `architect`, `arena`, `interrogate`, `unslop`, `no-comments`, `technical-writing`, `tdd`, and the principles). the table below is for when you want one directly:
 
 ```
 /how does aiter pick between the hip and triton kernels for this gemm? where does the M threshold live?
@@ -155,7 +155,6 @@ to keep [`/ateam-mode`](./skills/ateam-mode/SKILL.md) on across turns, pick it f
 | [`/blast-radius`](./skills/blast-radius/SKILL.md) | you have a small-looking change and want to know what else it could break, with the one fact it's safe because of proven by running code, not asserted. |
 | [`/architect`](./skills/architect/SKILL.md) | you're about to write code that crosses a function boundary and want the caller's usage, types, and module shape settled first. |
 | [`/arena`](./skills/arena/SKILL.md) | you want N parallel attempts at the same thing, then to grab the best parts of each. |
-| [`/swarm`](./skills/swarm/SKILL.md) | you want N parallel workers across different slices or races, then one aggregated report. |
 | [`/interrogate`](./skills/interrogate/SKILL.md) | you have a diff and want different models to try to break it, including a strict code-quality lens. |
 | [`/automate-me`](./skills/automate-me/SKILL.md) | you want your own `-mode` skill, drafted from how you've worked. |
 | [`/setup-mstack`](./skills/setup-mstack/SKILL.md) | you want to pick which models mstack uses per role, or map this machine for kernel work. `/setup-mstack models` writes the model rule. `/setup-mstack env` writes `~/.cursor/mstack/env.md`. |
@@ -215,8 +214,8 @@ trace:             /ateam-mode here is an att trace of the slow kernel. where do
 refactor:          /ateam-mode clean up this aiter kernel without changing its isa.
 arena:             /arena take my prompt to the arena verbatim. i want to compare their proposals
                    with yours.
-swarm:             /swarm check every kernel under aiter/ops/flydsl/ with the isa.diff port. one
-                   worker per kernel. one report.
+fan-out:           /ateam-mode check every kernel under aiter/ops/flydsl/ with the isa.diff port.
+                   one worker per kernel. one report.
 interrogate:       /interrogate review this branch.
 tdd:               /tdd implement
 unslop:            can we unslop and tighten the new changes?

@@ -14,6 +14,7 @@ REMOVED = [
     "jdbba-autoresearch",
     "jdbba-frontier-search",
     "kernel-walkthrough",
+    "swarm",
 ]
 RETIRED_PRINCIPLES = [
     "experience-first",

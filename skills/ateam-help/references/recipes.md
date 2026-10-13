@@ -37,7 +37,7 @@ Swap in the real paths, skills, and done checks. Informal wording works.
 ## Review and ship
 
 - `/interrogate the whole branch, but skeptically. don't change anything yet. no nitpicks unless it's a real bug or regression.` Read the dismissals too.
-- `/swarm check every kernel under <dir> with the isa.diff port. one worker per kernel. one report.`
+- `/ateam-mode check every kernel under <dir> with the isa.diff port. one worker per kernel. one report.`
 - `/ateam-mode open the pr. small ordered commits, evidence in the description.`
 - `/ateam-mode babysit this pr. get it green.` For status only: `/ateam-mode check on pr <number>. anything outstanding?`
 - `/ateam-mode land the stack.`

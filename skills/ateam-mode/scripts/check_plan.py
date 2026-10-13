@@ -185,7 +185,7 @@ def check(file):
         live = block("Verify, live.")
         if live:
             if not LANES.search(live["rest"]):
-                fail(live["n"], f"{pr['title']}: Verify, live lacks \"Ten lanes on `<swarm workers model>` at the PR head\" with the model filled in")
+                fail(live["n"], f"{pr['title']}: Verify, live lacks \"Ten lanes on `<fan-out workers model>` at the PR head\" with the model filled in")
             lanes = []
             for b in boxes(live["lines"]):
                 lanes.append({**b, "m": re.match(r"^Lane (\d+)\. ", b["text"])})

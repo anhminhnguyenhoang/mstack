@@ -1,6 +1,6 @@
 # Design before you write code
 
-One attempt at a hard design locks in the first shape the model thought of. `/architect` settles types and boundaries before implementation. `/arena` runs several attempts at the same brief and merges the best parts. `/interrogate` has other models try to break the result. When the job is coverage rather than design synthesis, `/swarm` fans out slices or races and aggregates their results.
+One attempt at a hard design locks in the first shape the model thought of. `/architect` settles types and boundaries before implementation. `/arena` runs several attempts at the same brief and merges the best parts. `/interrogate` has other models try to break the result. When the job is coverage rather than design synthesis, ask `/ateam-mode` to fan out slices or races and aggregate their results.
 
 The two most common design mistakes are taking the agent's first design and polishing a plan that no code has tested. This page fixes both. You plan through code: prototypes answer the open questions, a README or tutorial sets the target, and the written plan comes last.
 
@@ -50,15 +50,15 @@ The panel comes from your [`/setup-mstack`](../../skills/setup-mstack/SKILL.md) 
 /arena this, 5 candidates. the tuned-config CSV schema is expensive to change later.
 ```
 
-## Cover slices and races with `/swarm`
+## Cover slices and races with a fan-out
 
 ```text
-/swarm check every kernel under aiter/ops/flydsl/ with the isa.diff port. one worker per kernel. one report.
+/ateam-mode check every kernel under aiter/ops/flydsl/ with the isa.diff port. one worker per kernel. one report.
 ```
 
-[`/swarm`](../../skills/swarm/SKILL.md) fans N workers across independent slices, coverage matrices, gauntlet lanes, exploration partitions, or declared race arms. Each worker gets its own scope and check, then reports `PASS`, `ISSUES`, or `BLOCKED`. The parent waits for the workers and returns one compact report with any gaps or dropouts.
+The router's fan-out rule spawns N local workers in one message. Each worker gets its own scope, the exact SHAs, and a method, then reports `PASS`, `ISSUES`, or `BLOCKED`. GPU runs queue on one locked GPU. The parent returns one table with the issues and the gaps. A gap is not a pass.
 
-Reach for it when parallelism adds coverage or lets independent checks race. `/arena` gives every worker the same design or code brief, then picks a base and grafts the best parts. `/swarm` covers slices or runs a race with a selection rule declared up front. It does not use the base-selection and grafting ceremony.
+Reach for it when parallelism adds coverage or lets independent checks race. `/arena` gives every worker the same design or code brief, then picks a base and grafts the best parts. A fan-out covers slices or runs a race with a selection rule declared up front. It does not graft.
 
 ## Break it with `/interrogate`
 
@@ -123,7 +123,7 @@ Not every change needs this. Most need none of it. A rough ladder:
 - A small, finished change you're unsure about needs `/interrogate` alone.
 - A change that crosses function boundaries or moves ownership earns `/architect`, which brings `/arena` with it.
 - A standalone decision where independent attempts would help, like naming, formats, or an algorithm, is `/arena` directly.
-- A coverage matrix, set of parallel checks, or race with declared arms is `/swarm`.
+- A coverage matrix, set of parallel checks, or race with declared arms is a fan-out in `/ateam-mode`.
 - An open question you could answer by running something, like a layout, a timing, or an approach, gets a prototype, not a debate.
 - A contested design that's expensive to reverse gets `/architect`, then `/interrogate` before shipping.
 - Work that spans several PRs gets a plan, written after the design settles.
