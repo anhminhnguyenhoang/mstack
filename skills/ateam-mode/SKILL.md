@@ -85,11 +85,13 @@ Read the leaf skill in full for any principle you apply. Each leaf is the **prin
 
 - Posting or editing a Jira comment, or changing a ticket's status or fields. Write the draft (**Deliver**) and let the human approve it.
 - Opening a PR against a public upstream (`ROCm/aiter`, `ROCm/FlyDSL`, `triton-lang/triton`, `sgl-project/sglang`). Prepare the branch, title, and body, ask, and open it only as a draft after the user says yes. Without a yes, stop.
+- Running a fork PR's code on a GPU or a host you share, as in the **PR review** validation step. Name the head repo and author, and ask.
+- Posting a review on someone else's PR. Write the draft (**PR review**), and post it only with the event the human approved.
 - Marking any PR ready for review. PRs open as drafts only, and the human marks them ready after review. Merge only when the user asked to ship, and only a PR the human has marked ready.
 - Pushing a shared docker image.
 - Any text that names a customer or an NDA model, in any outbound channel.
 
-**Session overrides:** "Don't stop" / "going to bed" / "run until done" / "be fully autonomous" → keep going. The Jira, public-upstream, shared-image, and customer-or-NDA pauses stay in force. Prepare the draft or the PR branch and wait.
+**Session overrides:** "Don't stop" / "going to bed" / "run until done" / "be fully autonomous" → keep going. The Jira, PR-review, fork-code, public-upstream, shared-image, and customer-or-NDA pauses stay in force. Prepare the draft or the PR branch and wait.
 
 **No is an acceptable answer.** Asked whether to do something, invited to add scope, or shown an approach, reply with your real judgment. Decline, push back, or say "this doesn't earn its place" when true. A recommendation is a judgment, not a validation. Agreement is not the default, candor over sycophancy.
 
@@ -144,6 +146,7 @@ A large or cross-cutting effort (a migration across many call sites, an ambitiou
 - **Prototype.** Throwaway sketch to settle a design or empirical fork. "Prototype", "mock it up", "try this layout".
 - **Authoring or modifying a skill.** Writing or editing a SKILL.md (`authoring-a-skill`).
 - **Eval.** Test how a skill, structure, or prompt change affects agent behavior before promoting it.
+- **PR review.** An advisory review of someone's PR, by number or URL, ending in a draft the human approves before it posts. "Review PR 123." For a local diff, the **interrogate** skill.
 - **Babysit.** Drive a PR or stack to merge-ready: conflicts, review threads, CI.
 - **Shipping.** Verify a green stack independently, then land the contiguous verified run bottom-up (`references/forge.md`).
 - **Autonomous run.** A long task driven to completion. "Run until done", "/loop until X".

@@ -65,7 +65,7 @@ use [`/ateam-mode`](./skills/ateam-mode/SKILL.md) at the start of a task. it rea
 
 ### just use [`/ateam-mode`](./skills/ateam-mode/SKILL.md)
 
-this skill is the main shortcut. i use it whenever i need the agent to do rigorous engineering work. it comes with twenty-five playbooks:
+this skill is the main shortcut. i use it whenever i need the agent to do rigorous engineering work. it comes with twenty-six playbooks:
 
 ```
 /ateam-mode this flydsl kernel returns nan at T=4096 on gfx950. repro first, then fix and
@@ -78,7 +78,7 @@ morning.
 ```
 
 <details>
-<summary>the twenty-five playbooks</summary>
+<summary>the twenty-six playbooks</summary>
 
 | playbook | for |
 |---|---|
@@ -95,6 +95,7 @@ morning.
 | [prototype](./skills/ateam-mode/playbooks/prototype.md) | a throwaway sketch to make a design or behavioral decision cheaply, or to settle an empirical fork by observing it. |
 | [authoring a skill](./skills/ateam-mode/playbooks/authoring-a-skill.md) | writing or editing a SKILL.md. |
 | [eval](./skills/ateam-mode/playbooks/eval.md) | test how a skill or prompt change affects agent behavior, blinded. |
+| [pr review](./skills/ateam-mode/playbooks/pr-review.md) | advisory review of someone's pr: the repo's review rules with gpu base-vs-head evidence, a model panel, one merged verdict, and a draft you approve before it posts. |
 | [babysit](./skills/ateam-mode/playbooks/babysit.md) | drive a pr or a stack to merge-ready: conflicts, review threads, ci. |
 | [shipping](./skills/ateam-mode/playbooks/shipping.md) | independently verify a green stack, then land the contiguous verified run bottom-up through the resolved forge. |
 | [autonomous run](./skills/ateam-mode/playbooks/autonomous-run.md) | drive a long task to completion without stopping. |
@@ -133,7 +134,7 @@ to keep [`/ateam-mode`](./skills/ateam-mode/SKILL.md) on across turns, pick it f
 ```
 
 ```
-/interrogate review this pr.
+/interrogate review this branch.
 ```
 
 <details>
@@ -195,6 +196,7 @@ multi-phase:       /ateam-mode open source these skills as a plugin. nothing int
                    in a temp dir, show me the dependency graph first.
 overnight run:     /ateam-mode i'm going to bed. get the stack green even if ci flakes. i want
                    every pr verified and ready for my review by morning.
+pr review:         /ateam-mode review ROCm/aiter#123. draft it, i'll approve before it posts.
 babysit:           /ateam-mode check on pr 123. anything outstanding?
 figure it out:     /ateam-mode i'm stepping away. migrate every op test from the old timing helper
                    to run_perftest, keeping the reported numbers identical. i want to trust it
@@ -213,7 +215,7 @@ arena:             /arena take my prompt to the arena verbatim. i want to compar
                    with yours.
 swarm:             /swarm check every kernel under aiter/ops/flydsl/ with the isa.diff port. one
                    worker per kernel. one report.
-interrogate:       /interrogate review this pr.
+interrogate:       /interrogate review this branch.
 tdd:               /tdd implement
 unslop:            can we unslop and tighten the new changes?
 reflect:           /reflect that took too long. capture what we learned so the next run doesn't

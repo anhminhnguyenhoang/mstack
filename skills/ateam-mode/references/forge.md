@@ -57,6 +57,7 @@ Rules for every MCP call.
 | Review threads, list | `gh api graphql` | `pull_request_read` (`get_review_comments`, gives thread IDs) | `get_pull_request_comments`, `get_pull_request_reviews` (flat, no resolved state) |
 | Review thread, reply | `gh api --method POST repos/<o>/<r>/pulls/<n>/comments/<id>/replies` | `add_reply_to_pull_request_comment` | none: report |
 | Review thread, resolve | `gh api graphql` | `pull_request_review_write` (`resolve_thread`, `threadId`) | none |
+| PR review, submit | `gh pr review <n> --comment --body-file <f>` (event the human chose) | `pull_request_review_write` (`create`, `event`, `body`, `commitID`) | `create_pull_request_review` |
 | PR comment | `gh pr comment <n>` | `add_issue_comment` (`issue_number` is the PR number) | `add_issue_comment` |
 | PR merge | `gh pr merge <n> --squash` | `merge_pull_request` (`merge_method: squash`, `expectedHeadSha`) | `merge_pull_request` |
 | Arm merge-when-ready | `gh pr merge <n> --squash --auto` | none | none |

@@ -1,0 +1,16 @@
+### PR review
+
+**You own one advisory verdict on someone's PR. Evidence first, then judgment, then a draft the human posts.** For "review PR 123", a PR URL, or `owner/repo#N`. A local diff with no PR is the **interrogate** skill alone. Your own PR before it opens is **Opening a PR**, which runs the same ports.
+
+The review is advisory. It never approves, never requests changes, and never merges. Only the human picks the review event.
+
+1. **Resolve the PR and the forge.** Pin `owner/repo`, the number, the base ref, and the head SHA, per `../references/forge.md`. The `pr.review` port's scripts need a signed-in `gh` even when the forge resolves to MCP. If `gh auth status` fails, stop and ask the user to run `gh auth login`. Do not emulate the scripts by hand.
+2. **Sync the review skills.** Run `scripts/sync-upstream-skills.sh` on the checkout that ships the `pr.review` port's skill, and record the SHA it prints. A failed sync is a stop: a review on a stale rule set is a review by a different reviewer.
+3. **Run the `pr.review` port** from the skill's own repo (`../references/ports.md`). Follow that skill in full, including its gates, and its own triage of whether the `pr.validate` port must run. Its fetch step runs the PR's code itself, so check first: `gh pr view <N> --repo <owner/repo> --json isCrossRepository,headRepositoryOwner,author`. For a fork PR, pause per Autonomy: name the head repo and author, and run the code only after the human says yes. Without a yes, start the port with `REVIEW_AUTO_VALIDATE=0` and review the diff alone. Hold its GPU run to one locked GPU. Keep `$WORK` and its card. A red gate means the step did not happen. Go back to it, never around it.
+4. **Run the interrogate panel on the same diff** when the PR changes code. Hand it the PR body as the intent. Skip it for a docs-only or config-only PR, with a one-line `skip:`.
+5. **Merge into one verdict.** Start from the step 3 card. Add a panel finding only when it names a changed file and survives the card's refutation rule. Note which source raised each finding. A finding both sources raised independently goes first. Keep the card's Validation and Perf lines unchanged: the panel adds judgment, never evidence.
+6. **Write the review draft** to `review-draft-<repo>-<N>.md`, in the ticket folder when there is one, else in the working directory. Top line: `Reviewed head: <40-hex sha>`. Then the merged card, at most five findings, each with problem, impact, and an action verb. Apply `/unslop`. Show the draft in the reply.
+7. **Stop at the draft.** Ask the human to approve it and to pick the event: `COMMENT` (default), `REQUEST_CHANGES`, or `APPROVE`. Never pick a stronger event than the human chose.
+8. **Post only after approval** with `scripts/post-review.sh <owner/repo> <N> <draft> <event>`, passing the event the human chose. It pins the review to the draft's head SHA and refuses when the head moved. On that refusal, re-run from step 2 or ask. Without `gh`, use the forge's PR review row and make the same head check by hand first. Report the review URL.
+
+**Reply:** the PR, head SHA, and skills SHA reviewed. The merged verdict with its Validation and Perf lines. The draft path. The open decision: approve the draft and pick the event.
