@@ -1,6 +1,6 @@
 # Run work while you sleep
 
-This is the payoff for everything before it. An agent you can trust to verify its own work is an agent you can leave alone with a hard task. Three things make that safe: a checkable finish condition, an isolated worktree or cloud agent, and a decision log you audit in the morning.
+This is the payoff for everything before it. An agent you can trust to verify its own work is an agent you can leave alone with a hard task. Three things make that safe: a checkable finish condition, an isolated worktree, and a decision log you audit in the morning.
 
 ![She waves goodnight from the door while robots keep the factory running, one updating a DECISION LOG wall board under a BUILD LOOP ACTIVE sign.](./images/overnight.jpg)
 
@@ -87,7 +87,7 @@ For a program of many stacked PRs, write the plan first. The [Multi-phase plan p
 
 ## Run many projects in parallel
 
-A [Cursor Project](https://cursor.com/blog/projects) gives one coordinator agent a persistent thread. The coordinator doesn't write code. It directs subagents, which run in the cloud by default, so the work continues when your laptop is closed. That's the shape the Autopilot playbooks expect. Start your prompts to the coordinator with `/ateam-mode`, and the subagents it spawns follow the playbooks.
+A [Cursor Project](https://cursor.com/blog/projects) gives one coordinator agent a persistent thread. The coordinator doesn't write code. It directs subagents. In mstack, Autopilot owners and fan-out workers run locally, so ticket text and NDA code stay on the host and the GPU is in reach. The Cursor session must stay connected for the run to continue. That's the shape the Autopilot playbooks expect. Start your prompts to the coordinator with `/ateam-mode`, and the subagents it spawns follow the playbooks.
 
 A few habits help:
 

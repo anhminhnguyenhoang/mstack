@@ -141,7 +141,7 @@ Principles are one-rule skills that `/ateam-mode` reads and cites in its replies
 | A new model choice had no effect | The rule from `/setup-mstack` applies to new chats. Start one. |
 | Runs cost more than expected | See the cost paragraph under Get set up. |
 | A skill didn't load on its own | Only `/setup-mstack` loads from the user's words. The others load when the user types them or when `/ateam-mode` runs them, and it doesn't run every skill. |
-| Parallel agents overwrote each other | Give each agent its own worktree, or run them as cloud agents, which each get their own machine. |
+| Parallel agents overwrote each other | Give each agent its own worktree, inside the container mount for GPU repos. |
 | An overnight run moved but finished nothing | `/loop` needs a check that can pass or fail, not a duration. See [guide page 7](../../docs/guide/07-overnight.md). |
 | A kernel step stopped because a port's skill is missing or malformed | Run `/setup-mstack env` and read its Skills table. A renamed or removed skill needs a fix in [`ports.md`](../ateam-mode/references/ports.md). |
 | The reply claims success from a green build | Ask for the real command, the op test output, or the ISA. That's the prove-it-works principle. |

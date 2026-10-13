@@ -94,11 +94,11 @@ A long chat accumulates context from the last task. When you change subjects, sa
 
 "new task" tells `/ateam-mode` to re-match rather than continue the prior playbook. "don't change any code yet" pins this one to Investigation. Without those two phrases, a mode mid-Feature tends to treat your question as the next feature step.
 
-## Give parallel work its own machine
+## Give parallel work its own worktree
 
-If you run several agents against one repository on one computer, they will conflict over the working tree, the ports, and the build output. The cleanest isolation is a [cloud subagent](https://cursor.com/docs/subagents#cloud-subagents). Each one gets its own VM and branch, so it can install dependencies and build without touching your machine. A cloud VM has no AMD GPU, so use it for compile-only work such as ISA checks and cleanups, not for benchmarks. Type `/in-cloud` before the task, or ask the parent chat to hand work to cloud subagents.
+If you run several agents against one repository on one computer, they will conflict over the working tree, the ports, and the build output. Give each agent its own worktree, and for GPU repos make it inside the container mount. Each agent then has its own branch and build output, and the container still sees it.
 
-When the work has to stay local, ask for a worktree up front:
+Ask for a worktree up front:
 
 ```text
 /ateam-mode new task. branch off <base> in a fresh worktree, then port the FlyDSL fix there.
