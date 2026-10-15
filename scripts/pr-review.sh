@@ -5,8 +5,11 @@
 # skills gets them linked in. A fork PR's code does not run unless ALLOW_FORK_CODE=1.
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
-SKILLS=${MSTACK_SKILLS_DIR:-$HOME/.claude/skills}
 ENV_FILE=${MSTACK_ENV:-$HOME/.cursor/mstack/env.md}
+env_skills_dir() { awk -F'|' '/^## /{s=/^## Skills/} s&&d==2{gsub(/^[ `]+|[ `]+$/,"",$2); if($2!="not set") print $2; exit} s&&d==1{d=2} s&&$2~/^ *Dir *$/{d=1}' "$ENV_FILE" 2>/dev/null | sed "s|^~|$HOME|"; }
+SKILLS=${MSTACK_SKILLS_DIR:-$(env_skills_dir)}
+SKILLS=${SKILLS:-$HOME/.claude/skills}
+export MSTACK_SKILLS_DIR=$SKILLS
 SKILL_FUNCTIONS="$ROOT/skills/ateam-mode/references/skill-functions.md"
 GH=${GH:-gh}
 
