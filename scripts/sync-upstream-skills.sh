@@ -7,7 +7,10 @@
 # makes the snapshot. The last field of each output line is the snapshot path.
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
-SKILLS=${MSTACK_SKILLS_DIR:-$HOME/.claude/skills}
+ENV_FILE=${MSTACK_ENV:-$HOME/.cursor/mstack/env.md}
+env_skills_dir() { awk -F'|' '/^## /{s=/^## Skills/} s&&d==2{gsub(/^[ `]+|[ `]+$/,"",$2); if($2!="not set") print $2; exit} s&&d==1{d=2} s&&$2~/^ *Dir *$/{d=1}' "$ENV_FILE" 2>/dev/null | sed "s|^~|$HOME|"; }
+SKILLS=${MSTACK_SKILLS_DIR:-$(env_skills_dir)}
+SKILLS=${SKILLS:-$HOME/.claude/skills}
 CACHE=${XDG_CACHE_HOME:-$HOME/.cache}/mstack/upstream
 mkdir -p "$CACHE"
 exec 9>"$CACHE/.lock"
