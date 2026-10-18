@@ -5,6 +5,8 @@
 1. Run `/ticket-init <KEY>`. It loads the ticket through the Atlassian Jira MCP and writes `<tickets>/<KEY>/ticket-raw.md`, a brief of at most 150 words, and the acceptance predicate. Read all three before you route. If the folder already exists, `/ticket-init` runs resume mode. Read `STATUS.md` first, then `ticket-raw.md`, `notes/`, and any `comment-draft-*.md`, and continue from them.
 2. Check the brief against the ticket. The predicate must be a command or a number that can pass or fail. If it is not, fix it or ask the human the one question that settles it.
 3. Route by the predicate:
+   - A new kernel, a Triton port, or tuned configs to add goes to **Feature** (`playbooks/feature.md`). Its kernel steps use the `kernel.write`, `test.author`, and `config.tune` skill functions.
+   - A PR to review goes to **PR review** (`playbooks/pr-review.md`).
    - A defect to reproduce and fix goes to **Bug fix**.
    - A kernel metric to improve against a target goes to **Kernel hillclimb** (`playbooks/kernel-hillclimb.md`).
    - A claim to verify, or a version matrix to run, goes to **Repro audit** (`playbooks/repro-audit.md`).
