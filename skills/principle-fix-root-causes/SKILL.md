@@ -6,9 +6,9 @@ disable-model-invocation: true
 
 # Fix root causes
 
-When debugging, fix the fault, not the place where it surfaced. The symptom is where a wrong state became visible. The root cause is the first place the system did something it should not do, or failed to handle a state it should handle.
+When debugging, fix the fault, not the place where it became visible. The symptom is where a wrong state became visible. The root cause is the first place the system did something it should not do, or failed to handle a state it should handle.
 
-**Why:** A symptom fix hides the evidence and leaves the fault free to surface somewhere else. Each one makes the system harder to reason about, because the code now carries a workaround for a bug that nobody named.
+**Why:** A symptom fix hides the evidence and leaves the fault in place to cause a failure somewhere else. Each one makes the system harder to reason about, because the code now carries a workaround for a bug that nobody named.
 
 **Pattern:**
 - Reproduce first.

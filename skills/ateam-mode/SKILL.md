@@ -71,7 +71,7 @@ Read the leaf skill in full for any principle you apply. Each leaf is the **prin
 - **Prove it works.** Before declaring done. Check the real artifact, not a proxy or "it compiles".
 - **Fix root causes.** Debugging. Trace back to the first wrong step and fix it there. A guard is a fix only for a legitimate state.
 - **Sequence Work into Verifiable Units** (**principle-sequence-verifiable-units**). Multi-step work and commit or PR stacks. Small units, each ending in a check.
-- **Test behavior, not implementation.** Writing or keeping a test. Assert what users observe. Fail when behavior breaks, pass when only internals change.
+- **Test behavior, not implementation.** Writing or keeping a test. Assert what users observe. The test fails when behavior breaks and passes when only the internals change.
 - **Explain the number.** Before you trust or report a measured number. Name its limiter, give GPU percent of peak, rule out artifacts.
 - **Prove it reached codegen.** A compile hint, flag, attribute, or structure change. Credit it only if the ISA or IR changed.
 - **Correctness before speed.** Timing or keeping a kernel change. `allclose` and the NaN count pass on the same run first.

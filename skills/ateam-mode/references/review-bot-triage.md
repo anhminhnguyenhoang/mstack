@@ -1,6 +1,6 @@
 # Review-bot triage
 
-Use this reference when the Babysit playbook (`../playbooks/babysit.md`) handles review-bot comments. On ROCm repos these come from Copilot's review, GitHub code scanning (`github-advanced-security`), and CI bots. Bugbot comments only where a repo turns it on. The goal is not to ignore bots by default. The goal is to stop treating every comment as a required code change.
+Use this reference when the Babysit playbook (`../playbooks/babysit.md`) handles review-bot comments. On ROCm repos these come from Copilot's review, GitHub code scanning (`github-advanced-security`), and CI bots. Bugbot posts comments only where a repo turns it on. Do not ignore bots by default, and do not treat every comment as a required code change.
 
 ## Decision rubric
 

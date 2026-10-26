@@ -18,7 +18,7 @@ Look for these signs:
 
 Information leakage makes multiple modules depend on the same internal decision. A representation, policy, or protocol detail appears in more than one place, so changing it requires coordinated edits.
 
-In kernel code, a layout or preshuffle decision that both the caller and the kernel encode is leakage: change it in one place and the other reads garbage. Public re-exports of transport or wire types are leakage too. Parse external data into domain types behind the interface. Keep storage schemas, framework objects, and protocol details private.
+In kernel code, a layout or preshuffle decision that both the caller and the kernel encode is leakage. Change it in one place, and the other side reads the wrong data. Public re-exports of transport or wire types are leakage too. Parse external data into domain types behind the interface. Keep storage schemas, framework objects, and protocol details private.
 
 ## Temporal decomposition
 

@@ -1,6 +1,6 @@
 ---
 name: architect
-description: "Sketch an op contract (signature, tensor layouts, dispatch gate, tile plan) or types, signatures, and module structure before code, then stay in the loop while implementation fills in. Use for /architect, 'architect this', 'design this', or non-trivial work where jumping to code would lock in the wrong shape."
+description: "Before code, sketch the shape: an op contract (signature, tensor layouts, dispatch gate, tile plan) for a kernel, or types, signatures, and module structure for other code. Then stay in the loop while implementation fills in. Use for /architect, 'architect this', 'design this', or non-trivial work where jumping to code would lock in the wrong shape."
 disable-model-invocation: true
 ---
 
@@ -22,7 +22,7 @@ Open a todolist with one entry per phase before starting.
 
 Build a real mental model of every system the new code touches. Run the **how** skill over the relevant subsystems. Naming a file isn't grounding. Produce the architectural explanation `how` prescribes. If the design redefines ownership or layering, also run the **why** skill on the existing shape so the rationale becomes a constraint, not a guess.
 
-For a kernel, also bound the ceiling first: the roofline limit for the target shapes per the **explain-the-number** principle skill, or a **Bound probe** when the limit is unclear, and the levers the `lever.menu` skill function (`../ateam-mode/references/skill-functions.md`) offers for that bottleneck class.
+For a kernel, also bound the ceiling first. Find the roofline limit for the target shapes per the **explain-the-number** principle skill, or run a **Bound probe** when the limit is unclear. Then list the levers that the `lever.menu` skill function (`../ateam-mode/references/skill-functions.md`) offers for that bottleneck class.
 
 Skip Phase A only when the work is greenfield with no surrounding system to integrate.
 

@@ -1,6 +1,6 @@
 ---
 name: principle-migrate-callers-then-delete-legacy-apis
-description: "Apply when introducing a new internal API, or running a planned rewrite, while old callers still exist. Converge on the end state: migrate callers and delete the old API in the same wave instead of preserving compatibility layers."
+description: "Apply when introducing a new internal API, or running a planned rewrite, while old callers still exist. Converge on the end state. Migrate callers and delete the old API in the same wave instead of preserving compatibility layers."
 disable-model-invocation: true
 ---
 
@@ -14,7 +14,7 @@ When we decide a new API is the right design, migrate callers and remove the old
 - Treat temporary adapters as exceptional and time-boxed, not default architecture
 - Update tests to assert the new contract, and delete tests that only protect pre-refactor implementation details
 
-**Converge on the end state.** Do not keep every step between here and the target fully working with throwaway compatibility code, because that code outlives the rewrite. Breakage between steps is fine when it is planned, stays on your branch, and is declared in the plan. Keep the checks for the code you touch running while you migrate, and run the full correctness and perf checks when the wave ends. Each PR that lands upstream still passes CI on its own.
+**Converge on the end state.** Do not keep every step between here and the target fully working with throwaway compatibility code, because that code outlives the rewrite. Breakage between steps is fine when you plan it, keep it on your branch, and declare it in the plan. Keep the checks for the code you touch running while you migrate, and run the full correctness and perf checks when the wave ends. Each PR merged upstream still passes CI on its own.
 
 **When this applies:**
 - No external users depend on backward compatibility
