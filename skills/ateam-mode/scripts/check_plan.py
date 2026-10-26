@@ -74,7 +74,7 @@ def check(file):
         lines.append({"n": n, "text": text, "code": code})
         if code:
             continue
-        prose = re.sub(r"`[^`]*`", "`", text)
+        prose = re.sub(r"(?<!`)(`+)(?!`)(.*?)(?<!`)\1(?!`)", "`", text)
         prose = re.sub(r"!\[[^\]]*\]\([^)]*\)", "", prose)
         prose = re.sub(r"\]\([^)]*\)", "]", prose)
         if re.search("[\u2013\u2014]", prose):
@@ -328,6 +328,16 @@ def self_test():
     result = run_plan("```markdown `invalid`\n## Example only\n```\n", 1)
     expect_in(result, '"## Example only" after Close the program is not an appendix', "info string")
     cases += 1
+
+    for count in [2, 3, 4]:
+        delimiter = "`" * count
+        run_plan(f"Use {delimiter}echo `x`: \u201cquoted\u201d \u2014 example{delimiter}.\n", 0)
+        cases += 1
+    outside = run_plan("Use ``echo `x`: y``. Bad: prose.\n", 1)
+    expect_in(outside, "mid-sentence colon", "after multi-backtick span")
+    unmatched = run_plan("Use ``unclosed: bad` here.\n", 1)
+    expect_in(unmatched, "mid-sentence colon", "unmatched delimiters")
+    cases += 2
 
     for failure in failures:
         print(f"FAIL {failure}", file=sys.stderr)
