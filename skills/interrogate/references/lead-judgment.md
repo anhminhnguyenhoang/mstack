@@ -8,7 +8,7 @@ Reviewers, especially adversarial ones, tend to fill their review. If they don't
 
 ### Hypothetical vs. actual
 
-"What if someone passes null here?" is only a finding if the caller can pass null. Trace the call site. If the input is validated upstream or the type system prevents it, dismiss the finding. Reviewers working from a diff can't always see the full call chain. You can.
+"What if M is not a multiple of the tile?" is only a finding if a caller can pass that shape. Trace the call site. If the op wrapper or the dispatcher rejects it, or the type system prevents it, dismiss the finding. Reviewers working from a diff can't always see the full call chain. You can.
 
 ### Premature abstraction warnings
 

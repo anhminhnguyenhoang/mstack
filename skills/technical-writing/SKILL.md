@@ -60,7 +60,7 @@ Don't mix modes: no reference tables inside a tutorial, no tutorial hand-holding
 - Link with words that say where the link goes: the page title or a short description. Never "click here". Prefer a sentence of context on the page over a link off it.
 - Headings carry the point, not just the topic ("Pick the mode first", not "Modes"). Sentence case. A task heading is a bare verb phrase ("Create an instance"). A concept heading is a noun phrase. One h1 per page, no skipped levels.
 - Numbered lists for sequences, bullets for everything else. Introduce a list with a complete sentence. Keep items parallel.
-- Code goes in code font. UI elements go in bold. Use serial commas. Drop "etc." and say up front that a list is partial.
+- Code goes in code font. Use serial commas. Drop "etc." and say up front that a list is partial.
 
 ## Make statements load one at a time (STE rules)
 
@@ -92,7 +92,6 @@ Don't mix modes: no reference tables inside a tutorial, no tutorial hand-holding
 
 - Apply the **unslop** skill to every doc this skill touches. That skill owns the slop-pattern catalog: AI vocabulary, filler, hedging, formatting tells.
 - PR descriptions and commit messages are writing too. Every layer except Diátaxis applies to them. A PR body is a briefing that a reviewer can read in under a minute. Do not paste fan-out logs, SHA lists, or metric tables. Link them.
-- Product UI strings are not documentation. Use your product's copy guidelines for those.
 - Indent code snippets with tabs. Write real paths. Make every count or tree claim true at the commit that lands it, and include the command that regenerates it.
 
 ## Worked example

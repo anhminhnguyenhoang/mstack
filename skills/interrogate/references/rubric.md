@@ -6,7 +6,7 @@ Review through whichever lenses are relevant. Not every lens applies to every ch
 
 Does the code do what the intent says it should?
 
-- Edge cases: empty inputs, nil/undefined, boundary values, concurrent access
+- Edge cases: zero-size and tail shapes, non-contiguous strides, NaN and inf inputs, boundary values, concurrent access
 - Error handling: are errors caught, propagated, or silently swallowed?
 - Off-by-one, type coercion, integer overflow, string encoding
 - State management: race conditions, stale closures, dangling references
@@ -14,7 +14,7 @@ Does the code do what the intent says it should?
 - Idempotency: what happens if this operation runs twice, or if a previous run crashed halfway? If the answer is "it depends on what state was left behind," a reconciliation step is missing.
 - Concurrency: if multiple actors can touch the same mutable state (files, branches, shared data), is access serialized structurally (locks, sequential phases, exclusive ownership), or by conventions that won't hold?
 
-When you find a potential bug, trace the execution path. Don't just flag "this could be nil". Show the call chain that makes it nil.
+When you find a potential bug, trace the execution path. Don't just flag "this could read out of bounds". Show the call chain and the shape that make it do so.
 
 ## Root causes vs. symptoms
 
@@ -71,7 +71,7 @@ Simpler is better unless simpler is wrong.
 
 For each security finding, trace the input path through the code and show it.
 
-- User input flowing to dangerous sinks (SQL, shell, eval, innerHTML) without sanitization
-- Authentication/authorization gaps in new endpoints
+- Input flowing to dangerous sinks (shell, eval, `pickle` or `torch.load` of an untrusted file, a path built from input) without checks
+- GPU memory read or written out of bounds because a shape, stride, or offset from the caller is not checked
 - Secrets in code, logs, or error messages
 - TOCTOU (time-of-check-time-of-use) in security-critical paths

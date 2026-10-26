@@ -60,7 +60,7 @@ For a kernel, [`/verify-gpu-kernel`](../../skills/verify-gpu-kernel/SKILL.md) is
 
 It writes `.cursor/skills/verify-<lib>/`, agent-facing instructions plus a feature map under `features/` with one file per op family and the result that proves it works. The skill ships a [worked feature-map example](../../skills/create-verification-skill/references/feature-map-example/) with a README index and one file per feature using the four required H2s. Before handing it over, the generator proves the skill once on one locked GPU through the `bench.run` skill function: doctor, one feature, the artifact. If that proof fails, don't use the output.
 
-From then on, "verify it in the app" is a step any agent can execute, in this repo, with no setup conversation. Name it in the prompt when you want the proof in a specific form:
+From then on, "verify it on the GPU" is a step any agent can execute, in this repo, with no setup conversation. Name it in the prompt when you want the proof in a specific form:
 
 ```text
 /ateam-mode build the fp8 path for this op. use /verify-gpu-kernel to verify your changes and show me the artifact JSON as proof.

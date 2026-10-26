@@ -24,9 +24,9 @@ For each fact the change's safety depends on, get it as far down this list as is
 2. You pointed at the line. A real `file:line`, or the library's own source.
 3. You showed the bad case can't happen. You walked the failure step by step and it doesn't reach.
 4. You ran it. A script or test that calls the real code and fails loud if you're wrong.
-5. You reproduced it in the running app.
+5. You reproduced it on the real artifact: the op at the model's shapes, on one locked GPU.
 
-Step 4 is usually one small script that imports the same library the app ships and calls the exact function you're worried about.
+Step 4 is usually one small script that imports the same library the model loads and calls the exact function you're worried about.
 
 ## Steps
 
