@@ -92,7 +92,6 @@ The default answer is `/ateam-mode`, which runs most of the others when its step
 | Keep a decision log during a run, and review it afterward | [`/show-me-your-work`](../show-me-your-work/SKILL.md) |
 | Pick a model for each role and a reasoning budget | [`/setup-mstack`](../setup-mstack/SKILL.md) |
 | Map the GPU hosts, containers, repo remotes, Jira sites, and optional local resources for this machine | `/setup-mstack env` |
-| Turn their own working habits into a personal mode skill | [`/automate-me`](../automate-me/SKILL.md) |
 | Turn what a finished task taught into skill edits | [`/reflect`](../reflect/SKILL.md) |
 | Stop agents from repeating the same mistakes in this repo | [`/correct`](../correct/SKILL.md) |
 | Find their way around mstack | `/ateam-help` |
@@ -152,7 +151,6 @@ For a run that drifts, [`references/prompting.md`](references/prompting.md) has 
 
 ## Make mstack my own
 
-- [`/automate-me`](../automate-me/SKILL.md) drafts a personal mode skill from the user's own history, to use alongside `/ateam-mode`.
 - [`/reflect`](../reflect/SKILL.md) after a session turns its lessons into skill edits the user approves.
 - `/ateam-mode write a skill for <workflow>` runs the authoring playbook. The eval playbook tests a skill change blind.
 - Fix a misbehaving skill in its own PR, not inside the feature work where it went wrong.
