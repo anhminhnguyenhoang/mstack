@@ -35,7 +35,7 @@ Each reviewer gets `subagent_type: generalPurpose`, `readonly: true`, and `model
 
 If the Task tool rejects a configured entry, run that reviewer on its family's table default and say so. Families go by the slug without its effort token: `claude-opus-5-5`, `claude-sonnet-5-5`, and `composer-2.5`. With no family match, use Reviewer A's default. If it rejects a table default, spawn with the closest equivalent from the valid slugs in its error message (prefer the same family and reasoning tier), and open a separate PR to update the default table. Do not block the review on the slug issue. Never treat an alias entry as a rejected slug or apply either fallback to it.
 
-Read `references/reviewer-prompt.md` and fill in the same template for every reviewer with the stated intent, the diff or file contents, the rubric from `references/rubric.md`, and the code-quality lens from `references/code-quality-review.md`.
+Read `references/reviewer-prompt.md` and fill in the same template for every reviewer with the stated intent, the diff or file contents, the rubric from `references/rubric.md`, and the code-quality lens from `references/code-quality-review.md`. When the diff touches a GPU kernel or its dispatch, also paste the GPU kernel findings section of `../ateam-mode/references/review-bot-triage.md` into the rubric slot, so each reviewer names the check that settles each kernel finding.
 
 ## Step 4, Synthesize
 

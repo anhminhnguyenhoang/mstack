@@ -67,6 +67,17 @@ Is the complexity justified by what the code accomplishes?
 
 Simpler is better unless simpler is wrong.
 
+## GPU kernels
+
+When the diff touches a kernel or its dispatch, check each class and name the check that settles it. The lead pastes the full entries with their checks.
+
+- Numerics drift: accumulation order, a narrowed dtype, fast-math, NaN or inf flow
+- Occupancy cliff: VGPR, AGPR, or LDS growth, or a new spill, that crosses a waves-per-SIMD step
+- Out-of-bounds or masked-tail access: partial tiles, varlen batches, empty groups
+- Race or missing barrier on LDS
+- Arch-gated path: an instruction, MFMA shape, fp8 format, or LDS size that differs between `gfx942` and `gfx950`
+- Dispatch threshold: an off-by-one boundary, a threshold tuned on another arch or dtype, a tuned-config miss
+
 ## Security
 
 For each security finding, trace the input path through the code and show it.
