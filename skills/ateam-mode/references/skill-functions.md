@@ -69,4 +69,7 @@ trace.capture ──► trace.analyze ──► lever.menu ──► next lever
 
 Installed skills that no skill function binds. One line each, as ``- `<name>`: <reason>.`` The check reads this list.
 
-None.
+- `update-hardware-specs`: local hardware-specs.md maintenance; no skill function yet.
+- `verify-aiter`: repo-local aiter correctness/perf proof skill; not a skill function.
+- `verify-aiter-triton`: repo-local aiter Triton proof skill; not a skill function.
+- `verify-flydsl`: repo-local FlyDSL proof skill; not a skill function.
