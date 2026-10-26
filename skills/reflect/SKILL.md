@@ -50,6 +50,8 @@ A learning about a technique, a hardware fact, or a method that is not a skill e
 
 File each Backlog item to your team's devex or backlog tracker without waiting. Only the Accepted list waits for approval.
 
+Never edit an installed copy under `~/.cursor/plugins/`, because a reinstall or update overwrites it. Before approval, show each edit's destination. An mstack skill goes to the user's mstack git checkout. Ask for its path when you cannot find one. Any other plugin's skill goes to a copy of its folder in `.cursor/skills/<skill>/` or `~/.cursor/skills/<skill>/`, made after approval. Never open a PR or push.
+
 Follow each approved row's Routing exactly:
 
 - Trivial existing-skill edit (a one-line bullet, a tightened sentence, a stale fact corrected): the parent does it directly.
