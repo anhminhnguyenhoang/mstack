@@ -32,7 +32,7 @@ Remaining triggers:
 - Parallel fan-out over slices, races, or verification lanes → spawn the workers yourself, all in one message. Set `environment: "local"` and use the `fan-out workers` model (default `claude-sonnet-5-5-high`). A fan-out worker never runs as a cloud agent. Before you spawn, state the done predicate, the shape, and N. The shape is either slices, or a race with `first pass`, `rank all`, or `best-of` declared. Each brief stands alone. It gives the scope, the exact SHAs, the method, and the worker's own output path. It asks for a `PASS`, `ISSUES`, or `BLOCKED` report with evidence. GPU runs queue on one locked GPU through the `bench.run` skill function. Drop a result that lacks its SHAs or method, and respawn it once. After a second miss, record a gap. A gap is not a pass. Return one table with the issues and the gaps. Design or code bakeoffs → **arena**.
 - Contested design → the **interrogate** skill before shipping.
 - Nontrivial multi-step → write the throughput checkpoint (Feature step 3).
-- Any prose you write, your reply included → the **unslop** skill. Write the reply per **Writing the reply**. Agent-facing prose also follows the **create-skill** skill.
+- Any prose you write, your reply included → the **unslop** skill. Write the reply per **Writing the reply and every draft**. Agent-facing prose also follows the **create-skill** skill.
 - Docs, RFCs, readmes, PR descriptions, or commit messages → the **technical-writing** skill.
 - Before commit → the `style.gate` skill function, run as the repo's row of the Opening a PR per-repo table says, and the `comment-sicko` agent over the diff.
 - Before review → the **no-comments** skill.
@@ -117,19 +117,21 @@ You own every subagent's work. Review the diff and write your own summary, don't
 
 **Ponytail, when the user runs it.** The separate ponytail plugin is optional. Its hook gives its ruleset to this chat only, because a Cursor subagent gets no hook context. When this chat's context shows ponytail active at `lite`, `full`, or `ultra`, put the line `ponytail: <level>` in every code delegate's brief. Use the level that ponytail last reported in this chat. When ponytail is `off` or absent, change nothing. Ponytail cuts code, never a playbook step, a correctness or verification gate, or a reply section. Where the two disagree, this skill wins. Put ponytail's skipped-and-risk line last in the reply.
 
-## Writing the reply
+## Writing the reply and every draft
 
-The owner's rule is to reply and explain in 50% of ASD-STE100, minimize prose, prioritise diagrams, and build an interactive HTML page when it carries the gist better. Write the reply clean as you draft it. A cleanup pass after drafting does not remove these patterns.
+The owner's rule is to write in ASD-STE100-lite, keep prose short, and use a table, a diagram, or an interactive HTML page only where it carries the gist better than sentences. This applies to the chat reply and to every draft a person will read: review bodies, inline comments, Jira drafts, PR descriptions, and commit messages. Write it clean as you draft it. A cleanup pass after drafting does not remove these patterns.
 
 - **ASD-STE100-lite.** Apply the sentence rules and skip the word dictionary. One instruction or one thought per sentence. Keep an instruction under about 20 words and any other sentence under about 25. One verb per action, one word per meaning, and keep "the" and "a". Use the active voice. Use no idioms and no long-dash character. A colon before a list is fine.
-- **Diagram first.** Open with the picture of the result: an ASCII flow, a Mermaid block, or a table. One diagram per idea. The prose after it adds only what the diagram cannot show. A diagram label, a table cell, and an arrow are not prose, so the unslop sentence rules do not apply inside them.
-- **HTML when the gist needs it.** For a multi-variant result, a design space, a trace, or a matrix, write one self-contained HTML page (inline CSS and JS, no CDN) with filters or click-to-expand. Save it next to the artifacts (the ticket folder in ticket work) and give its path. The chat reply still carries the diagram and the verdict.
+- **Tables and diagrams are optional.** Add one only where it shows the result faster than a sentence: a flow, a comparison, a list of findings with an ask each. Skip it when two sentences say the same. One diagram per idea. The prose around it adds only what it cannot show. A diagram label, a table cell, and an arrow are not prose, so the unslop sentence rules do not apply inside them.
+- **HTML when the gist needs it.** For a multi-variant result, a design space, a trace, or a matrix, write one self-contained HTML page (inline CSS and JS, no CDN) with filters or click-to-expand. Save it next to the artifacts (the ticket folder in ticket work) and give its path. The chat reply still carries the verdict.
 - **One line per measurement.** Number, unit, run count, and range together, for example `p50 41 ms → 33 ms, median of 7 runs, range 32 to 35 ms`. For a GPU kernel add the percent of peak.
 - **Less prose never means less content.** Every section the playbook's reply names stays: details, tradeoffs, choices, open decisions. A diagram or table carries them.
 - **Say who the work is for.** The first line names the consumer and what changes for them. Then say what the next maintainer inherits.
 - **Jira drafts use Why, Result, Evidence, Next,** per the **Deliver** playbook.
 - **Never fabricate a link, citation, or transcript reference.** Link only artifacts you produced or read this session.
 - **Every claim carries its evidence or its label in the same sentence.** Measured, inferred, or guess. A prediction or an unseen cause is a guess. Never hand the human a check you could run.
+
+- **Drafts for people.** Open with one plain sentence: the result, then what is left to fix. Put detail once, in the inline comment, never in both the body and the inline. Put one concrete, polite ask at the end of each comment ("Could you ...?"). Keep internal tags, rule codes, local paths, and tool names out of the text the person reads.
 
 Every playbook ends with a reply written this way, PR link as `https://github.com/<owner>/<repo>/pull/<number>`. Each playbook's own reply lines name only the content unique to that playbook.
 
