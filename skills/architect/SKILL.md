@@ -1,12 +1,12 @@
 ---
 name: architect
-description: "Sketch types, signatures, and module structure before code, then stay in the loop while implementation fills in. Use for /architect, 'architect this', 'design this', or non-trivial work where jumping to code would lock in the wrong shape."
+description: "Sketch an op contract (signature, tensor layouts, dispatch gate, tile plan) or types, signatures, and module structure before code, then stay in the loop while implementation fills in. Use for /architect, 'architect this', 'design this', or non-trivial work where jumping to code would lock in the wrong shape."
 disable-model-invocation: true
 ---
 
 # Architect
 
-Sketch types, function signatures, class shapes, and module boundaries with `not implemented` bodies and pseudocode. Synthesize across multiple model perspectives, then fill in code against the chosen sketch.
+Sketch types, function signatures, class shapes, and module boundaries with `not implemented` bodies and pseudocode. For a GPU kernel, the sketch is the op contract instead: the op signature with dtypes, the tensor layouts (including any preshuffle), the output buffer and whether the op writes in place, the dispatch gate (which arch, dtype, and shape classes reach which variant, and the fallback), the tuned-config key, and the tile and grid plan as pseudocode. Synthesize across multiple model perspectives, then fill in code against the chosen sketch.
 
 ## Start
 
@@ -22,6 +22,8 @@ Open a todolist with one entry per phase before starting.
 
 Build a real mental model of every system the new code touches. Run the **how** skill over the relevant subsystems. Naming a file isn't grounding. Produce the architectural explanation `how` prescribes. If the design redefines ownership or layering, also run the **why** skill on the existing shape so the rationale becomes a constraint, not a guess.
 
+For a kernel, also bound the ceiling first: the roofline limit for the target shapes per the **explain-the-number** principle skill, or a **Bound probe** when the limit is unclear, and the levers the `lever.menu` skill function (`../ateam-mode/references/skill-functions.md`) offers for that bottleneck class.
+
 Skip Phase A only when the work is greenfield with no surrounding system to integrate.
 
 ## Phase B: Sketch
@@ -30,7 +32,7 @@ Run the **arena** skill with the design-sketch task and the Phase A grounding ar
 
 Take the runners from the `architect runners` line in the `mstack-models.mdc` rule, in place of the `arena runners` line. If the rule or that line is missing, use `claude-opus-5-5-xhigh` and `claude-sonnet-5-5-high`. Alias and rejected entries follow the runner rules in the **arena** skill's Phase A.
 
-Design it twice. Require at least two structurally distinct candidates before synthesis, even when the first looks sufficient. This is the **exhaust-the-design-space** principle skill made concrete. The alternatives must be whole shapes, not point fixes inside one shape.
+Design it twice. Require at least two structurally distinct candidates before synthesis, even when the first looks sufficient. This is the **exhaust-the-design-space** principle skill made concrete. The alternatives must be whole shapes, not point fixes inside one shape. For a kernel, whole shapes differ in data layout, in how work splits into kernels (one fused kernel or two stages), or in how dispatch splits the shape space, not in one tile size.
 
 Screen every candidate against [`references/design-red-flags.md`](references/design-red-flags.md) before synthesis. Assume the next contributor is an agent that sees only the files it opened, copies the nearest example, and takes the shortest path that compiles. Prefer the design where a change that looks right from one file is right for the whole repo.
 
@@ -64,6 +66,7 @@ The signal is a *pattern*, not single instances. Tells:
 - The "we need a lock" reflex when the sketch said the state wasn't shared.
 - Callers having to know the abstraction's internal rules to use it.
 - Two or more independent Phase D deviations of the same shape across the implementation.
+- In a kernel: per-shape branches inside the kernel body, an arch special case added for each new path, or a tuned-config table that grows a row for every shape instead of a rule.
 
 Use judgment. A few edge cases don't condemn an architecture. Some problems are legitimately complex. Complexity in the data is not complexity in the design.
 
@@ -76,4 +79,4 @@ When you scrap:
 
 ## Outputs
 
-Write the caller's usage first and derive the type sketch from it. Use one file with new types and signatures for small changes, and a module map plus type definitions for larger work. Ship the rationale alongside, shaped per `references/rationale-template.md`, including the usage sketch and the synthesis decision.
+Write the caller's usage first and derive the type sketch from it. Use one file with new types and signatures for small changes, and a module map plus type definitions for larger work. For a kernel, write the model's call site first, then the op contract above as a stub with a torch reference body, so the op test can run against the stub before the kernel exists. Ship the rationale alongside, shaped per `references/rationale-template.md`, including the usage sketch and the synthesis decision.
