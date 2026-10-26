@@ -119,7 +119,7 @@ when invoked it:
 
 1. matches your task to a [playbook](./skills/ateam-mode/playbooks/) and opens a todo list whose first items are its steps, copied in verbatim.
 2. routes to the other skills as the steps fire.
-3. writes replies diagram-first in short asd-ste100-lite sentences, with a one-line number, unit, and run count for each measurement, and an html page when a diagram alone is not enough.
+3. writes replies and drafts in short asd-ste100-lite sentences, with a one-line number, unit, and run count for each measurement. a table, diagram, or html page appears only where it shows the result faster than a sentence.
 
 the full rules and playbooks live in [`skills/ateam-mode/SKILL.md`](./skills/ateam-mode/SKILL.md).
 

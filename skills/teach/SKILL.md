@@ -69,7 +69,7 @@ The reply still carries the first diagram and the verdict. The page adds depth.
 
 ## Reply
 
-Write in the owner's reply style: about half ASD-STE100, short sentences, one thought each, diagrams first. Follow the **unslop** skill. Give each concept one name and keep it. Do not print framing labels. No quizzes. No staged pauses.
+Write in the owner's reply style: ASD-STE100-lite, short sentences, one thought each, and a table or diagram only where it helps. Follow the **unslop** skill. Give each concept one name and keep it. Do not print framing labels. No quizzes. No staged pauses.
 
 - Line 1 names the reader and what they can now do.
 - Then the first diagram, and the smallest complete answer in one or two sentences.
