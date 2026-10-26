@@ -1,7 +1,7 @@
 {
 	"name": "mstack",
 	"displayName": "mstack",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "Rigorous agent workflows for AMD GPU kernel development (aiter, FlyDSL, Triton, HIP/MFMA on gfx942 and gfx950) and Jira-ticket-driven work. A fork of pstack.",
 	"author": {
 		"name": "anhminhnguyenhoang"
