@@ -54,7 +54,7 @@ Read the leaf skill in full for any principle you apply. Each leaf is the **prin
 **Core**
 
 - **Redesign from first principles.** A new requirement in an existing design, or core types and scaffold before logic.
-- **Attack the premise.** Two or more fixes share one premise and failed the same gate. Census the actors first.
+- **Attack the premise.** Two or more fixes share one premise and failed the same gate. Write the premise down and test it before the next fix.
 - **Subtract before you add.** Sequencing a change, sizing a diff, or tempted to add a layer. Delete first, change least.
 - **Minimize reader load.** Code that is hard to trace. Collapse layers, one-caller wrappers, and mutable scope.
 - **Outcome-oriented execution.** Planned rewrites and migrations. Converge on the target, skip throwaway compatibility states.
@@ -70,9 +70,9 @@ Read the leaf skill in full for any principle you apply. Each leaf is the **prin
 **Verification**
 
 - **Prove it works.** Before declaring done. Check the real artifact, not a proxy or "it compiles".
-- **Fix root causes.** Debugging. Reproduce first, then ask why down to the root.
+- **Fix root causes.** Debugging. Trace back to the first wrong step and fix it there. A guard is a fix only for a legitimate state.
 - **Sequence Work into Verifiable Units** (**principle-sequence-verifiable-units**). Multi-step work and commit or PR stacks. Small units, each ending in a check.
-- **Test behavior, not implementation.** Writing or keeping a test. Call the code as users do, assert a literal expected value.
+- **Test behavior, not implementation.** Writing or keeping a test. Assert what users observe. Fail when behavior breaks, pass when only internals change.
 - **Explain the number.** Before you trust or report a measured number. Name its limiter, give GPU percent of peak, rule out artifacts.
 - **Prove it reached codegen.** A compile hint, flag, attribute, or structure change. Credit it only if the ISA or IR changed.
 - **Correctness before speed.** Timing or keeping a kernel change. `allclose` and the NaN count pass on the same run first.

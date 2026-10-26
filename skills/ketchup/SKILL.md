@@ -41,3 +41,13 @@ When something is easier to grasp as a picture than as sentences, draw it: how a
 Keep each visual small enough to read at a glance: at most six boxes, with at most eight words in each. Write labels as plain words a person would say, not tags like "Tests: pass". A fact that needs a sentence belongs in the text, or nowhere.
 
 Embed screenshots and videos inline when the change is visible, not only as links. If a visible change has none, mark its summary line "No screenshot yet," and say there what changed on screen. Draw diagrams and charts from facts you have: a Mermaid diagram for how things connect and a `/visualize` chart for numbers. Never invent a number, and never draw or generate a picture of a screen you did not capture. Link only artifacts that exist.
+
+## In kernel and ticket work
+
+The reply rules in the Writing the reply section of the **ateam-mode** skill still hold. Where they and this skill differ, these lines decide.
+
+- A perf number that a result or a call rests on keeps its full measurement line: number, unit, run count, range, and percent of peak with the peak's source, per the **explain-the-number** principle skill. Leave out the numbers that no call rests on.
+- Keep a head SHA, a Jira key, or a PR link when a call binds to it, such as a verdict at one head or a draft for one ticket.
+- Kernel terms that the user works with every day, such as MFMA, LDS, VGPR, spill, occupancy, and ATT, are plain words here.
+- Kernel pictures come from the run's artifacts: a before and after chart per shape from the bench artifact, the kernel's place on the roofline, an ATT or WaveScope screenshot of the stall, or the ISA resource diff. A per-shape table can carry the numbers in the text, but it is not the visual. Link the ticket's HTML page when one exists.
+- The Always-pause items in the Autonomy section of the **ateam-mode** skill are the usual action items: a Jira write, a PR on a public upstream, marking a PR ready, a fork PR's code on a shared GPU, and text that names a customer or an NDA model. For a Jira write, show the drafted text.
