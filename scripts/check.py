@@ -47,6 +47,7 @@ CODE_SPAN = re.compile(r"`([^`\n]+)`")
 HOME_PATH = re.compile(r"(?<!\w)~/([^\s`'\")\]>,;|]*)|/home/[A-Za-z0-9_.-]+/")
 LOCAL_NAMES = re.compile(r"knowledge-base|KernelForge")
 HOME_OK = (".cursor",)
+PLUGIN_INSTALL_SUBDIR = re.compile(r"\.cursor/plugins/[^/]")
 HOME_OK_LINE = "~/Library/Application"
 PROBE_FILE = "skills/setup-mstack/SKILL.md"
 PROBE_MARK = "(probe)"
@@ -406,7 +407,7 @@ if not args.skills_only:
         for n, line in enumerate(text.splitlines(), 1):
             if HOME_OK_LINE in line or (path == PROBE_FILE and PROBE_MARK in line):
                 continue
-            hits = [m.group(0) for m in HOME_PATH.finditer(line) if m.group(1) is None or not m.group(1).startswith(HOME_OK)]
+            hits = [m.group(0) for m in HOME_PATH.finditer(line) if m.group(1) is None or not m.group(1).startswith(HOME_OK) or PLUGIN_INSTALL_SUBDIR.match(m.group(1))]
             hits += LOCAL_NAMES.findall(line)
             for hit in hits:
                 local += 1

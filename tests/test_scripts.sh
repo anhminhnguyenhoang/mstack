@@ -164,6 +164,15 @@ echo "$out" | grep -q "^WARN $S:" || fail "check.py silent on a snapshot behind 
 g -C "$snap" checkout -q --detach origin/main
 echo "ok check.py exemption"
 
+# --- check.py: a path into a plugin's install dir is a local path; Cursor config paths are not
+mkdir "$T/leak" && tar -c -C "$ROOT" --exclude=.git . | tar -x -C "$T/leak"
+printf '%s\n' 'Read `~/.cursor/plu''gins/local/x/SKILL.md`.' > "$T/leak/install.md"
+printf '%s\n' 'Read `~/.cursor/mstack/env.md` and skills under `~/.cursor/plugins/`.' > "$T/leak/config.md"
+out=$(cd "$T/leak" && python3 scripts/check.py --no-tests --no-skills 2>&1 || true)
+echo "$out" | grep -q "^LOCAL PATH install.md:1:" || fail "check.py passed a plugin install path"
+echo "$out" | grep -q "^LOCAL PATH config.md" && fail "check.py flagged a Cursor config path"
+echo "ok check.py plugin install path"
+
 # --- pr-review.sh
 lsnap=$(snap_of "$S")
 snap="$C/checkout-$(git --git-dir="$T/remotes/o/r.git" rev-parse main | cut -c1-12)"
