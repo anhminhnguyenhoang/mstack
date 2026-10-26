@@ -20,7 +20,7 @@ Ground first, then commit. Don't start the run until you can state:
 - Scope, quantified: rough units and effort, plus the blockers that grounding found.
 - The rigor level, biased high. One-way doors and high blast radius get more. Reversible low-stakes steps get less. Rigor is gates and artifacts, not "try harder".
 
-Present the framing and tradeoffs before committing to a long run. Reversible work proceeds (the **never-block-on-the-human** principle skill), but a multi-hour run earns one checkpoint.
+Present the framing and tradeoffs before committing to a long run. Reversible work proceeds, per the Autonomy section of the **ateam-mode** skill, but a multi-hour run earns one checkpoint.
 
 ## Phase B: Design the workflow
 

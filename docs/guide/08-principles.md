@@ -34,7 +34,6 @@ The core principles decide how much to build and when to rethink the design:
 - [Attack the premise](../../skills/principle-attack-the-premise/SKILL.md) writes down the premise that two or more failed fixes shared and tests it directly before the next fix.
 - [Subtract before you add](../../skills/principle-subtract-before-you-add/SKILL.md) removes dead weight before building on top of it, and prefers deletion and the smallest change that solves the problem.
 - [Minimize reader load](../../skills/principle-minimize-reader-load/SKILL.md) collapses layers and hidden state a reader must hold in their head.
-- [Outcome-oriented execution](../../skills/principle-outcome-oriented-execution/SKILL.md) converges rewrites on the target design instead of preserving throwaway compatibility states.
 - [Exhaust the design space](../../skills/principle-exhaust-the-design-space/SKILL.md) builds two or three competing prototypes when there's no precedent.
 - [Build the lever](../../skills/principle-build-the-lever/SKILL.md) builds the script that does or proves the work, so a reviewer can rerun it. When an agent keeps doing the same thing by hand, have it write the tool or skill it wishes it had. If a script can do a step the same way every time, use the script, and save agents for the judgment calls.
 
@@ -57,7 +56,6 @@ The verification principles define what counts as proof:
 The delegation principles govern parallel work:
 
 - [Guard the context window](../../skills/principle-guard-the-context-window/SKILL.md) routes bulk reading to subagents and keeps findings in the main chat.
-- [Never block on the human](../../skills/principle-never-block-on-the-human/SKILL.md) proceeds on reversible work and presents the result.
 
 And one meta principle:
 

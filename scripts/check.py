@@ -23,6 +23,8 @@ RETIRED_TERMS = [
     ("port", "skill function", re.compile(r"`[a-z]+\.[a-z_.]+` ports?\b|(?<![\w-])ports\.md|\bPORTS\b"), False),
 ]
 RETIRED_PRINCIPLES = [
+    "never-block-on-the-human",
+    "outcome-oriented-execution",
     "experience-first",
     "type-system-discipline",
     "boundary-discipline",

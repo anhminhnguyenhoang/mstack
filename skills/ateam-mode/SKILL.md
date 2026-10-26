@@ -57,14 +57,13 @@ Read the leaf skill in full for any principle you apply. Each leaf is the **prin
 - **Attack the premise.** Two or more fixes share one premise and failed the same gate. Write the premise down and test it before the next fix.
 - **Subtract before you add.** Sequencing a change, sizing a diff, or tempted to add a layer. Delete first, change least.
 - **Minimize reader load.** Code that is hard to trace. Collapse layers, one-caller wrappers, and mutable scope.
-- **Outcome-oriented execution.** Planned rewrites and migrations. Converge on the target, skip throwaway compatibility states.
 - **Exhaust the design space.** A decision with no precedent. Prototype 2 or 3 competing designs and compare.
 - **Build the lever.** Any non-trivial work. Build the rerunnable tool (codemod, script, generator), not hand edits.
 
 **Architecture**
 
 - **Model the domain.** Stateful or heavily branching code, or a shape assumption repeated across files. Use a structure, not conditionals.
-- **Migrate callers then delete legacy APIs.** A new internal API while old callers exist. Migrate and delete in one wave.
+- **Migrate callers then delete legacy APIs.** A new internal API or a planned rewrite while old callers exist. Converge on the end state. Migrate and delete in one wave.
 - **Separate before serializing shared state.** Concurrent actors may write the same file, branch, or object. Remove the sharing first.
 
 **Verification**
@@ -80,7 +79,6 @@ Read the leaf skill in full for any principle you apply. Each leaf is the **prin
 **Delegation**
 
 - **Guard the context window.** Large outputs, long files, repeated reads, or fan-out planning. Route bulk to subagents.
-- **Never block on the human.** Tempted to ask "should I do X?" on reversible work. Proceed, present, let the human correct.
 
 **Meta**
 
