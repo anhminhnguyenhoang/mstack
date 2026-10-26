@@ -47,6 +47,7 @@ CODE_SPAN = re.compile(r"`([^`\n]+)`")
 HOME_PATH = re.compile(r"(?<!\w)~/([^\s`'\")\]>,;|]*)|/home/[A-Za-z0-9_.-]+/")
 LOCAL_NAMES = re.compile(r"knowledge-base|KernelForge")
 HOME_OK = (".cursor",)
+ABS_PATH = re.compile(r"(?:~|(?<![\w.~}:/>-]))/[^\s`'\")\]>,;|]*")
 HOME_OK_LINE = "~/Library/Application"
 PROBE_FILE = "skills/setup-mstack/SKILL.md"
 PROBE_MARK = "(probe)"
@@ -399,6 +400,12 @@ if not args.skills_only:
                     print(f"KB PATH NEAR kb RESOURCE {path}:{n}: {token}")
     fail += kb_paths
 
+    repo_paths = {p for p in repo_suffixes if "/" in p.rstrip("/") and os.path.exists(p)}
+
+    def install_path(token):
+        parts = token.rstrip("/").split("/")
+        return any("/".join(parts[i:]) in repo_paths for i in range(1, len(parts) - 1))
+
     local = 0
     for path, text in walk(hidden=True):
         if path == "scripts/check.py" or path.startswith(NAME_EXEMPT_DIRS):
@@ -407,6 +414,7 @@ if not args.skills_only:
             if HOME_OK_LINE in line or (path == PROBE_FILE and PROBE_MARK in line):
                 continue
             hits = [m.group(0) for m in HOME_PATH.finditer(line) if m.group(1) is None or not m.group(1).startswith(HOME_OK)]
+            hits += [m.group(0) for m in ABS_PATH.finditer(line) if install_path(m.group(0)) and m.group(0) not in hits]
             hits += LOCAL_NAMES.findall(line)
             for hit in hits:
                 local += 1

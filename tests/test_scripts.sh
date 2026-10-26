@@ -164,6 +164,22 @@ echo "$out" | grep -q "^WARN $S:" || fail "check.py silent on a snapshot behind 
 g -C "$snap" checkout -q --detach origin/main
 echo "ok check.py exemption"
 
+# --- check.py: an absolute path to this plugin's own file is a local path, under any harness
+mkdir "$T/leak" && tar -c -C "$ROOT" --exclude=.git . | tar -x -C "$T/leak"
+printf '%s\n' \
+  'Read `~/.cursor/plugins/local/mstack/skills/ateam-mode/SKI''LL.md`.' \
+  'Read `~''/.claude/plugins/cache/mstack/agents/ateam-agent''.md`.' \
+  'Read `~''/.codex/mstack/scripts/check''.py`.' \
+  'Read `/opt/agents/mstack/skills/ateam-mode/SKI''LL.md`.' > "$T/leak/install.md"
+printf '%s\n' \
+  'Read `~/.cursor/mstack/env.md` and skills under `~/.cursor/plugins/`.' \
+  'Run `${CURSOR_PLUGIN_ROOT:-.}/scripts/check.py`, `$ROOT/scripts/check.py`, or `<plugin>/scripts/check.py`.' \
+  'See [the skill](./skills/ateam-mode/SKILL.md) and https://github.com/o/mstack/blob/main/skills/ateam-mode/SKILL.md.' > "$T/leak/ok.md"
+out=$(cd "$T/leak" && python3 scripts/check.py --no-tests --no-skills 2>&1 || true)
+for n in 1 2 3 4; do echo "$out" | grep -q "^LOCAL PATH install.md:$n:" || fail "check.py passed install path $n"; done
+echo "$out" | grep "^LOCAL PATH ok.md" && fail "check.py flagged a run-time or relative path"
+echo "ok check.py install path"
+
 # --- pr-review.sh
 lsnap=$(snap_of "$S")
 snap="$C/checkout-$(git --git-dir="$T/remotes/o/r.git" rev-parse main | cut -c1-12)"
