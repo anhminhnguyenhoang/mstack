@@ -56,7 +56,7 @@ Tests alone are not sufficient verification. A PR is verified only when its unit
 - [ ] Open the PR as a draft, never ready, per **Opening a PR**. Use the run's built-in PR tool when it has one, else `gh pr create --draft --base <base-branch>`, or MCP `create_pull_request` with `draft: true`, per the resolved PR tool. A stack child targets its parent branch. On a public upstream, ask first and open it only after the human says yes, per **Opening a PR**.
 - [ ] Run the repo's lint and typecheck once before the PR-facing push. Push with hooks on.
 - [ ] Run the `style.gate` skill function and the `comment-sicko` agent before each commit and `/no-comments` before review.
-- [ ] Triage every Bugbot and security-reviewer comment per `../references/bugbot-triage.md`.
+- [ ] Triage every review-bot and code-scanning comment per `../references/review-bot-triage.md`.
 - [ ] Rebase onto current trunk before the code-ready report and babysit. Keep that merge base in fix rounds. Rebase again only at merge prep, on a `git merge-tree` conflict with trunk, or on a CI failure that comes from a change on trunk.
 
 ### Verdict and merge, for every PR
@@ -125,7 +125,7 @@ Each live lane runs at the PR head on the machine that owns the surface. A GPU l
 **Merge.**
 
 - [ ] Root's clean verdict at the exact head SHA.
-- [ ] Bugbot triage done.
+- [ ] Review-bot triage done.
 - [ ] Rebased onto current trunk after the verdict, patch-id unchanged.
 - [ ] <The owner squash-merges its own PR, or the root appends it to the base-branch stack and the operator lands it bottom-up.>
 

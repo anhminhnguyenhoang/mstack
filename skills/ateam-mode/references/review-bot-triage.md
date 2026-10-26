@@ -1,16 +1,16 @@
-# Bugbot triage
+# Review-bot triage
 
-Use this reference when the Babysit playbook (`../playbooks/babysit.md`) handles Bugbot or review-automation comments. The goal is not to ignore Bugbot by default. The goal is to stop treating every comment as a required code change.
+Use this reference when the Babysit playbook (`../playbooks/babysit.md`) handles review-bot comments. On ROCm repos these come from Copilot's review, GitHub code scanning (`github-advanced-security`), and CI bots. Bugbot comments only where a repo turns it on. The goal is not to ignore bots by default. The goal is to stop treating every comment as a required code change.
 
 ## Decision rubric
 
-Classify each Bugbot thread before acting:
+Classify each bot thread before acting:
 
-- `fix`: The comment identifies a plausible correctness, numerics, memory-safety, security, privacy, data loss, auth, billing, migration, idempotency, race, or shipped-behavior issue. Fix it in the lowest owning PR, then reply with the commit SHA and resolve the thread.
-- `dismiss`: The comment matches a documented low-risk noisy pattern, and the current code/context proves the concern does not need a code change. Reply with a short reason and resolve the thread.
-- `ask`: The comment is novel, high-severity, security/privacy/data-related, or ambiguous. Ask the user instead of guessing.
+- `fix`: The comment identifies a plausible correctness, numerics, memory-safety, race, security, or shipped-behavior issue, or a break in an op's signature that downstream model code (sglang, vLLM) calls. Fix it in the lowest owning PR, then reply with the commit SHA and resolve the thread.
+- `dismiss`: The comment matches a documented low-risk noisy pattern, and the current code and context prove the concern does not need a code change. Reply with a short reason and resolve the thread.
+- `ask`: The comment is novel, high-severity, security-related, or ambiguous. Ask the user instead of guessing.
 
-When in doubt, ask. Skipping a noisy code-quality comment is cheap; skipping a real data or security bug is not.
+When in doubt, ask. Skipping a noisy code-quality comment is cheap. Skipping a real numerics or memory bug is not.
 
 ## Learned pattern format
 
@@ -30,10 +30,10 @@ Use `candidate` for one or two examples. Use `recurring` after multiple real dis
 
 ## Recurring skip candidates
 
-### Upstack or stack-local usage Bugbot cannot see
+### Upstack or stack-local usage the bot cannot see
 
 - Confidence: candidate
-- Skip when: Bugbot flags an export, helper, or file as unused, and the active PR tool's PR list and diffs, upper-stack diffs, or PR context show it is used by a later PR in the stack.
+- Skip when: The bot flags an export, helper, or file as unused, and the active PR tool's PR list and diffs, upper-stack diffs, or PR context show it is used by a later PR in the stack.
 - Do not skip when: The current PR is not part of a stack, the symbol is public API, or the supposed upstack use cannot be verified.
 - Example signal: "Exported helper is never used" with a human reply like "used upstack".
 
@@ -41,7 +41,7 @@ Use `candidate` for one or two examples. Use `recurring` after multiple real dis
 
 - Confidence: candidate
 - Skip when: The PR intentionally duplicates a small amount of code to keep a new path parallel to an old path that is being deleted, replaced, or proven out.
-- Do not skip when: The duplicated code changes security, billing, data access, API behavior, or a long-lived shared abstraction would clearly reduce risk.
+- Do not skip when: The duplicated code changes numerics, memory access, an op's public signature, or a long-lived shared helper would clearly reduce risk.
 - Example signal: "Significant duplication" or "duplicated validation logic" where the owner explains the old path will be deleted or the duplicate logic is intentionally local.
 
 ### Existing framework or component invariant covers the warning
@@ -55,19 +55,19 @@ Use `candidate` for one or two examples. Use `recurring` after multiple real dis
 
 - Confidence: candidate
 - Skip when: The PR owner explicitly says the issue is a known follow-up, the behavior is not made worse by the current PR, and the comment is not about a high-risk area.
-- Do not skip when: The agent is acting without owner input, the issue is medium/high severity product behavior, or deferring would merge a new regression.
+- Do not skip when: The agent is acting without owner input, the issue is a medium or high severity correctness or perf issue, or deferring would merge a new regression.
 - Example signal: "I'll worry about that later" or "we'll delete this eventually".
 
 ### Self-withdrawn or explicit false-positive rule comments
 
 - Confidence: recurring
-- Skip when: The comment body or a later Bugbot reply explicitly says the finding is withdrawn, compliant, or a false positive, and the agent can verify the relevant rule locally.
+- Skip when: The comment body or a later bot reply explicitly says the finding is withdrawn, compliant, or a false positive, and the agent can verify the relevant rule locally.
 - Do not skip when: The only evidence is a human saying "false positive" on a high-risk issue without explanation.
 - Example signal: A file-naming rule comment whose body says the file is already compliant.
 
 ## GPU kernel findings
 
-Default to `fix`. Bugbot findings in these classes are usually real, and a wrong kernel can pass a lenient test. Each entry names what settles the finding. Run that check on the PR tip before you classify. Run the check through the skill functions in [`skill-functions.md`](./skill-functions.md).
+Default to `fix`. Bot findings in these classes are usually real, and a wrong kernel can pass a lenient test. Each entry names what settles the finding. Run that check on the PR tip before you classify. Run the check through the skill functions in [`skill-functions.md`](./skill-functions.md).
 
 ### Numerics drift
 
@@ -123,60 +123,14 @@ Default to `fix`. Bugbot findings in these classes are usually real, and a wrong
 
 Do not auto-skip these categories, even if a previous PR dismissed something similar:
 
-- Security, privacy, auth, billing, data retention, training-data, and permission-boundary findings.
+- Security and permission-boundary findings, including code-scanning alerts.
 - Out-of-bounds, race, and numerics findings in a kernel, unless the evidence in the GPU section settles them.
 - High-severity findings.
-- Migration, schema, idempotency, concurrency, and cross-system behavior findings.
-- Comments where the suggested fix is small and clearly reduces risk without changing product intent.
+- A change to an op's signature, defaults, or dispatch that downstream model code relies on.
+- Comments where the suggested fix is small and clearly reduces risk without changing the PR's intent.
 
-Historical data showed humans sometimes dismiss security/data-flow comments. Treat those as owner judgment calls, not team-wide skip rules.
+Humans sometimes dismiss security comments. Treat those as owner judgment calls, not team-wide skip rules.
 
 ## Candidate learnings from recent babysits
 
-Append new candidate learnings here during or after babysitting when they look team-useful but not yet mature. Prefer promoting recurring candidates into the section above once several PRs confirm the pattern.
-
-### Contract-test drift claims are cheap to verify, so run the test first
-
-- Confidence: candidate
-- Skip when: Never skip the verification itself; it costs one command. When a PR
-  ships a contract test that pins protocol or documentation prose (regexes over
-  a SKILL.md, snapshot of doc wording), and Bugbot claims "the test no longer
-  matches the doc" (or vice versa), run that test on the PR tip before
-  classifying. A red run confirms the claim empirically; a green run is a
-  concrete disproof for the dismissal reply.
-- Do not skip when: n/a. This is a verification shortcut, not a dismissal
-  pattern. Repeat-pass lean-dismiss heuristics would misfire here:
-  prose-pinning tests drift because earlier fix rounds edit the prose.
-- Example signal: "Contract test omits the pre-fix wait" on a PR whose earlier
-  fix commits reworded the pinned passage; the test run on the tip failed on
-  exactly the cited assertion.
-- Source: one prose-pinning PR with eight Bugbot passes; the claim was real on
-  pass 7 despite every earlier pass being fixed-and-resolved.
-
-### Stale security-review finding already fixed later in the same PR
-
-- Confidence: candidate
-- Skip when: An agentic security review (or similar) claims a missing authz/validation call, and the current PR tip clearly includes that exact gate (with tests), typically added in a later hardening commit after the review ran.
-- Do not skip when: The cited helper is a no-op for the principal under discussion, the check runs after the side effect it guards, or coverage for the claimed principal is missing.
-- Example signal: A HIGH "missing authorization check" finding while the exact guard is already called before the side effect on the tip.
-- Source: one endpoint PR whose hardening commit postdated the review run.
-
-### Widening a deliberately narrow error condition would mask the real error
-
-- Confidence: candidate
-- Skip when: The finding asks to broaden a narrow error condition (a specific
-  `errno`, error code, or status class) into a catch-all, and that narrowness
-  encodes a real distinction. The canonical shape is a dependency fallback
-  gated on `ENOENT`: "binary is not installed" is a different situation from
-  "the command ran and failed". Retrying on any non-zero exit would re-run a
-  legitimate failure (not found, expired auth, network) against the fallback
-  and then report the fallback's error, hiding the true one.
-- Do not skip when: The narrow condition misses a case in the same category
-  (another "binary unusable" errno such as `EACCES`, another transport-level
-  failure), the unhandled path loses data or leaves partial state, or the retry
-  is idempotent and the original error is still reported.
-- Example signal: "only retries when X fails with ENOENT … never tries the
-  fallback even when a working Y exists", pointing at code whose fallback
-  exists for a missing dependency rather than a failed operation.
-- Source: one CLI-rename PR whose fallback existed for a missing binary rather
-  than a failed command.
+Append new candidate learnings here during or after babysitting when they look team-useful but not yet mature. Prefer promoting recurring candidates into the sections above once several PRs confirm the pattern.
