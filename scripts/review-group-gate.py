@@ -57,7 +57,7 @@ def red(*msgs):
 def read(path):
     if not os.path.isfile(path):
         red(f"missing {path}")
-    return open(path, encoding="utf-8").read()
+    return open(path, encoding="utf-8", newline="").read()
 
 
 def group_path(work, *parts):

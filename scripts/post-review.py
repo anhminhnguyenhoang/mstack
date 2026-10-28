@@ -61,7 +61,7 @@ def main():
         die(2, __doc__)
     if event not in ("COMMENT", "REQUEST_CHANGES", "APPROVE"):
         die(2, "event must be COMMENT, REQUEST_CHANGES, or APPROVE")
-    text = open(draft).read()
+    text = open(draft, encoding="utf-8", newline="").read()
     m = re.search(r"^Reviewed head: *([0-9a-f]{40})\b", text, re.M)
     if not m:
         die(2, f"{draft} has no 'Reviewed head: <40-hex sha>' line")
