@@ -7,9 +7,20 @@
         "timeout": 5
       }
     ],
+    "afterFileEdit": [
+      {
+        "command": "python3 \"${CURSOR_PLUGIN_ROOT:-.}/scripts/draft-lint.py\" record",
+        "timeout": 5
+      }
+    ],
     "stop": [
       {
         "command": "python3 \"${CURSOR_PLUGIN_ROOT:-.}/scripts/climb-gate.py\" hook",
+        "timeout": 10,
+        "loop_limit": 3
+      },
+      {
+        "command": "python3 \"${CURSOR_PLUGIN_ROOT:-.}/scripts/draft-lint.py\" hook",
         "timeout": 10,
         "loop_limit": 3
       }

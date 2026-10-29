@@ -18,7 +18,8 @@ record and record-refute read the reply from the reviewer's own Cursor transcrip
 must show it got the unchanged prompt file, and the reader must be the same reviewer resumed. merge
 requires one reviewer per `interrogate reviewers` entry on its configured model, each review-group
 finding on the draft or dropped with a reason code, a source tag on each finding and each
-inline comment, the card's Validation and Perf lines unchanged, and the pr.review skill's
+inline comment, at most 40 body words for a finding that has an inline comment, a green
+draft-lint.py, the card's Validation and Perf lines unchanged, and the pr.review skill's
 own Step 8 gates green, run from the snapshot that produced $WORK. post-review.py posts
 only a draft whose stamp matches it.
 """
@@ -46,6 +47,7 @@ LABEL = re.compile(r"[A-Z]")
 DROP = re.compile(r"^(\w+) DROPPED (duplicate|refuted|out-of-scope|capped) -- (.{20,})$")
 GROUP_TAG = "review-group:"
 DOCS_OR_CONFIG = re.compile(r"(^|/)docs?/|\.(md|rst|txt|csv|json|ya?ml|toml|ini|cfg)$")
+BODY_WORDS = 40
 
 
 def red(*msgs):
@@ -297,13 +299,25 @@ def merge(work, draft, no_review_group):
     tagged = [sources_of(f, ids, errs, "finding") for f in findings]
     cited = {s[len(GROUP_TAG):] for srcs in tagged if srcs for s in srcs if s.startswith(GROUP_TAG)}
     inline = rest[0] if rest else ""
+    inlined = set()
     for anchor, section in zip(ANCHOR.findall(inline), re.split(r"^### \S+?:\d+(?:-\d+)?\s*$", inline, flags=re.M)[1:]):
         srcs = sources_of(section, ids, errs, f"inline comment {anchor[0]}:{anchor[1]}")
         if srcs and srcs not in tagged:
             errs.append(f"inline comment {anchor[0]}:{anchor[1]} carries [src: {', '.join(sorted(srcs))}], which matches no finding on the draft")
+        inlined.add(srcs)
+    for line, srcs in zip(findings, tagged):
+        words = len(re.findall(r"\w\S*", SOURCE.sub("", line)))
+        if srcs in inlined and words > BODY_WORDS:
+            errs.append(f"finding [src: {', '.join(sorted(srcs))}] has {words} words and an inline comment: keep the problem and the action "
+                        f"in the body in at most {BODY_WORDS} words, and put the mechanism, repro, and fix only inline")
     for fid, (_, title) in ids.items():
         if fid not in cited and fid not in dropped:
             errs.append(f"review-group finding {fid} ({title}) is neither on the draft nor dropped with a reason in review-group/dispositions.txt")
+
+    lint = subprocess.run([sys.executable, os.path.join(ROOT, "scripts", "draft-lint.py"), draft, "--channel", "pr-review"],
+                          capture_output=True, text=True)
+    if lint.returncode:
+        errs.append("draft-lint.py is red:\n" + lint.stderr.strip())
 
     card = read(os.path.join(work, "card.md")).splitlines()
     for key in ("Validation (", "Perf ("):
