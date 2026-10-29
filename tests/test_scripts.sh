@@ -357,6 +357,7 @@ printf 'B\tm-other\t\n' >> "$W/review-group/models.tsv"; merged "⚠️ first ca
 printf 'B\tm-other\tthe Task tool rejected m-two in this session\n' >> "$W/review-group/models.tsv"
 "$G" merge "$W" "$T/draft.md" >/dev/null || fail "merge gate red on a complete draft with a recorded fallback"
 [ "$(cat "$T/draft.md.gate")" = "$(sha256sum "$T/draft.md" | cut -d' ' -f1)" ] || fail "merge did not stamp the draft"
+merged "⚠️ first card finding $(printf 'word %.0s' $(seq 45))[src: card, review-group:A1]"; red "$G" merge "$W" "$T/draft.md"
 W3="$T/work3"; work "$W3"; blind "$W3" A m-one "### 1. [warning] Off by one in a.py
 ### 2. [nit] Naming"; blind "$W3" B m-two "no findings"
 cp "$W/independent.txt" "$W3/"; cp "$W/review-group/dispositions.txt" "$W3/review-group/"
@@ -420,3 +421,27 @@ draft "stamped text"; echo "edited after the gate" >> "$T/draft.md"; post "$sha"
 sed -i 1d "$T/draft.md"; post "$sha" COMMENT 2>/dev/null; [ $? -eq 2 ] || fail "posted a draft with no head line"
 set -e
 echo "ok post-review"
+
+# --- draft-lint.py: pleasantry, sentence length, channel caps, and the stop hook
+DL="$ROOT/scripts/draft-lint.py"; D="$T/drafts"; mkdir -p "$D/t"
+long="$(printf 'word %.0s' $(seq 100))end."
+printf 'The test passes on gfx950. Please review.\n' > "$D/slack-draft-ok.md"
+"$DL" "$D/slack-draft-ok.md" >/dev/null || fail "draft lint red on a clean Slack draft"
+printf 'Thanks for the PR. The test passes.\n' > "$D/slack-draft-thanks.md"; red "$DL" "$D/slack-draft-thanks.md"
+printf '%s\n' "$long" > "$D/review-draft-long.md"; red "$DL" "$D/review-draft-long.md"
+printf '```\n%s\n```\n| %s |\nPerf (advisory): %s\n' "$long" "$long" "$long" > "$D/review-draft-exempt.md"
+"$DL" "$D/review-draft-exempt.md" >/dev/null || fail "draft lint counted code, a table, or a card line as prose"
+printf 'The test passes. %.0s' $(seq 20) > "$D/slack-draft-cap.md"; red "$DL" "$D/slack-draft-cap.md"
+"$DL" "$D/slack-draft-cap.md" --channel pr-body >/dev/null || fail "--channel did not override the file name"
+printf 'ok\n' > "$D/notes.md"; red "$DL" "$D/notes.md"
+cp "$D/slack-draft-thanks.md" "$D/t/comment-draft-x.md"
+ev() { printf '{"conversation_id":"%s","status":"completed","file_path":"%s"}' "$1" "${2:-}"; }
+hk() { ev "${1:-c9}" | python3 "$DL" hook; }
+[ "$(hk)" = '{}' ] || fail "draft hook fired on a draft this chat did not edit"
+[ "$(ev c9 "$D/notes.md" | python3 "$DL" record)" = '{}' ] || fail "record did not answer {}"
+ev c9 "$D/t/comment-draft-x.md" | python3 "$DL" record >/dev/null
+hk | grep -q "pleasantry" || fail "draft hook did not report a red draft this chat edited"
+[ "$(hk)" = '{}' ] || fail "draft hook reported the same file version twice"
+[ "$(hk c8)" = '{}' ] || fail "draft hook reported another chat's draft"
+echo "The test passes." > "$D/t/comment-draft-x.md"; [ "$(hk)" = '{}' ] || fail "draft hook fired on a green draft"
+echo "ok draft-lint"

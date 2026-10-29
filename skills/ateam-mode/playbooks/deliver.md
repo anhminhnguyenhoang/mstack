@@ -4,7 +4,7 @@
 
 1. Classify the output: `code`, `finding`, or `both`. A finding is a measured result, a diagnosis, a feasibility note, or a repro verdict.
 2. For `code`, run **Opening a PR** for the repo the change belongs to.
-3. For a `finding`, write `<tickets>/<KEY>/comment-draft-<topic>.md`. Outside a ticket, write it in the working directory. Use this shape, then apply `/technical-writing` and `/unslop`:
+3. For a `finding`, write `<tickets>/<KEY>/comment-draft-<topic>.md`. Outside a ticket, write it in the working directory. Use this shape and the drafts rule in **Writing the reply**, apply `/technical-writing` and `/unslop`, then run `scripts/draft-lint.py` on the draft until it is green:
    - Title as `## <the result, in one line>`, then `**TL;DR:**` in 1 to 2 sentences.
    - `### Why`. The question the ticket asked and why the work answers it.
    - `### Result`. The numbers with unit, run count, and spread. A table when there are two or more variants. A kernel optimization result carries S* (the kept levers), its ablation table, and the gain over B.
