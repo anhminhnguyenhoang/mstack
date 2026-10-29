@@ -216,6 +216,16 @@ mkdir -p "$H/.cursor/mstack"
 printf '## Repos\n| Repo | Path | Push remote | PR target |\n|---|---|---|---|\n| k | ~''/kcopy | origin, ssh | o/k main |\n\n## Git\n' > "$H/.cursor/mstack/env.md"
 out=$("$ROOT/scripts/pr-review.sh" o/k#7 2>/dev/null) || fail "env.md Repos row not used: exit $?"
 case "$out" in "pwd=$C/kcopy-"*) ;; *) fail "env.md Repos row not used: $out" ;; esac
+g init -q --bare "$T/remotes/fork/k.git"
+g -C "$H/kcopy" push -q "$T/remotes/fork/k.git" HEAD~0:refs/heads/main
+echo up > "$T/seed-k/UP"; g -C "$T/seed-k" add UP; g -C "$T/seed-k" commit -qm up; g -C "$T/seed-k" push -q origin main
+g -C "$H/kcopy" remote rename origin public
+g -C "$H/kcopy" remote add origin "$T/remotes/fork/k.git"; g -C "$H/kcopy" fetch -q origin; g -C "$H/kcopy" remote set-head origin main
+printf '## Repos\n| Repo | Path | Push remote | PR target |\n|---|---|---|---|\n| k | ~''/kcopy | origin = fork | o/k (remote public) |\n\n## Git\n' > "$H/.cursor/mstack/env.md"
+out=$("$ROOT/scripts/pr-review.sh" o/k#7 2>/dev/null) || fail "checkout with origin = fork and PR target remote not found: exit $?"
+kroot=${out#pwd=}; kroot=${kroot%% *}
+case "$kroot" in "$C/kcopy-"*) ;; *) fail "env.md row with a PR target remote not used: $out" ;; esac
+[ -e "$kroot/UP" ] || fail "snapshot taken from the fork, not the PR target remote: $out"
 echo "ok pr-review"
 
 # --- review-group-gate.py

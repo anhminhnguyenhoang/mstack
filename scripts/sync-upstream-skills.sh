@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # usage: sync-upstream-skills.sh [--no-links] <checkout>... | --review-functions
-# Checks out origin's default branch of each checkout into a per-commit snapshot and points
+# Checks out the upstream remote's default branch of each checkout (scripts/upstream-remote.sh) into a per-commit snapshot and points
 # the skills-dir links into it. The snapshot is kept while the linked skill folders match. A review already running keeps the snapshot it started on.
 # Links into a feature worktree are a deliberate pin and are left alone. --review-functions
 # (alias: --review-ports) syncs the checkouts that ship the pr.review and pr.validate skills. --no-links only
@@ -17,6 +17,7 @@ exec 9>"$CACHE/.lock"
 flock -w 300 9 || { echo "sync lock busy for 300 s" >&2; exit 1; }
 
 main_checkout() { dirname "$(git -C "$1" rev-parse --path-format=absolute --git-common-dir)"; }
+. "$ROOT/scripts/upstream-remote.sh"
 
 links=1
 if [ "${1:-}" = --no-links ]; then links=0; shift; fi
@@ -34,10 +35,11 @@ for repo in "$@"; do
   repo=$(main_checkout "$repo")
   common="$repo/.git"
   name=$(basename "$repo")
-  branch=$(git -C "$repo" symbolic-ref --short refs/remotes/origin/HEAD)
-  branch=${branch#origin/}
-  git -C "$repo" fetch -q origin "$branch"
-  sha=$(git -C "$repo" rev-parse "origin/$branch")
+  remote=$(upstream_remote "$repo")
+  branch=$(git -C "$repo" symbolic-ref --short "refs/remotes/$remote/HEAD")
+  branch=${branch#"$remote"/}
+  git -C "$repo" fetch -q "$remote" "$branch"
+  sha=$(git -C "$repo" rev-parse "$remote/$branch")
   hex12=$(printf '[0-9a-f]%.0s' {1..12})
 
   # Links into this repo's main checkout or its snapshots; a feature worktree is a pin.
@@ -77,5 +79,5 @@ for repo in "$@"; do
     [ -e "$old/.superseded" ] || touch "$old/.superseded"
     if [ -n "$(find "$old/.superseded" -mmin +1440)" ]; then git -C "$repo" worktree remove --force "$old"; fi
   done
-  echo "$name at $(git -C "$wt" log -1 --format='%h %cd' --date=short), skills as origin/$branch ${sha:0:10}: $wt"
+  echo "$name at $(git -C "$wt" log -1 --format='%h %cd' --date=short), skills as $remote/$branch ${sha:0:10}: $wt"
 done
