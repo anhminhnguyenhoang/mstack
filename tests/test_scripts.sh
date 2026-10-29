@@ -378,6 +378,9 @@ blind "$W5" A m-one "no findings"; blind "$W5" B m-two "no findings"
 grep -q "^NONE AVAILABLE -- " "$W5/independent.txt" || fail "clean card: independent.txt does not say none available"
 printf 'Reviewed head: %s\nReview (advisory): ✅ NO FINDINGS\nValidation (deterministic): N/A — no runtime surface changed\nPerf (advisory): N/A — no runtime surface changed\n' "$sha" > "$T/clean.md"
 "$G" merge "$W5" "$T/clean.md" >/dev/null || fail "a clean PR cannot pass the merge gate"
+W6="$T/work6"; work "$W6"
+printf '{"title": "Fix the a.py bound", "body": "Because b.\\r\\nThe tail is masked."}' > "$W6/pr_meta.json"
+blind "$W6" A m-one "no findings" || fail "a PR body with CRLF line endings broke the blind prompt's hash"
 echo "ok review-group-gate"
 
 # --- post-review.py
