@@ -313,6 +313,8 @@ diff -ru /tmp/mstack-import /tmp/cursor-plugins/pstack
 
 Port the changes you want by hand. Upstream paths use `pstack`, `poteto-mode`, `poteto-agent`, `poteto-help`, and `setup-pstack`. Map them to `mstack`, `ateam-mode`, `ateam-agent`, `ateam-help`, and `setup-mstack`.
 
+[`UPSTREAM.md`](./UPSTREAM.md) records the last reviewed upstream commit and each decision. To list what is new, run `git log --oneline <reviewed>..origin/main -- pstack` in the upstream clone.
+
 ## license
 
 MIT
