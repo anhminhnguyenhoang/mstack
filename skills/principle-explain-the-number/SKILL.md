@@ -1,11 +1,12 @@
 ---
 name: principle-explain-the-number
-description: "Apply before you trust, report, or act on a number you measured: a speedup, a regression, a throughput, a latency, or an eval result. Find what limits it, state a GPU kernel number as a percent of peak with the peak's source, and rule out that it measured something other than the work you think."
+description: "Apply before you measure, and before you trust, report, or act on a number you measured: a speedup, a regression, a throughput, a latency, or an eval result. Find what limits it, state a GPU kernel number as a percent of peak with the peak's source, and rule out that it measured something other than the work you think."
 disable-model-invocation: true
 ---
 
 # Explain the number
 
+- **Write the decision before you run.** Name the result that would change a decision, and the noise floor. Stop when the run-to-run spread is larger than the effect.
 - **Ask "why not double?"** Name the resource or code path that bounds the result: HBM bandwidth, MFMA issue, LDS, VMEM issue, occupancy, or launch overhead. For host-side work it is a core, a lock, the disk, or the network. Get it from a profile or from counters taken during a run (`rocprofv3` counters or an ATT trace for a kernel), then map it to source. A guess from reading the code is not a limiter. If you cannot say why the number is not twice as good, you do not know what you measured.
 - **List what else the number could be measuring, and rule out each one with evidence.** The usual suspects are errors, skipped or cached work (a warm L2 or MALL), code that never ran (a fallback kernel), an untuned side (one left on default settings), noise, and a piece too small to matter end to end.
 - **Keep the evidence with the number.** Put the run count, the spread, and the limiter in the notes or a linked artifact.
@@ -20,6 +21,6 @@ disable-model-invocation: true
 
 For a performance number, run the full procedure with the [benchmark-checklist](../benchmark-checklist/SKILL.md) skill. For an eval result, ask the same of the trials: did every run do the task, does the gap hold across trials and models, and does the scenario matter.
 
-You skipped this when the evidence behind a number has no run count, no spread, or no named limiter, when a kernel speedup has no percent of peak or the peak has no source, when a lever targets an axis the kernel is not bound by, or when the time saved is larger than the time the changed piece took.
+You skipped this when a run started without the result that would change a decision, when the evidence behind a number has no run count, no spread, or no named limiter, when a kernel speedup has no percent of peak or the peak has no source, when a lever targets an axis the kernel is not bound by, or when the time saved is larger than the time the changed piece took.
 
 Distinct from [Prove it works](../principle-prove-it-works/SKILL.md), which checks that an output is real.
