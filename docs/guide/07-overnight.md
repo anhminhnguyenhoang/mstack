@@ -77,10 +77,10 @@ The contract above drives one task to one finish condition. Some nights hold a q
 /ateam-mode full autopilot on this queue. each item is independent. i want them verified and ready for my review by morning.
 ```
 
-[Autopilot-stack](../../skills/ateam-mode/playbooks/autopilot-stack.md) runs the same owner loop but ships nothing. You wake up to one linear base-branch stack with a verifier's verdict on every link, and you review and land it yourself. Pick it over Autopilot-full when the changes are coupled, or when you want your own eyes on the work before anything merges:
+[Autopilot-stack](../../skills/ateam-mode/playbooks/autopilot-stack.md) is Autopilot-full without the merge. You wake up to verified PRs, each with its verdict, and you review and land them yourself. A PR stacks only on a PR it builds on. Pick it over Autopilot-full when you want your own eyes on the work before anything merges:
 
 ```text
-/ateam-mode autopilot these five changes but stack them, don't ship. i'll land the stack in the morning.
+/ateam-mode autopilot these five changes, but don't merge. i'll land them in the morning.
 ```
 
 For a program of many stacked PRs, write the plan first. The [Multi-phase plan playbook](../../skills/ateam-mode/playbooks/multi-phase-plan.md) names which of the two playbooks above runs it.

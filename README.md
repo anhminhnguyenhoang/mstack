@@ -102,7 +102,7 @@ morning.
 | [shipping](./skills/ateam-mode/playbooks/shipping.md) | independently verify a green stack, then land the contiguous verified run bottom-up through the resolved PR tool. |
 | [autonomous run](./skills/ateam-mode/playbooks/autonomous-run.md) | drive a long task to completion without stopping. |
 | [autopilot-full](./skills/ateam-mode/playbooks/autopilot-full.md) | run independent prs to merged with one owner per pr and a root fan-out verdict on each round, from the code-ready head on. |
-| [autopilot-stack](./skills/ateam-mode/playbooks/autopilot-stack.md) | build and verify one linear base-branch stack for the operator to review and land. |
+| [autopilot-stack](./skills/ateam-mode/playbooks/autopilot-stack.md) | autopilot-full without the merge. build and verify prs for the operator to review and land, stacking a pr only on a pr it builds on. |
 | [session pickup](./skills/ateam-mode/playbooks/session-pickup.md) | resume or take over a prior agent's in-flight work. |
 | [pause safely](./skills/ateam-mode/playbooks/pause-safely.md) | suspend in-flight work cleanly so it can be resumed later. |
 | [multi-phase plan](./skills/ateam-mode/playbooks/multi-phase-plan.md) | work that spans phases or stacked PRs. |
@@ -157,7 +157,7 @@ to keep [`/ateam-mode`](./skills/ateam-mode/SKILL.md) on across turns, pick it f
 | [`/blast-radius`](./skills/blast-radius/SKILL.md) | you have a small-looking change and want to know what else it could break, with the one fact it's safe because of proven by running code, not asserted. |
 | [`/architect`](./skills/architect/SKILL.md) | you're about to write code that crosses a function boundary and want the caller's usage, types, and module shape settled first. |
 | [`/arena`](./skills/arena/SKILL.md) | you want N parallel attempts at the same thing, then to grab the best parts of each. |
-| [`/interrogate`](./skills/interrogate/SKILL.md) | you have a diff and want different models to try to break it, including a strict code-quality lens. |
+| [`/interrogate`](./skills/interrogate/SKILL.md) | you have a diff and want different models to try to break it, keeping only findings a run proves. |
 | [`/setup-mstack`](./skills/setup-mstack/SKILL.md) | you want to pick which models mstack uses per role, or map this machine for kernel work. `/setup-mstack models` writes the model rule. `/setup-mstack env` writes `~/.cursor/mstack/env.md`. |
 | [`/reflect`](./skills/reflect/SKILL.md) | a long task landed and you want the recipe captured as a skill edit. |
 | [`/correct`](./skills/correct/SKILL.md) | you keep correcting agents for the same mistakes. mines history for mistake classes, fixes each at the highest level that works (architecture, then types, lint, and ci, then tests, with docs last), and keeps a table pairing each rule with what enforces it. |
