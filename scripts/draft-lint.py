@@ -13,7 +13,9 @@ The channel comes from the file name when --channel is absent:
   review-draft-*       pr-review   no total cap
   pr-draft-*, pr-description-draft*   pr-body   no total cap
 
-Every channel fails on a pleasantry and on a sentence longer than 100 words.
+Every channel fails on a pleasantry, on a sentence longer than 100 words, on a sentence of
+6 or more words that the draft repeats, and on a prose term from the optional machine-local
+file ~/.cursor/mstack/jargon.txt (one term per line, # starts a comment).
 Prose is the text outside fenced code, tables, headings, and the review card's
 Reviewed head, Review, Validation, and Perf lines. Inline code counts as one word,
 a link as its text, and a [src: ...] tag as nothing.
@@ -34,6 +36,7 @@ NAMES = [
     ("pr-description-draft", "pr-body"),
 ]
 SENTENCE_WORDS = 100
+REPEAT_WORDS = 6
 SEEN = os.path.join(os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"), "mstack", "draft-lint")
 CARD = ("Reviewed head:", "Review (", "Validation (", "Perf (")
 PLEASANTRY = re.compile(
@@ -76,8 +79,19 @@ def words(s):
     return re.findall(r"[\w][\S]*", s)
 
 
+def jargon_terms():
+    path = os.path.expanduser("~/.cursor/mstack/jargon.txt")
+    if not os.path.isfile(path):
+        return []
+    with open(path, encoding="utf-8") as f:
+        terms = [line.split("#", 1)[0].strip() for line in f]
+    return [(t, re.compile(r"(?<![\w-])" + re.escape(t) + r"(?![\w-])")) for t in terms if t]
+
+
 def lint(path, channel):
     errs, total = [], 0
+    jargon = jargon_terms()
+    sentences = {}
     for n, line in prose_lines(open(path, encoding="utf-8").read()):
         total += len(words(line))
         m = PLEASANTRY.search(line)
@@ -87,6 +101,17 @@ def lint(path, channel):
             k = len(words(sentence))
             if k > SENTENCE_WORDS:
                 errs.append(f"line {n}: a sentence of {k} words, the limit is {SENTENCE_WORDS}: split it or drop clauses: {sentence[:70]}...")
+            if k >= REPEAT_WORDS:
+                sentences.setdefault(" ".join(sentence.lower().split()), []).append((n, sentence.strip()))
+        for term, pattern in jargon:
+            if pattern.search(line):
+                errs.append(f"line {n}: `{term}` is on your jargon list: say it in plain words")
+    for hits in sentences.values():
+        if len(hits) > 1:
+            lines = sorted({n for n, _ in hits})
+            shown = hits[0][1][:70] + ("..." if len(hits[0][1]) > 70 else "")
+            where = ("lines " if len(lines) > 1 else "line ") + ", ".join(map(str, lines))
+            errs.append(f"{where}: the same sentence appears {len(hits)} times, \"{shown}\": say it once")
     cap = CAPS[channel]
     if cap is not None and total > cap:
         errs.append(f"{total} prose words, and a {channel} draft allows at most {cap}")
