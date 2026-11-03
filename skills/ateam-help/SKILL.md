@@ -82,6 +82,7 @@ The default answer is `/ateam-mode`, which runs most of the others when its step
 | Clean AI tells out of prose | [`/unslop`](../unslop/SKILL.md) |
 | Write docs, an RFC, a README, a PR description, or a commit message to a standard | [`/technical-writing`](../technical-writing/SKILL.md) |
 | Hear the last reply again without kernel jargon | [`/bro`](../bro/SKILL.md) |
+| Get a quoted line, term, number, kernel, design, optimization, lever, idea, or concept explained in plain words | [`/explain`](../explain/SKILL.md) |
 | Give a kernel library a scripted way to prove its ops (correctness, perf, ISA) | [`/create-verification-skill`](../create-verification-skill/SKILL.md) |
 | Bring a kernel library's verification skill and its feature map back in line with its tests | [`/maintain-verification-skill`](../maintain-verification-skill/SKILL.md) |
 | Start from a Jira ticket key and set up its ticket folder | [`/ticket-init`](../ticket-init/SKILL.md) |
