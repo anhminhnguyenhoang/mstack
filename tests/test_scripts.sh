@@ -484,3 +484,35 @@ hk c6 | grep -q 'Big-M' || fail "draft hook did not report a jargon term"
 rm "$H/.cursor/mstack/jargon.txt"
 "$DL" "$D/slack-draft-jargon.md" >/dev/null || fail "draft lint red with no jargon file"
 echo "ok draft-lint"
+
+# --- lanes.py: the state of each background lane, and the quiet threshold
+LN="$ROOT/scripts/lanes.py" LD="$T/lanes"; mkdir -p "$LD"
+TSU='{"role":"user","message":{"content":[{"type":"text","text":"<timestamp>Tuesday, Nov 3, 2026, 4:14 PM (UTC+2)</timestamp>\n<user_query>\nfix the cache key\n</user_query>"}]}}'
+U='{"role":"user","message":{"content":[{"type":"text","text":"<user_query>\nfix the cache key\n</user_query>"}]}}'
+A='{"role":"assistant","message":{"content":[{"type":"text","text":"Reading the cache code."}]}}'
+{ echo "$TSU"; echo "$A"; echo '{"type":"turn_ended","status":"success"}'; echo; } > "$LD/e0000005.jsonl"
+{ echo "$TSU"; echo "$A"; echo '{"type":"turn_ended","status":"error"}'; } > "$LD/d0000004.jsonl"
+{ echo "$U"; echo "$A"; } > "$LD/c0000003.jsonl"
+{ echo "$U"; echo "$A"; } > "$LD/b0000002.jsonl"
+{ echo "$U"; echo "$A"; } > "$LD/a0000001.jsonl"
+touch -d '60 minutes ago' "$LD/e0000005.jsonl"
+touch -d '45 minutes ago' "$LD/d0000004.jsonl"
+touch -d '30 minutes ago' "$LD/c0000003.jsonl"
+touch -d '3 minutes ago' "$LD/b0000002.jsonl"
+out=$("$LN" "$LD") || fail "lanes.py exit $? on a directory"
+[ "$(head -1 <<<"$out")" = "$(printf 'lane\tstate\tquiet_min\tlines\tbrief')" ] || fail "lanes.py header: $(head -1 <<<"$out")"
+field() { awk -F'\t' -v l="$1" -v c="$2" '$1==l{print $c}' <<<"$out"; }
+[ "$(awk -F'\t' 'NR>1{print $1}' <<<"$out" | paste -sd' ')" = "e0000005 d0000004 c0000003 b0000002 a0000001" ] || fail "lanes.py row order: $out"
+[ "$(field e0000005 2)" = done ] && [ "$(field d0000004 2)" = error ] && [ "$(field c0000003 2)" = quiet ] || fail "lanes.py states: $out"
+[ "$(field b0000002 2)" = running ] && [ "$(field a0000001 2)" = running ] || fail "lanes.py states: $out"
+[ "$(field b0000002 5)" = "fix the cache key" ] && [ "$(field e0000005 5)" = "fix the cache key" ] || fail "lanes.py brief: $out"
+[ "$(field e0000005 4)" = 3 ] || fail "lanes.py lines counts non-blank lines: $(field e0000005 4)"
+awk -v q="$(field c0000003 3)" 'BEGIN{exit !(q >= 29.5 && q <= 31)}' || fail "lanes.py quiet_min of a 30 minute old file: $(field c0000003 3)"
+[ "$("$LN" --quiet-min 60 "$LD" | awk -F'\t' '$1=="c0000003"{print $2}')" = running ] || fail "lanes.py --quiet-min 60 kept a 30 minute lane quiet"
+rc=0; "$LN" "$LD/nope.jsonl" >/dev/null 2>&1 || rc=$?
+[ "$rc" = 2 ] || fail "lanes.py exit $rc on a missing path, want 2"
+mkdir "$T/lanes-edge"
+printf '%s\n%s\n' "{\"role\":\"user\",\"message\":{\"content\":[{\"type\":\"text\",\"text\":\"$(printf 'w%.0s' $(seq 80))\"}]}}" '{"type":"turn_en' > "$T/lanes-edge/f0000006.jsonl"
+edge=$("$LN" "$T/lanes-edge") || fail "lanes.py crashed on a half-written last line"
+[ "$(awk -F'\t' 'NR==2{print $2 "," length($5)}' <<<"$edge")" = "running,60" ] || fail "lanes.py half-written line or 60 character brief: $edge"
+echo "ok lanes"
