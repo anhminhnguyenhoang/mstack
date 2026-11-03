@@ -405,6 +405,22 @@ not a changed file"
 [ "$(payload '"## Inline" not in p["body"] and "on new1" not in p["body"]')" = True ] || fail "inline section left in the body"
 [ ! -e "$T/pwned" ] || fail "draft text was executed"
 [ "$(payload '"[src:" not in p["body"] and all("[src:" not in c["body"] for c in p["comments"])')" = True ] || fail "source tags were posted"
+draft "Plain words. The lint passes[verified] on the branch.
+The kernel is faster [inferred, no NVIDIA GPU here] and the flag is set [inferred, no GPU here].
+[verified] [inferred] Both labels share one line.
+A cache claim has no source [unverified].
+## Inline
+### src/a.py:2
+on new1 [verified] [src: review-group:A1]
+### src/a.py:2-3
+on both new lines [inferred, no GPU here] the second run agrees
+### src/a.py:10
+[unverified] the bullet line [verified]"
+[ "$(post "$sha" COMMENT 2>/dev/null)" = https://example/review ] || fail "post refused a draft with evidence labels"
+[ "$(payload 'all(s not in t for t in [p["body"], *[c["body"] for c in p["comments"]]] for s in ["[verified]", "[inferred", "[unverified]", "[src:"])')" = True ] || fail "evidence labels were posted"
+[ "$(payload '"(not tested: no NVIDIA GPU here)" in p["body"] and "(not tested)" in p["body"] and "(no source found)" in p["body"]')" = True ] || fail "body lacks plain labels"
+[ "$(payload '[c["body"] for c in p["comments"]]')" = "['on new1', 'on both new lines (not tested: no GPU here) the second run agrees', '(no source found) the bullet line']" ] || fail "inline labels not plain: $(payload '[c["body"] for c in p["comments"]]')"
+[ "$(payload '"Plain words. The lint passes on the branch." in p["body"] and "(not tested) Both labels share one line." in p["body"] and "(no source found)." in p["body"]')" = True ] || fail "label spacing wrong"
 [ "$(EXISTING=1 REPOST=1 post "$sha" COMMENT 2>/dev/null)" = https://example/review ] || fail "REPOST=1 refused"
 set +e
 post "$other" COMMENT 2>/dev/null; [ $? -eq 3 ] || fail "posted although head moved"
