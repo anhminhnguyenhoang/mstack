@@ -1,12 +1,16 @@
 ---
 name: explain
-description: "Explains a quoted line, term, or number, or a kernel, design, optimization, lever, idea, or concept, in plain words. Routes kernels to teach, designs to how and why, optimizations and levers to the lever doc, and ideas to the kb resource. Use for /explain or 'what do you mean by'."
+description: "Explains a quoted line, term, or number, or a kernel, design, optimization, lever, idea, or concept, in plain words. Routes kernels to teach, designs to how and why, optimizations and levers to the lever doc, and ideas to the kb resource. Use for /explain or 'what do you mean by'. Leads with a diagram or an interactive page, with little prose."
 disable-model-invocation: true
 ---
 
 # Explain
 
 Explain a quoted line, term, or number in plain words, and route each other target to its owning source.
+
+## Answer
+
+Every route answers with a visual first. Draw a diagram for one idea, per the **Diagram first** rule in [ateam-mode](../ateam-mode/SKILL.md). Build an interactive HTML page when the target has three or more moving parts, per its **HTML when the gist needs it** rule. Keep prose to a few short ASD-STE100 sentences. Write at a level that a junior engineer and a leader can follow. Define each technical term the first time you use it.
 
 ## Route
 
@@ -26,4 +30,4 @@ Explain a quoted line, term, or number in plain words, and route each other targ
 3. Say why the text is there: the decision, the measurement, or the rule behind it. Label each reason as measured, inferred, or guess.
 4. Say what the text changes for the user: an action, a decision, or nothing.
 5. When the text sits in a draft that needed this explanation, offer a plainer line. Write it as a new draft version, per the revised-draft rule in the **ateam-mode** skill. Do not edit the posted text.
-6. Use the voice of the [`/bro`](../bro/SKILL.md) skill: short sentences, plain words, no filler. Keep the answer under about 120 words unless the user asks for more. Answer several items as a numbered list, in the user's order.
+6. Answer several items as a numbered list, in the user's order.
