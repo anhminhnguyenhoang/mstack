@@ -20,17 +20,18 @@ grep -q baseRefOid <<<"$("$GH" pr view --help 2>&1)" || { echo "gh is too old fo
 
 function_skill() { sed -n "s/^| \`pr\.$1\` |[^|]*| \`\([^\`]*\)\`.*/\1/p" "$SKILL_FUNCTIONS"; }
 main_checkout() { dirname "$(git -C "$1" rev-parse --path-format=absolute --git-common-dir)"; }
-origin_is() { local u; u=$(git -C "$1" remote get-url origin 2>/dev/null) || return 1; u=${u,,}; u=${u%.git}; [[ $u == *[:/]"${2,,}" ]]; }
+. "$ROOT/scripts/upstream-remote.sh"
+upstream_is() { local u; u=$(git -C "$1" remote get-url "$(upstream_remote "$1")" 2>/dev/null) || return 1; u=${u,,}; u=${u%.git}; [[ $u == *[:/]"${2,,}" ]]; }
 
-# The local checkout whose origin is $1: the Repos table of env.md, else a scan of $HOME.
+# The local checkout whose upstream remote is $1: the Repos table of env.md, else a scan of $HOME.
 checkout_of() {
   local p d found=()
   p=$(sed -n '/^## Repos/,/^## [^R]/p' "$ENV_FILE" 2>/dev/null | awk -F'|' -v r="$1" 'index(tolower($0), tolower(r)) { gsub(/^ +| +$/, "", $3); print $3; exit }')
   if [ "${p:0:1}" = "~" ]; then p="$HOME${p:1}"; fi
-  if [ -n "$p" ] && origin_is "$p" "$1"; then main_checkout "$p"; return; fi
+  if [ -n "$p" ] && upstream_is "$p" "$1"; then main_checkout "$p"; return; fi
   for d in "$HOME"/*/; do
     d=${d%/}
-    if [ "$(git -C "$d" rev-parse --show-toplevel 2>/dev/null)" = "$d" ] && origin_is "$d" "$1"; then found+=("$d"); fi
+    if [ "$(git -C "$d" rev-parse --show-toplevel 2>/dev/null)" = "$d" ] && upstream_is "$d" "$1"; then found+=("$d"); fi
   done
   [ ${#found[@]} -eq 1 ] && { echo "${found[0]}"; return; }
   echo "need one local checkout of $1, found ${#found[@]}${found:+: ${found[*]}}. Set it in the Repos table with /setup-mstack env." >&2
