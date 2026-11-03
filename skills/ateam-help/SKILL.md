@@ -103,7 +103,7 @@ Close calls:
 - `/how` explains what the code does. `/why` explains the reasons. `/teach` runs one or both and explains the result plainly.
 - `/arena` gives every worker the same brief and merges the best parts. `/ateam-mode` fans out local workers over slices or a race and returns one table of issues and gaps.
 - `/architect` implements right after it settles the design. Add "with checkpoint" to review the design before it writes code.
-- `/interrogate` reviews a local diff with a review group. The PR review playbook reviews a PR by number. It checks repo rules and GPU evidence, runs the same review group, and writes a draft that the human posts. `/blast-radius` looks for breakage outside the diff and proves the one fact that makes the change safe.
+- `/interrogate` has adversaries try to break a local diff and keeps only the findings a run proves. The PR review playbook reviews a PR by number. It checks repo rules and GPU evidence, runs the same review group, and writes a draft that the human posts. `/blast-radius` looks for breakage outside the diff and proves the one fact that makes the change safe.
 - `/recall` rebuilds context across recent chats. `/ketchup` covers only this chat since the user's last message. Resuming one specific chat or branch is the Session pickup playbook.
 - `/figure-it-out` designs one rigorous run. A program of many stacked PRs is a Multi-phase plan, run by an Autopilot playbook. The Autonomous run playbook drives one task to a finish condition.
 
@@ -120,7 +120,7 @@ Playbooks are step lists inside `/ateam-mode`, not skills, so they have no slash
 - "land the stack" runs Shipping.
 - "take over this branch" runs Session pickup.
 - "pause safely" runs Pause safely.
-- "full autopilot on this queue" runs Autopilot-full. "stack them, don't ship" runs Autopilot-stack.
+- "full autopilot on this queue" runs Autopilot-full. "autopilot, don't merge" runs Autopilot-stack.
 - "run the eval playbook" runs Eval.
 - "reproduce their numbers" or "verify this claim" runs Repro audit.
 - "hillclimb this", "climb this metric", or "beat the Triton baseline" runs Kernel hillclimb. A metric that is not a GPU kernel uses its Non-kernel metrics section.
