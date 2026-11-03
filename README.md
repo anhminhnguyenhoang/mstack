@@ -171,7 +171,7 @@ to keep [`/ateam-mode`](./skills/ateam-mode/SKILL.md) on across turns, pick it f
 | [`/maintain-verification-skill`](./skills/maintain-verification-skill/SKILL.md) | the verify map of a kernel library may be stale. detects op test, tolerance, arch gate, and harness drift, re-proves each feature on one locked GPU, and reports drift per op family. |
 | [`/unslop`](./skills/unslop/SKILL.md) | you're cleaning up writing. removes AI tells. |
 | [`/bro`](./skills/bro/SKILL.md) | you want the last message restated without kernel or ROCm jargon (VGPR, LDS, MFMA, occupancy, spills). |
-| [`/explain`](./skills/explain/SKILL.md) | you quote a line, term, question, or number from this chat or a draft and want it in plain words: what it means, why it is there, and what it changes for you. runs only when you type `/explain`. |
+| [`/explain`](./skills/explain/SKILL.md) | you want a quoted line, term, or number explained, or a kernel, design, optimization, lever, idea, or concept. runs only when you type `/explain`. |
 | [`/technical-writing`](./skills/technical-writing/SKILL.md) | layered doc standard (Diátaxis + Google developer style + STE + Global English) for docs, RFCs, readmes, PR descriptions, commit messages. |
 
 </details>

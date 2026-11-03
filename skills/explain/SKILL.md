@@ -1,10 +1,25 @@
 ---
 name: explain
-description: "Explain a quoted line, term, question, or number from this chat or a draft in plain words: what it means, why it is there, and what it changes for the user. Use for /explain or 'what do you mean by'."
+description: "Explains a quoted line, term, or number, or a kernel, design, optimization, lever, idea, or concept, in plain words. Routes kernels to teach, designs to how and why, optimizations and levers to the lever doc, and ideas to the kb resource. Use for /explain or 'what do you mean by'."
 disable-model-invocation: true
 ---
 
 # Explain
+
+Explain a quoted line, term, or number in plain words, and route each other target to its owning source.
+
+## Route
+
+| Target | Do this |
+|---|---|
+| A quoted line, term, or number from this chat or a draft | Follow the steps under Quoted text. |
+| A GPU kernel or a kernel change | Run the [`teach`](../teach/SKILL.md) skill. |
+| A design, a subsystem, or "how does X work" | Run the [`how`](../how/SKILL.md) skill. Add the [`why`](../why/SKILL.md) skill when the reasons are the point. |
+| "Why was this built this way" | Run the [`why`](../why/SKILL.md) skill. |
+| An optimization or a lever that the lever doc records | Read the lever's row in the lever doc, as the [lever doc](../ateam-mode/references/lever-doc.md) defines it. Outside a ticket, the doc sits in the work dir. Explain the premise that queued the lever, its screen result, and its root cause. Explain its numbers per the Numbers section of [`teach`](../teach/SKILL.md). |
+| An idea or a concept | Read the `kb` resource when it is set, following the [resources](../ateam-mode/references/resources.md) reference. When it is not set, write `skipped kb: not set`, and explain the idea plainly with one diagram. |
+
+## Quoted text
 
 1. Find where the quoted text comes from: a file and line, or your own earlier message. Read that source again before you answer.
 2. Say what the text means in plain words. Define each term the user does not use every day, such as an internal tag or a coined name.
