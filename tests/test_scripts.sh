@@ -484,3 +484,64 @@ hk c6 | grep -q 'Big-M' || fail "draft hook did not report a jargon term"
 rm "$H/.cursor/mstack/jargon.txt"
 "$DL" "$D/slack-draft-jargon.md" >/dev/null || fail "draft lint red with no jargon file"
 echo "ok draft-lint"
+
+# --- mine-chats.py: the three transcript layouts, the filters, and the outputs
+MC="$ROOT/scripts/mine-chats.py" R="$T/mine/root" O="$T/mine/out" O2="$T/mine/out2"
+mkdir -p "$R/n1/subagents" "$R/x1" "$R/o1" "$R/late1"
+cat > "$R/n1/n1.jsonl" <<'EOF'
+{"role":"user","message":{"content":[{"type":"text","text":"<manually_attached_skills>\nSkill Name: fixture-skill\nSKILL.md content:\n# Fixture\n</manually_attached_skills>\n<timestamp>Monday, Oct 26, 2026</timestamp>\n<user_query>\nrecall my parser work\n</user_query>"}]}}
+{"role":"assistant","message":{"content":[{"type":"text","text":"Looking."},{"type":"tool_use","name":"Task","input":{"description":"scan","prompt":"find the parser"}}]}}
+{"role":"user","message":{"content":[{"type":"text","text":"<user_query>\nand the tests?\n</user_query>"}]}}
+{"type":"turn_ended","status":"completed"}
+EOF
+cat > "$R/f1.jsonl" <<'EOF'
+{"role":"user","message":{"content":[{"type":"text","text":"<user_query>\nflat chat about the lint\n</user_query>"}]}}
+{"role":"assistant","message":{"content":[{"type":"tool_use","name":"CallDynamicTool","input":{"namespace":"fixture","toolName":"Task","arguments":"{\"description\": \"lint\", \"prompt\": \"fix it\"}}"}},{"type":"tool_use","name":"CallDynamicTool","input":{"namespace":"fixture","toolName":"GetDynamicTools","arguments":{}}}]}}
+{"role":"user","message":{"content":[{"type":"text","text":"<timestamp>Thursday, Oct 29, 2026</timestamp>\nlegacy typed words"}]}}
+{"type":"progress","note":"not a message"}
+this line is not json
+EOF
+cat > "$R/n1/subagents/s1.jsonl" <<'EOF'
+{"role":"user","message":{"content":[{"type":"text","text":"<user_query>\nfind the parser\n</user_query>"}]}}
+{"role":"assistant","message":{"content":[{"type":"tool_use","name":"Read","input":{"path":"parser.py"}}]}}
+EOF
+cp "$R/n1/subagents/s1.jsonl" "$R/n1/subagents/s2.jsonl"
+cat > "$R/x1/x1.jsonl" <<'EOF'
+{"role":"user","message":{"content":[{"type":"text","text":"<user_query>\nEXCLUDE-ME excluded chat body\n</user_query>"}]}}
+EOF
+cat > "$R/o1/o1.jsonl" <<'EOF'
+{"role":"user","message":{"content":[{"type":"text","text":"<user_query>\nOLD-CHAT body\n</user_query>"}]}}
+EOF
+cat > "$R/late1/late1.jsonl" <<'EOF'
+{"role":"user","message":{"content":[{"type":"text","text":"<user_query>\nLATE-CHAT body\n</user_query>"}]}}
+EOF
+touch -d '2026-10-29 09:00' "$R/f1.jsonl"
+touch -d '2026-10-30 10:00' "$R/n1/n1.jsonl" "$R/n1/subagents/s1.jsonl"
+touch -d '2026-10-30 11:00' "$R/x1/x1.jsonl"
+touch -d '2026-10-01 10:00' "$R/o1/o1.jsonl"
+touch -d '2026-11-05 10:00' "$R/n1/subagents/s2.jsonl" "$R/late1/late1.jsonl"
+[ -x "$MC" ] || fail "mine-chats.py is not executable"
+grep -qiE 'cursor|/home/' "$MC" && fail "mine-chats.py names a Cursor or home path"
+python3 "$MC" --root "$R" --since 2026-10-26 --as-of '2026-11-02 16:43:00' --exclude-text EXCLUDE-ME --out "$O" >/dev/null || fail "mine-chats.py exited non-zero"
+python3 "$MC" --root "$R" --since 2026-10-26 --as-of '2026-11-02 16:43:00' --exclude-text EXCLUDE-ME --out "$O2" >/dev/null || fail "mine-chats.py exited non-zero on the second run"
+ids=$(python3 -c 'import csv,sys; print(" ".join(sorted(r["id"] for r in csv.DictReader(open(sys.argv[1])))))' "$O/chats.csv")
+[ "$ids" = "f1 n1" ] || fail "chats.csv ids: $ids"
+col() { python3 -c 'import csv,sys; print({r["id"]: r for r in csv.DictReader(open(sys.argv[1]))}[sys.argv[2]][sys.argv[3]])' "$O/chats.csv" "$1" "$2"; }
+[ "$(col n1 n_user_msgs)" = 2 ] || fail "n1 n_user_msgs: $(col n1 n_user_msgs)"
+[ "$(col n1 n_tool_uses)" = 1 ] || fail "n1 n_tool_uses: $(col n1 n_tool_uses)"
+[ "$(col n1 task_calls)" = 1 ] || fail "n1 task_calls: $(col n1 task_calls)"
+[ "$(col n1 n_subagents)" = 1 ] || fail "n1 n_subagents: $(col n1 n_subagents)"
+[ "$(col n1 attached_skills)" = fixture-skill ] || fail "n1 attached_skills: $(col n1 attached_skills)"
+[ "$(col f1 n_user_msgs)" = 2 ] || fail "f1 n_user_msgs: $(col f1 n_user_msgs)"
+[ "$(col f1 task_calls)" = 1 ] || fail "f1 task_calls (a Task call with a string arguments value, GetDynamicTools not counted): $(col f1 task_calls)"
+for s in 'recall my parser work' 'and the tests?' 'legacy typed words'; do grep -qF "$s" "$O/user_messages.md" || fail "user_messages.md lacks: $s"; done
+grep -qE 'fixture-skill|manually_attached_skills|Thursday|<timestamp>' "$O/user_messages.md" && fail "user_messages.md kept an injected block"
+grep -qE 'excluded chat body|OLD-CHAT|LATE-CHAT' "$O/user_messages.md" && fail "user_messages.md has an excluded, old, or late chat"
+st() { python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))[sys.argv[2]])' "$O/stats.json" "$1"; }
+[ "$(st n_parent_chats)" = 2 ] || fail "stats n_parent_chats: $(st n_parent_chats)"
+[ "$(st n_subagent_files)" = 1 ] || fail "stats n_subagent_files: $(st n_subagent_files)"
+[ "$(st excluded_ids)" = "['x1']" ] || fail "stats excluded_ids: $(st excluded_ids)"
+[ "$(st parse_errors)" = 1 ] || fail "stats parse_errors: $(st parse_errors)"
+[ "$(st unknown_line_shapes)" = 1 ] || fail "stats unknown_line_shapes: $(st unknown_line_shapes)"
+diff -r "$O" "$O2" >/dev/null || fail "two runs with the same flags differ"
+echo "ok mine-chats"
