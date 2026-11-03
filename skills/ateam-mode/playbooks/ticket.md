@@ -28,6 +28,7 @@ Parts, in this order:
 - **Open work.** One line per lever or task, with status: `open`, `running`, `done`, `dropped`. For kernel work, link the lever document `<tickets>/<KEY>/<topic>-opt.md`. Do not copy its rows.
 - **Drafts awaiting approval.** The `comment-draft-*.md` files the human has not approved, and any PR draft.
 - **Branches and worktrees.** Path, branch, SHA, and the container it runs in.
+- **Named commits.** One line per commit that a draft or a comparison names: the short SHA, its role (base, reviewed head, superseded, or best), and the source that fixes the role, such as a review URL. Before a draft compares two commits, check each line against the PR's commit list on GitHub.
 - **For the human.** Blockers and open questions. Write `none` when empty.
 - **Next step.** One action.
 
