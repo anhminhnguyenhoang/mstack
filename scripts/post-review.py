@@ -9,7 +9,9 @@ Refuses when the head moved (exit 3), when this user already reviewed that head 
 REPOST=1 posts again), or when the draft leaks a local path, an internal ticket key, or a
 pattern from the optional machine-local file ~/.cursor/mstack/leak-patterns.txt (exit 6),
 or when it has no merge stamp from review-group-gate.py that matches its text (exit 8). The
-internal `[src: ...]` tags are stripped before posting.
+internal `[src: ...]` tags are stripped before posting, and the evidence labels become plain
+words: `[verified]` is dropped, `[inferred]` becomes `(not tested)`, and `[unverified]` becomes
+`(no source found)`.
 """
 import hashlib
 import json
@@ -27,11 +29,25 @@ LEAK = re.compile("|".join([r"/home/[A-Za-z0-9_.-]+/", re.escape(os.environ.get(
 HUNK = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@")
 SOURCE = re.compile(r"\s*\[src: [^\]]*\]")
 ANCHOR = re.compile(r"^### (\S+?):(\d+)(?:-(\d+))?\s*$")
+LABEL_REWRITES = [
+    (re.compile(r"^([ \t]*)\[verified\][ \t]*", re.MULTILINE), r"\1"),
+    (re.compile(r"[ \t]*\[verified\]"), ""),
+    (re.compile(r"\[inferred, ([^\]]*)\]"), r"(not tested: \1)"),
+    (re.compile(r"\[inferred\]"), "(not tested)"),
+    (re.compile(r"\[unverified\]"), "(no source found)"),
+]
 
 
 def die(code, msg):
     print(msg, file=sys.stderr)
     sys.exit(code)
+
+
+def plain(text):
+    text = SOURCE.sub("", text)
+    for pattern, repl in LABEL_REWRITES:
+        text = pattern.sub(repl, text)
+    return text
 
 
 def gh(*args):
@@ -103,7 +119,7 @@ def main():
 
     comments, outside = [], []
     for path, start, end, lines in sections:
-        note = SOURCE.sub("", "\n".join(lines)).strip()
+        note = plain("\n".join(lines)).strip()
         if start <= end and path in files and all(n in files[path] for n in range(start, end + 1)):
             c = {"path": path, "line": end, "side": "RIGHT", "body": note}
             if start != end:
@@ -115,7 +131,7 @@ def main():
         body = body.rstrip() + "\n\n### Outside the diff\n\n" + "\n\n".join(outside)
         print(f"{len(outside)} inline comment(s) are not on diff lines and went into the body", file=sys.stderr)
 
-    payload = {"commit_id": reviewed, "event": event, "body": SOURCE.sub("", body).strip() + "\n", "comments": comments}
+    payload = {"commit_id": reviewed, "event": event, "body": plain(body).strip() + "\n", "comments": comments}
     with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
         json.dump(payload, f)
     try:
