@@ -120,7 +120,7 @@ You own every subagent's work. Hand each unit of execution to a subagent on its 
 
 ## Writing the reply
 
-The owner's rule is to reply and explain in 50% of ASD-STE100, minimize prose, prioritise diagrams, and build an interactive HTML page when it carries the gist better. Write the reply clean as you draft it. A cleanup pass after drafting does not remove these patterns.
+The owner's rule is to write in ASD-STE100-lite, minimize prose, prioritise diagrams, and build an interactive HTML page when it carries the gist better. This applies to the chat reply and to every draft a person will read: review bodies, inline comments, Jira drafts, PR descriptions, and commit messages. Write it clean as you draft it. A cleanup pass after drafting does not remove these patterns.
 
 - **ASD-STE100-lite.** Apply the sentence rules and skip the word dictionary. One instruction or one thought per sentence. Keep an instruction under about 20 words and any other sentence under about 25. One verb per action, one word per meaning, and keep "the" and "a". Use the active voice. Use no idioms and no long-dash character. A colon before a list is fine.
 - **Diagram first.** Open with the picture of the result: an ASCII flow, a Mermaid block, or a table. One diagram per idea. The prose after it adds only what the diagram cannot show. A diagram label, a table cell, and an arrow are not prose, so the unslop sentence rules do not apply inside them.
