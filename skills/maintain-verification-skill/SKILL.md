@@ -57,6 +57,7 @@ Edit only the verification skill's own directory: its `SKILL.md`, `features/`, a
 
 4. **Live pass.** Required even when the source looks clean. Re-prove each feature through the `bench.run` skill function, on one locked GPU, one command at a time. The ISA features go through the `isa.diff` skill function. Three rules hold for the whole pass:
    - Run the `bench.run` doctor before the first run and after any failed run. A busy GPU or a wrong arch stops the run.
+   - A feature is re-proved only when `gates.py` (the `bench.run` scripts) reports `GATES: PASS` on its artifact, and its negative control reports `FAIL` for `correct`.
    - Artifacts survive every cleanup. Check them at their named location.
    - Each run removes its own scratch files and JIT directory. That includes failed attempts.
 

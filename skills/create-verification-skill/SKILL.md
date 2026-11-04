@@ -31,6 +31,7 @@ Answer from the checkout. Ask the user only for what you cannot observe.
 - **Correctness gate.** For each family, find the torch reference and its dtype, the `rtol` and `atol`, the shapes, the edge cases (small M, partial tiles, dtypes), and how the test counts NaN.
 - **Perf.** For each family, find the frozen harness or the perf table of the op test, the reference side (torch, Triton, or a vendor library), the regime (cold-L2, warm, `hipGraph`), and the run count.
 - **Resources.** For each family, find the test command that dumps ISA, for the `isa.diff` skill function.
+- **Ticket families.** When the `tickets` resource is set, list each ticket that touched this library. Read its `brief.md` scope and the `command` field of its `bench_*.json` files. Each op family that a ticket touched gets a feature file, even when the repo groups it under another family. An entry point that exists only on a PR branch is a precondition of its sub-feature. Name the PR and the head SHA.
 - **Gaps.** An op with no test is a gap. Write the test through the `test.author` skill function, or list the gap in the map.
 
 If the checkout does not build or import as it is, fix that first or report it exactly. A skill written against a broken base teaches wrong steps.
@@ -42,7 +43,8 @@ Write `.cursor/skills/verify-<lib>/SKILL.md`. The frontmatter has `name: verify-
 - **Launch.** There is no server. Launch means take one GPU lock and build the kernel once inside its container, through the `bench.run` skill function. Cite the skill function. Do not restate its lock rule.
 - **Doctor.** Cite the `bench.run` doctor. Add the checks that belong to the library: the repo SHA, the build is present, and the arch matches the gate of each op.
 - **Drive.** Write real commands from this repo for each family: test paths, flags, and shapes. Prefer stable handles (flags, test IDs, shape lists) over positions.
-- **Evidence.** Each run writes its artifact through `bench.run`. Write it to the ticket folder when the `tickets` resource is set and the work has a ticket. Write it to the work dir otherwise. State the proof standards:
+- **Evidence.** Each run writes its artifact through `bench.run`. Write it to the ticket folder when the `tickets` resource is set and the work has a ticket. Write it to the work dir otherwise. Use the scripts of the `bench.run` skill (its Scripts section) for the gate, the perf rows, the artifact, and the five gates. Never copy them into the generated skill. Ship only harnesses that belong to the library. State the proof standards:
+  - A number is a result only after `gates.py` reports `GATES: PASS` on its artifact.
   - Correctness comes before perf. A perf row without a passing correctness row on the same run is not a result.
   - Copy every number from the saved stdout.
   - State the perf regime on every row.
@@ -62,8 +64,8 @@ op family ──┬─► <family>-correctness.md   allclose gate, edge cases, N
 
 - Cover the top 3 to 5 op families first. Skip a feature file only when the family has no entry point, and list the gap in the README.
 - Each file has the four H2s of the example: `Sub-features`, `How to get to it (user POV)`, `Driving it with <harness>`, and `Gotchas`.
-- A correctness file keeps a negative control that must fail. A gate that cannot fail tests nothing.
-- A perf file keeps the reference side in the same run, and freezes the harness with its hash.
+- A correctness file keeps a negative control (`checkwrap.py shift`) that must fail. A gate that cannot fail tests nothing. It states `snr_required=1` for an fp8, fp4, or mxfp4 output and runs under `checkwrap.py snr`.
+- A perf file keeps the reference side in the same run, and freezes the harness with its hash. It names the rate column, the peak, and the peak source for `perf.py --rate-col`, and takes the median of 7 runs.
 - An ISA file runs the `isa.diff` skill function. It compiles only and needs no GPU. A GPU run still goes through `bench.run`.
 - If the seed lacks a precondition, the journey reports a failure, and the reason goes in that file's `Gotchas`. Never weaken a journey to make it pass.
 
@@ -74,10 +76,11 @@ The map is the maintained source. A proof that drives one entry point is incompl
 Run its own instructions end to end:
 
 ```
-bench.run lock ──► doctor ──► drive ONE correctness feature ──► artifact ──► cleanup ──► artifact still there
+bench.run lock ──► doctor ──► drive ONE correctness feature ──► artifact ──► gates.py ──► cleanup ──► artifact still there
 ```
 
 - Drive one mapped feature. One is enough. The map lets later runs cover the rest.
+- `gates.py` reports `PASS` for `correct` and `surface` on that artifact. Run its negative control too, and confirm that `correct` reports `FAIL`.
 - After cleanup, confirm the artifact exists at its named location. A cleanup that removes the proof fails this step.
 - Fix what fails. Run the cleanup after each failed attempt.
 - A skill that was never run is a draft, not a deliverable.
