@@ -80,6 +80,7 @@ PICK=$(<Picker cell>)
 - Run one command per GPU at a time. Parallel worktrees may build and check ISA together. They queue for the GPU.
 - Give the run its own `AITER_JIT_DIR`, and each worktree its own. A command that interleaves A and B gives each side its own.
 - Run both sides of a comparison on the same GPU id.
+- Pick once for a series of runs, and reuse that index. The picker samples activity, so a pick right after your own run skips your GPU or finds none.
 - The host is shared. A lock file coordinates only runs that use the same convention. Treat a busy GPU as taken, lock or no lock.
 - If no GPU stays idle, stop and report `NO_GPU`. Do not benchmark on a busy GPU. A compile-only check (the `isa.diff` skill function) still works.
 
@@ -119,22 +120,61 @@ Write `<tickets>/<KEY>/bench_<topic>.json` for ticket work, and `./bench_<topic>
   "host": "<hostname>",
   "container": "<name>",
   "image": "<image:tag>",
-  "gpu": {"hip_index": 0, "arch": "gfx950", "name": "AMD Instinct MI355X"},
-  "versions": {"rocm": "", "torch": "", "hip": "", "triton": ""},
+  "gpu": {"hip_index": "6", "arch": "gfx950"},
+  "versions": {"rocm": "", "torch": "", "hip": "", "triton": "", "flydsl": ""},
   "repos": [{"path": "<repo path>", "sha": "", "dirty": false}],
   "command": "<exact command>",
-  "imports": {"<aiter or flydsl>": "<find_spec origin>"},
-  "correctness": {"passed": true, "rtol": 0, "atol": 0, "nan_count": 0, "snr_db": null, "shapes_checked": 0},
-  "perf": [{"shape": "", "us_median": 0, "runs": 0, "min_us": 0, "max_us": 0, "regime": "cold-L2 | warm | hipGraph"}],
+  "imports": {"<aiter or sglang>": "<find_spec origin>"},
+  "surface": {"wt": "<container path of the tree under test>", "pkg": "aiter", "arch_expected": "gfx950"},
+  "jit_dir": "", "jit_modules": [], "jit_modules_in_jit_dir": true,
+  "correctness": {"passed": true, "verdict": "PASS", "nan_count": 0, "rtol": 0, "atol": 0, "snr_db": null, "snr_required": false, "shapes_checked": 0, "gate": {}},
+  "perf": [{"shape": {}, "side": "", "us_median": 0, "runs": 0, "min_us": 0, "max_us": 0, "spread_pct": 0, "regime": "cold-L2 | warm | hipGraph", "pct_of_peak": 0, "peak_source": ""}],
+  "isa": null,
   "raw_output": "<path to the saved stdout>"
 }
 ```
 
 `snr_db` is the lowest SNR over the shapes checked. It is required for an fp8, fp4, or mxfp4 output, per **principle-correctness-before-speed**, and `null` otherwise. An A/B command adds a `side` field to each `perf` row. Save the full stdout beside it. The JSON must come from the run, never typed by hand.
 
+## Scripts
+
+The scripts in [`scripts/`](scripts/) write the artifact and check it. Every repo-local `verify-<lib>` skill uses them and never copies them. Run each with `--selftest` after an edit.
+
+```
+RUN/ facts.env cmd.txt stdout.log exit_code ──► gate.py ──► gate.json ─┐
+     logs of N runs ────────────────────────► perf.py ──► perf.json ─┼─► artifact.py ──► bench_<topic>.json ──► gates.py
+     isa.diff --json report ─────────────────────────────► isa.json ─┘
+```
+
+| Script | Side | Invocation |
+|---|---|---|
+| `gate.py` | host | `gate.py LOG EXIT_CODE --json RUN/gate.json`. Reads `checkAllclose`, pytest, unittest, NaN, JSON-table, and `[snr_db=X]` lines. `--strict` fails a `warning!` check, for a zero-error predicate. Exit 0 PASS, 1 FAIL, 2 INCONCLUSIVE. Exit 0 of the test alone is not a pass |
+| `checkwrap.py` | container | `python3 checkwrap.py snr\|shift\|zero <script> [args]`, or `... -m pytest <target>`. `snr` prints `[snr_db=X]` for each check and keeps the verdict. `shift` and `zero` are negative controls, and `gate.py` must report FAIL. Spawned and `torchrun` ranks get the same patch through `checkwrap_site/` on `PYTHONPATH`. Wrap `-m torch.distributed.run`, not the `torchrun` binary |
+| `perf.py` | host | `perf.py --col COL --key K1,K2 --regime cold-L2\|warm\|hipGraph [--ms] [--rate-col RCOL --peak P --peak-source SRC] LOG...`. Gives the median, range, and `spread_pct` per row, and `pct_of_peak` with `--rate-col` |
+| `artifact.py` | host | `artifact.py RUN OUT.json`. The facts come from the doctor in `RUN/facts.env` |
+| `gates.py` | host | `gates.py OUT.json [--min-runs 5]`. Checks the five gates below. Exit 0 PASS, 1 FAIL, 2 INCONCLUSIVE |
+| `triton_isa.py` | host | `triton_isa.py TRITON_CACHE_DIR OUT_DIR`. Lays out a Triton cache as an `isa.diff` dump, keyed by kernel symbol |
+
+Copy the scripts into the container once per session: `docker cp <this skill>/scripts/. <container>:/tmp/verify-gpu-kernel-scripts`. Remove that directory at cleanup.
+
+`facts.env` keys: `feature key host container image hip_index arch arch_expected rocm torch hip triton flydsl repo wt pkg sha dirty jit_dir snr_required`. Add one `<pkg>=<find_spec origin>` line per package. `wt` is the container path of the tree under test. `pkg` is the package under test. A multi-GPU run writes `hip_index` as a comma list and holds one lock per index.
+
+## Five gates
+
+A number is a result only after `gates.py` reports `GATES: PASS` on its artifact. A gate marked n/a does not count.
+
+| Gate | PASS when | n/a when |
+|---|---|---|
+| correct | `gate.py` PASS, no NaN line, and `snr_db` present when `snr_required=1` | never |
+| codegen | the `isa.diff` report in the run is OK. A lever claim also needs the ISA change that the lever predicted, per **principle-prove-it-reached-codegen** | the run has no `isa.json` |
+| surface | the arch matches `arch_expected`, `pkg` imports from under `wt`, the repo is clean, and every JIT module comes from `jit_dir`. A run with aiter under test must set `jit_dir` | never |
+| explained | every perf row has `pct_of_peak` and its source, per **principle-explain-the-number** | the run has no perf rows |
+| noise | every perf row is a median of at least 5 runs. The noise floor is the largest row spread. A delta below it is not a result | the run has no perf rows |
+
 ## Proof standards
 
 - Run the real kernel path on a GPU. A CPU fallback, an import check, or a compile does not prove it.
+- Report a number only after `gates.py` passes on its artifact.
 - Correctness comes before perf. A perf row next to a failed or unchecked correctness row is not a result.
 - Confirm the arch, the GPU id, and the repo SHAs in the artifact match what you ran.
 - Confirm the `imports` path is under the worktree you meant to test. A run that imported another checkout is `INCONCLUSIVE`.
