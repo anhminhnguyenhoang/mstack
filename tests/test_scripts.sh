@@ -106,7 +106,7 @@ stop() { printf '{"conversation_id":"%s","status":"%s"}' "$1" "${2:-completed}" 
 env -u CURSOR_CONVERSATION_ID python3 "$CG" freeze "$TK" "$R" test_x.py | grep -q "^NOTE stop hook off" || fail "freeze without a chat id did not say the hook is off"
 CURSOR_CONVERSATION_ID=c1 python3 "$CG" freeze "$TK" "$R" test_x.py >/dev/null
 python3 "$CG" check "$TK" >/dev/null || fail "check red on an unchanged harness"
-art() { printf '{"correctness":{"passed":%s},"repos":[{"path":"/in/container","sha":"%s","dirty":%s}]}' "$2" "$3" "${4:-false}" > "$TK/bench_$1.json"; }
+art() { printf '{"ts":"%s","correctness":{"passed":%s},"repos":[{"path":"/in/container","sha":"%s","dirty":%s}]}' "$(date -u +%FT%T+00:00)" "$2" "$3" "${4:-false}" > "$TK/bench_$1.json"; }
 B=$(git -C "$R" rev-parse HEAD)
 stop c1 | grep -q "B in $R has no bench_" || fail "stop gate passed B with no artifact"
 art b false "$B"; stop c1 | grep -q "has no bench_" || fail "stop gate passed a failed correctness run"
@@ -149,6 +149,43 @@ CURSOR_CONVERSATION_ID=c1 python3 "$CG" done "$TK" >/dev/null
 CURSOR_CONVERSATION_ID=c3 python3 "$CG" freeze "$T/ticket3" "$R" test_x.py >/dev/null
 rm -rf "$T/ticket3"
 [ "$(stop c3)" = '{}' ] && [ ! -e "$T/cache/mstack/climbs/c3" ] || fail "stop hook kept the registration of a deleted ticket"
+tc() { printf '{"ts":"%s","image":"img:1","gpu":{"arch":"gfx950"},"versions":{"rocm":"%s","torch":"2.9"},"correctness":{"passed":true},"repos":[{"path":"/in/container","sha":"%s","dirty":false}]}' "${5:-$(date -u +%FT%T+00:00)}" "$2" "$3" > "$1/bench_$4.json"; }
+PR="$T/pin/repo" PS="$T/pin/s" TP="$T/pin/t1" TP2="$T/pin/t2" TP3="$T/pin/t3" OLD=2000-01-01T00:00:00+00:00
+mkdir -p "$TP" "$TP2" "$TP3"; g init -q "$PR"; echo k0 > "$PR/kernel.py"; echo h0 > "$PR/test_x.py"; g -C "$PR" add -A; g -C "$PR" commit -qm B
+PB=$(git -C "$PR" rev-parse HEAD)
+g -C "$PR" worktree add -q -b pin-s "$PS"; echo k1 > "$PS/kernel.py"; g -C "$PS" commit -qam S
+PSH=$(git -C "$PS" rev-parse HEAD)
+CURSOR_CONVERSATION_ID=c4 python3 "$CG" freeze "$TP" "$PR" test_x.py >/dev/null
+tc "$TP" 6.3 "$PB" a
+[ "$(stop c4)" = '{}' ] || fail "first proof of B refused"
+grep -q '"versions.rocm": "6.3"' "$TP/harness.lock" || fail "first proof of B did not pin its toolchain"
+rm "$TP/bench_a.json"; tc "$TP" 6.3 "$PB" b
+[ "$(stop c4)" = '{}' ] || fail "proof on the pinned toolchain refused"
+rm "$TP/bench_b.json"; tc "$TP" 6.4 "$PB" c
+stop c4 | grep -q "The toolchain changed: versions.rocm 6.3 -> 6.4" || fail "proof on another toolchain not refused, or its field not named"
+stop c4 | grep -q "re-measure B" || fail "refusal does not say to re-freeze and re-measure B"
+tc "$TP" 6.4 "$PB" c "$OLD"
+CURSOR_CONVERSATION_ID=c4 python3 "$CG" freeze "$TP" "$PR" test_x.py >/dev/null
+stop c4 | grep -q "has no bench_" || fail "re-freeze pinned a proof measured before the freeze"
+tc "$TP" 6.4 "$PB" d
+[ "$(stop c4)" = '{}' ] || fail "re-measured B on the new toolchain refused after re-freeze"
+CURSOR_CONVERSATION_ID=c5 python3 "$CG" freeze "$TP2" "$PR" test_x.py >/dev/null
+tc "$TP2" 6.3 "$PB" a
+tc "$TP2" 6.4 "$PSH" s
+python3 "$CG" best "$TP2" "$PS" >/dev/null
+stop c5 | grep -q "The toolchain changed: versions.rocm 6.3 -> 6.4" || fail "S* on another toolchain pinned before B"
+tc "$TP2" 6.3 "$PSH" s
+[ "$(stop c5)" = '{}' ] || fail "S* proof on the pinned toolchain refused"
+TP4="$T/pin/t4"; mkdir -p "$TP4"; CURSOR_CONVERSATION_ID=c7 python3 "$CG" freeze "$TP4" "$PR" test_x.py >/dev/null
+python3 "$CG" best "$TP4" "$PS" >/dev/null; tc "$TP4" 6.4 "$PSH" s
+[ "$(stop c7)" = '{}' ] || fail "S* proof refused while B had no proof"
+tc "$TP4" 6.3 "$PB" a
+stop c7 | grep -q "The toolchain changed: versions.rocm 6.3 -> 6.4" || fail "S* proof pinned the toolchain before B's proof"
+CURSOR_CONVERSATION_ID=c6 python3 "$CG" freeze "$TP3" "$PR" test_x.py >/dev/null
+printf '{"ts":"%s","correctness":{"passed":true},"repos":[{"path":"/in/container","sha":"%s","dirty":false}]}' "$(date -u +%FT%T+00:00)" "$PB" > "$TP3/bench_old.json"
+[ "$(stop c6)" = '{}' ] || fail "artifact without toolchain fields refused before any pin"
+rm "$TP3/bench_old.json"; tc "$TP3" 6.4 "$PB" new
+[ "$(stop c6)" = '{}' ] || fail "a toolchain field the pin lacks counted as a change"
 echo "ok climb-gate"
 
 # --- check.py: a snapshot whose skill matches origin/HEAD is not a branch warning; a stale one is

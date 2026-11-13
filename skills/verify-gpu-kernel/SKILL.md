@@ -58,6 +58,7 @@ hostname
 rocm-smi --showuse --showmemuse
 rocm-smi --showpids
 docker exec <container> bash -c 'rocminfo | grep -m1 gfx; echo $HIP_VISIBLE_DEVICES $AITER_JIT_DIR'
+docker exec <container> bash -c 'cat /opt/rocm/.info/version; python3 -c "import triton; print(triton.__version__)"'
 git -C <repo path> log -1 --format='%h %s'; git -C <repo path> status --short | head
 ```
 
