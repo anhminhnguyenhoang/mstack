@@ -22,6 +22,7 @@ Use this section for a number from a GPU kernel on AMD Instinct (MI300X `gfx942`
 - Use the same GPU id for both sides (`HIP_VISIBLE_DEVICES`, or `ROCR_VISIBLE_DEVICES` inside a container). Different GPUs of one host differ by several percent.
 - Note clocks and power state from `rocm-smi`. Say so when the GPU is not in its normal performance state.
 - Clear the JIT caches so both sides compile fresh, and exclude compile time from the timed region. For FlyDSL and aiter, clear the cache directories the build uses, and check the resolved paths before you delete anything.
+- Finish all of your compiles, builds, and ISA checks before you time, and start none while the timing runs. A FlyDSL compile opens the GPU driver even with `HIP_VISIBLE_DEVICES` empty. Four such compiles made a sparse MLA kernel run about 10 times slower on another GPU. Concurrent compiles also once made a false 5% win on a 20 µs kernel. The build lock in **verify-gpu-kernel** keeps them apart.
 - Record the arch, the ROCm and torch versions, the docker image, and the repo SHAs (each repo in the `repos` resource) for both sides.
 
 **The questions.**
