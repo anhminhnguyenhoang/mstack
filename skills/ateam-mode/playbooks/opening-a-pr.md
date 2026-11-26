@@ -28,13 +28,15 @@ After the sections, attach videos or screenshots when they prove a claim. Full S
 
 `ROCm/aiter`, `ROCm/FlyDSL`, `triton-lang/triton`, and `sgl-project/sglang` are public upstreams. Do not open a PR there unless the human says yes to your question first. Ask once the branch, title, and body are ready. Without a yes, prepare the branch, the title, and the body, then stop. After a yes, open it as a draft like every other PR. A draft on a public upstream is still public.
 
-**PR tool.** Resolve the PR tool before the first PR operation and keep that choice for create, edit, view, watch, and merge. Resolve it per `../references/pr-tool.md`. Record the path and why.
+**PR tool.** Resolve the PR tool before the first PR operation and keep that choice for create, edit, view, watch, and merge. Resolve it per `../references/pr-tool.md`. Record the path and why. Resolve the repo's login from the env file before the first `gh` call or push, and run each `gh` call with `GH_TOKEN=$(gh auth token -u <login>)`, per the Resolution order in that file.
 
 **Built-in PR tool.** When the run provides a built-in PR tool, create (as a draft), edit, and retarget through it, never through a CLI. A CLI-made PR misses what the built-in tool tracks. Use the resolved PR tool for everything the built-in tool does not cover, and for every PR operation when the run has no such tool.
 
 **Size and stacks.** Prefer five narrow PRs to one large PR. A stack is a base-branch chain. The root PR targets trunk. Each child branch rebases onto its parent's exact tip and its PR targets the parent branch. Without a built-in PR tool, per the resolved PR tool, create a child with `gh pr create --draft --base <parent-branch>`, and retarget one with `gh pr edit <pr> --base <parent-branch>`. Branch from trunk only for independent work. Rebase on trunk before substantial stack work.
 
 **Readiness.** Open PRs as drafts, through the PR tool per `../references/pr-tool.md`. Never open one ready. Set `draft: true` on every creation call through a built-in PR tool. With `gh`, pass `--draft`. With MCP, set `draft: true`. If a PR still opens ready, convert it back to a draft, or stop and report when the path cannot (`gh pr ready --undo`, or the new-remote `update_pull_request` with `draft: true`). Marking a PR ready is the human's step. Never run `gh pr ready` or `draft: false` to mark a PR ready. Run `gh pr view <number>` before you refer to PR status.
+
+**Post-push check.** After each push, confirm the remote holds the commit you report. Run `GIT_TERMINAL_PROMPT=0 git ls-remote <push remote> refs/heads/<branch>` and compare its SHA with the SHA you report. For a PR, run `gh pr view <number> --json headRefOid` (or `pull_request_read` `get` on MCP) and compare its head SHA with the same SHA. A mismatch, or an empty result, means the push did not land. Stop and report that artifact as not pushed, with both SHAs. The final report states pushed or not pushed for each artifact the user asked for.
 
 **Babysit.** Opening a PR does not start a babysit. Post the URL and keep building. Finish the phase or stack first. Run a separate babysit pass only when the user asks for one after the whole stack exists. A babysit for each new PR stalls the build and spends checks on commits later waves restart. Push back when feedback drifts from intent.
 
