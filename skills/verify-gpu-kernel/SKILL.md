@@ -71,13 +71,14 @@ Pick over a sampling window, not one reading, then hold a lock for the whole run
 
 ```bash
 PICK=$(<Picker cell>)
-<Lock cell, with $PICK for <id>> docker exec -w <wt> -e PYTHONPATH=<pythonpath> -e HIP_VISIBLE_DEVICES=$PICK <container> <command>
+<Lock cell, with $PICK for <id>> flock -x /tmp/mstack-build-$USER.lock docker exec -w <wt> -e PYTHONPATH=<pythonpath> -e HIP_VISIBLE_DEVICES=$PICK <container> <command>
 ```
 
 - `<wt>` is the container path of the worktree under test, or of the repo root when there is no worktree, per the Worktree paragraph of [`opening-a-pr.md`](../ateam-mode/playbooks/opening-a-pr.md).
 - `<pythonpath>` is `<wt>` for aiter and for a Triton kernel in aiter. For FlyDSL it is `<wt>/python:<wt>/build-fly/python_packages`.
 
 - Run one command per GPU at a time. Parallel worktrees may build and check ISA together. They queue for the GPU.
+- Never compile while a benchmark of yours times, on any GPU of the host. A compile opens the GPU driver and can slow the timed kernel about 10 times. Put `flock -x /tmp/mstack-build-$USER.lock` after the Lock cell, before `docker exec`, for every benchmark. Wrap each build, JIT warmup, and ISA check in `flock -s /tmp/mstack-build-$USER.lock`. Builds then share the lock with each other and wait for the benchmark.
 - Give the run its own `AITER_JIT_DIR`, and each worktree its own. A command that interleaves A and B gives each side its own.
 - Run both sides of a comparison on the same GPU id.
 - Pick once for a series of runs, and reuse that index. The picker samples activity, so a pick right after your own run skips your GPU or finds none.
