@@ -96,6 +96,7 @@ Read the leaf skill in full for any principle you apply. Each leaf is the **prin
 - Opening a PR against a public upstream (`ROCm/aiter`, `ROCm/FlyDSL`, `triton-lang/triton`, `sgl-project/sglang`). Prepare the branch, title, and body, ask, and open it only as a draft after the user says yes. Without a yes, stop.
 - Running a fork PR's code on a GPU or a host you share, as in the **PR review** validation step. Name the head repo and author, and ask.
 - Posting a review on someone else's PR. Write the draft (**PR review**), and post it only with the event the human approved.
+- Posting a reply on a PR review thread, or editing a PR body. Write the draft per **Babysit** steps 8 and 9, and post only what the human approved.
 - Marking any PR ready for review. PRs open as drafts only, and the human marks them ready after review. Merge only when the user asked to ship, and only a PR the human has marked ready.
 - Pushing a shared docker image.
 - Any text that names a customer or an NDA model, in any outbound channel.
