@@ -571,13 +571,14 @@ touch -d '2026-10-30 11:00' "$R/x1/x1.jsonl"
 touch -d '2026-10-01 10:00' "$R/o1/o1.jsonl"
 touch -d '2026-11-05 10:00' "$R/n1/subagents/s2.jsonl" "$R/late1/late1.jsonl"
 [ -x "$MC" ] || fail "mine-chats.py is not executable"
-grep -qiE 'cursor|/home/' "$MC" && fail "mine-chats.py names a Cursor or home path"
+grep -qE '\.cursor/|/home/' "$MC" && fail "mine-chats.py names a Cursor path or a home path"
 python3 "$MC" --root "$R" --since 2026-10-26 --as-of '2026-11-02 16:43:00' --exclude-text EXCLUDE-ME --out "$O" >/dev/null || fail "mine-chats.py exited non-zero"
 python3 "$MC" --root "$R" --since 2026-10-26 --as-of '2026-11-02 16:43:00' --exclude-text EXCLUDE-ME --out "$O2" >/dev/null || fail "mine-chats.py exited non-zero on the second run"
 ids=$(python3 -c 'import csv,sys; print(" ".join(sorted(r["id"] for r in csv.DictReader(open(sys.argv[1])))))' "$O/chats.csv")
 [ "$ids" = "f1 n1" ] || fail "chats.csv ids: $ids"
 col() { python3 -c 'import csv,sys; print({r["id"]: r for r in csv.DictReader(open(sys.argv[1]))}[sys.argv[2]][sys.argv[3]])' "$O/chats.csv" "$1" "$2"; }
 [ "$(col n1 n_user_msgs)" = 2 ] || fail "n1 n_user_msgs: $(col n1 n_user_msgs)"
+[ "$(col n1 n_injected)" = 0 ] || fail "n1 n_injected (a mixed message is typed): $(col n1 n_injected)"
 [ "$(col n1 n_tool_uses)" = 1 ] || fail "n1 n_tool_uses: $(col n1 n_tool_uses)"
 [ "$(col n1 task_calls)" = 1 ] || fail "n1 task_calls: $(col n1 task_calls)"
 [ "$(col n1 n_subagents)" = 1 ] || fail "n1 n_subagents: $(col n1 n_subagents)"
@@ -594,6 +595,46 @@ st() { python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))[sys.argv[
 [ "$(st parse_errors)" = 1 ] || fail "stats parse_errors: $(st parse_errors)"
 [ "$(st unknown_line_shapes)" = 1 ] || fail "stats unknown_line_shapes: $(st unknown_line_shapes)"
 diff -r "$O" "$O2" >/dev/null || fail "two runs with the same flags differ"
+IR="$T/mine/inj" IO="$T/mine/inj-out"
+mkdir -p "$IR"
+python3 - "$IR/i1.jsonl" <<'PY'
+import json, sys
+TS = '<timestamp>Monday, Nov 2, 2026, 11:55 PM (UTC+2)</timestamp>'
+MSGS = [
+    '<manually_attached_skills>\nSkill Name: fixture-skill\n</manually_attached_skills>\nMIXED-NO-QUERY typed words',
+    '<cursor_commands>\n--- Cursor Command: fixture ---\nCMD-BODY\n--- End Command ---\n</cursor_commands>\n<user_query>\nCMD-TYPED\n</user_query>',
+    '<image_files>\nIMG-PATH.png\n</image_files>\n<user_query>IMG-TYPED</user_query>',
+    "I saw 'mstack draft lint is red' in a chat last week. No draft this time.",
+    'mstack draft lint is red on a draft, why does it fire so often?',
+    '<details>kept tag</details> typed words',
+    '<system_reminder>\nREMINDER-BODY\n</system_reminder>',
+    '<system_notification>\nNOTICE-BODY\n</system_notification>',
+    '<side_chat_boundary>\nBOUNDARY-BODY\n</side_chat_boundary>',
+    '<available_subagent_types>\nCATALOG-BODY\n</available_subagent_types>\n<dynamic_tool_catalog>\nTOOLS-BODY\n</dynamic_tool_catalog>',
+    '<manually_attached_skills>\nSkill Name: only-attached\n</manually_attached_skills>',
+    TS,
+    TS + '\n<user_query>\nmstack draft lint is red on a draft changed in the last 20 minutes.\n/tmp/fixture/pr-draft.md:\n- line 7: DRAFT-LINT-BODY, a sentence of 27 words\n</user_query>',
+    TS + '\n<user_query>\nmstack draft lint is red on a draft this chat edited.\n/tmp/fixture/comment-draft.md:\n- 53 prose words, and a slack draft allows at most 50\n</user_query>',
+    TS + '\n\n<user_query>Briefly inform the user about the task result and perform any follow-up actions (if needed).</user_query>',
+    TS + '\n\n<user_query>Perform any necessary follow-up actions in response to the subagent completion above. TASK-LONG-BODY</user_query>',
+    'Your previous response was interrupted. Continue from where you left off.',
+    '',
+]
+with open(sys.argv[1], 'w', encoding='utf-8') as fh:
+    for text in MSGS:
+        fh.write(json.dumps({'role': 'user', 'message': {'content': [{'type': 'text', 'text': text}]}}) + '\n')
+    fh.write(json.dumps({'type': 'turn_ended', 'status': 'completed'}) + '\n')
+PY
+touch -d '2026-10-30 12:00' "$IR/i1.jsonl"
+python3 "$MC" --root "$IR" --since 2026-10-26 --as-of '2026-11-02 16:43:00' --out "$IO" >/dev/null || fail "mine-chats.py exited non-zero on the signature fixtures"
+icol() { python3 -c 'import csv,sys; print(next(csv.DictReader(open(sys.argv[1])))[sys.argv[2]])' "$IO/chats.csv" "$1"; }
+[ "$(icol n_user_msgs)" = 6 ] || fail "signature fixtures n_user_msgs (6 typed): $(icol n_user_msgs)"
+[ "$(icol n_injected)" = 12 ] || fail "signature fixtures n_injected (12 injected): $(icol n_injected)"
+[ "$(icol first_prompt)" = 'MIXED-NO-QUERY typed words' ] || fail "first_prompt is not the first typed message: $(icol first_prompt)"
+bys=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["injected_by_signature"])' "$IO/stats.json")
+[ "$bys" = "{'agent_catalog': 1, 'draft_lint': 2, 'empty': 1, 'harness_continue': 1, 'manually_attached_skills': 1, 'side_chat_boundary': 1, 'system_notification': 1, 'system_reminder': 1, 'task_finished': 2, 'timestamp': 1}" ] || fail "injected_by_signature: $bys"
+for s in 'MIXED-NO-QUERY typed words' 'CMD-TYPED' 'IMG-TYPED' 'No draft this time' 'why does it fire so often' '<details>kept tag</details> typed words'; do grep -qF "$s" "$IO/user_messages.md" || fail "user_messages.md lacks typed text: $s"; done
+for s in REMINDER-BODY NOTICE-BODY BOUNDARY-BODY CATALOG-BODY TOOLS-BODY only-attached CMD-BODY IMG-PATH DRAFT-LINT-BODY TASK-LONG-BODY 'Briefly inform' 'Continue from where' 'Nov 2, 2026'; do grep -qF "$s" "$IO/user_messages.md" && fail "user_messages.md kept injected text: $s"; done
 echo "ok mine-chats"
 
 # --- pstack-updates.py
