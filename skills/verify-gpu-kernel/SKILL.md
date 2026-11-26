@@ -38,10 +38,10 @@ Prefer the container the ticket already names. Look in this order:
 
 1. `<tickets>/<KEY>/.devcontainer/devcontainer.json`, when the `tickets` resource is set. The `--name=` entry in `runArgs` is the container name, and `workspaceMount` is the bind mount.
 2. The repo's default container and mount path in the Repos table of `~/.cursor/mstack/env.md`.
-3. `docker ps --format '{{.Names}}\t{{.Image}}\t{{.Status}}'` for a running container in the env file's Containers table. Match by ticket key or image tag.
+3. `docker ps --format '{{.Names}}\t{{.Image}}\t{{.Status}}'` for a running container that is confirmed in the env file's Containers table. Match by ticket key or image tag.
 4. If none exists, or the default is `not set`, ask the user which container or image to use, or build one through the `env.build` skill function. Do not pick an unrelated container.
 
-Only the containers in the env file's Containers table are the user's. Every other container belongs to another user or another task. Never `docker exec` into it, stop it, or remove it. A stopped container of the user's may be started only with the user's OK.
+Only a container confirmed in the env file's Containers table is the user's, per **setup-mstack**, step 8. Every other container is not the user's. Never `docker exec` into it, stop it, or remove it. A stopped container of the user's may be started only with the user's OK.
 
 Record the container's `torch.__version__`, `torch.version.hip`, and image tag in the artifact:
 
