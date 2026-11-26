@@ -300,7 +300,7 @@ cursor already has a plan mode, and it works with mstack. but personally, i don'
 
 models are configurable. type [`/setup-mstack`](./skills/setup-mstack/SKILL.md). it detects the models you have access to and writes a small always-applied rule mapping each role (code, judgment, the list roles) to a model. every skill reads it and falls back to sensible defaults when the rule is absent, so you override only what you want.
 
-when a default changes, a rule written before the change still pins the old default. delete those role lines, or delete the file, then run `/setup-mstack` again. a rerun keeps any role whose model differs from the default.
+when a default changes, run `/setup-mstack` again. the rule's `# defaults: N` line tells it which values are old defaults, so it replaces those and keeps the roles you chose.
 
 ## Upstream
 

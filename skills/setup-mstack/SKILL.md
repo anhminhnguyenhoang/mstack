@@ -22,7 +22,7 @@ Enumerate the model slugs you can pass to a `Task` subagent in this session. Tha
 
 ### 2. Load current state
 
-The default role-to-model mapping is the rule shape shown in step 5 below. If `~/.cursor/rules/mstack-models.mdc` already exists, read it and treat its `# budget` line and its role values as the current choices. Otherwise start from those defaults. A line whose role is not in step 5, such as `how critics`, is from a retired role. Drop it.
+The default role-to-model mapping is the rule shape shown in step 5 below. If `~/.cursor/rules/mstack-models.mdc` already exists, read it and treat its `# budget` line and its role values as the current choices. Otherwise start from those defaults. The `# defaults: N` line names the set of skill defaults that the rule was written against. This skill's set is `1`. When the rule's number is lower, or the line is missing, a role whose value is an old default of a lower set is not a choice: replace it with the current default and list it in step 3(c). Old defaults by set: none yet. When a default in step 5 changes, raise this skill's set number and list the old value here. A line whose role is not in step 5, such as `how critics`, is from a retired role. Drop it.
 
 ### 3. Budget, map, and confirm
 
@@ -43,7 +43,7 @@ Every real slug written must be in the detected set. `inherit-parent` and `auto`
 
 ### 5. Write the rule
 
-Write `~/.cursor/rules/mstack-models.mdc` with `alwaysApply: true`, a `# budget` line with the chosen label and its target effort, and one line per role, using the same labels ateam-mode uses. Overwrite the whole file so re-runs stay idempotent. Shape:
+Write `~/.cursor/rules/mstack-models.mdc` with `alwaysApply: true`, the `# defaults: 1` line, a `# budget` line with the chosen label and its target effort, and one line per role, using the same labels ateam-mode uses. Overwrite the whole file so re-runs stay idempotent. Shape:
 
 ```
 ---
@@ -52,6 +52,7 @@ alwaysApply: true
 ---
 # mstack model configuration. One line per role. Delete a line to fall back to the skill default.
 # `inherit-parent` or `auto` as a value: the role runs on the parent chat model (omit Task `model`). Alias entries in a list role still count toward its fan-out.
+# defaults: 1
 # budget: large (xhigh)
 feature, refactoring: claude-sonnet-5-5-high
 bug-fix: claude-sonnet-5-5-high
