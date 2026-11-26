@@ -30,5 +30,6 @@ To list the upstream commits after the reviewed point, with their mstack files, 
 | `c742dd6` | skipped | mstack has no orchestrate playbook. | none |
 | `e73df47` | skipped | The commit edits a skill that mstack removed. | none |
 | `a0b0ad9` | skipped | Changes the pstack README only. | none |
+| `2dd5c0c`, `9e278fe` | ported | New `/reframe` skill, verbatim. README and ateam-help rows added. The guide paragraph is not ported, because the mstack guide has no `/sharpen` section to place it after. | `git log --grep 'Upstream-Pstack: 2dd5c0c'` |
 
 Each port commit ends with an `Upstream-Pstack: <sha>` trailer, so the lookup survives a squash merge.
