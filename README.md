@@ -173,6 +173,7 @@ to keep [`/ateam-mode`](./skills/ateam-mode/SKILL.md) on across turns, pick it f
 | [`/bro`](./skills/bro/SKILL.md) | you want the last message restated without kernel or ROCm jargon (VGPR, LDS, MFMA, occupancy, spills). |
 | [`/explain`](./skills/explain/SKILL.md) | you want a quoted line, term, or number explained, or a kernel, design, optimization, lever, idea, or concept. runs only when you type `/explain`. |
 | [`/technical-writing`](./skills/technical-writing/SKILL.md) | layered doc standard (Diátaxis + Google developer style + STE + Global English) for docs, RFCs, readmes, PR descriptions, commit messages. |
+| [`/pstack-updates`](./skills/pstack-updates/SKILL.md) | you want to know what changed upstream in pstack since mstack last reviewed it, and which changes touch the skills mstack ships. lists the new commits, and recommends port, adapt, or skip for each. |
 
 </details>
 
@@ -304,17 +305,7 @@ when a default changes, a rule written before the change still pins the old defa
 
 mstack is a fork of [pstack](https://github.com/cursor/plugins/tree/main/pstack) 0.15.20 by poteto (Lauren Tan), MIT licensed. The pristine import is commit `1491916`. [`LICENSE`](./LICENSE) keeps the upstream copyright notice.
 
-To sync with upstream:
-
-```bash
-git clone https://github.com/cursor/plugins /tmp/cursor-plugins
-mkdir /tmp/mstack-import && git archive 1491916 | tar -x -C /tmp/mstack-import
-diff -ru /tmp/mstack-import /tmp/cursor-plugins/pstack
-```
-
-Port the changes you want by hand. Upstream paths use `pstack`, `poteto-mode`, `poteto-agent`, `poteto-help`, and `setup-pstack`. Map them to `mstack`, `ateam-mode`, `ateam-agent`, `ateam-help`, and `setup-mstack`.
-
-[`UPSTREAM.md`](./UPSTREAM.md) records the last reviewed upstream commit and each decision. To list what is new, run `git log --oneline <reviewed>..origin/main -- pstack` in the upstream clone.
+To list what upstream changed since the last review, run `python3 scripts/pstack-updates.py`. Port the changes you want by hand. [`UPSTREAM.md`](./UPSTREAM.md) holds the reviewed commit, each decision, and the [name map](./UPSTREAM.md#name-map) from upstream names to mstack names.
 
 ## license
 

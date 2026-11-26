@@ -254,7 +254,7 @@ if not args.skills_only:
         if not path.endswith(".md"):
             continue
         for n, line in enumerate(text.splitlines(), 1):
-            if os.path.basename(path) != "README.md" and STALE.search(line):
+            if os.path.basename(path) not in ("README.md", "UPSTREAM.md") and STALE.search(line):
                 stale.append(f"{path}:{n}:{line}")
             if not path.startswith(("skills/architect/", "skills/why/")) and TODO.search(line):
                 todo.append(f"{path}:{n}:{line}")
