@@ -60,12 +60,21 @@ Use this section for host-side Python or C++ in the timed path: launch overhead,
 - **Does it matter?** Report the result as a share of the end-to-end path.
 - **Did it even happen?** Confirm the work ran inside the timed region. Lazy code (generators nobody iterates, results the compiler can discard) and timeouts produce numbers for work that never happened.
 
+## Repeatability gates
+
+GPU question 5, the host-side reproduce check, and any noise floor are repeatability gates. Before the first run, write down three values: the primary threshold the claim needs, a retry budget N, and a fallback acceptance threshold.
+
+- Rerun the whole gate, up to N tries. Stop at the first try that meets the primary threshold.
+- If all N tries miss it, accept the number only at the fallback threshold. Label the verdict `accepted at fallback threshold`.
+- If the number misses the fallback too, the verdict is inconclusive.
+
 ## Report
 
 - Lead with the verdict: faster, slower, no measurable difference, or inconclusive.
 - Give the number with its unit, the run count, the range, and the limiter. For example, "41 µs → 33 µs, median of 50 graph replays per side, range 32 to 35 µs after, bound by `s_waitcnt vmcnt` stalls on the K-tile loads."
 - Call the verdict inconclusive when you claim a difference but cannot name the limiter, when a side ran untuned, or when you could not check questions 4 and 7. Name the gap.
 - Keep a PR body to one primary number, per the **Opening a PR** playbook. Put the runs, range, and limiter evidence in a linked artifact or notes file.
+- For each repeatability gate, give N, every try's result (not only the one that passed), both thresholds, and the one that applied.
 
 ## Other perf material
 
