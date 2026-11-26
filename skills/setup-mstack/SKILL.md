@@ -1,6 +1,6 @@
 ---
 name: setup-mstack
-description: Configure mstack for this user and this machine. Part A sets the model per role and the reasoning budget. Part B detects the GPU hosts, containers, PR tool, Jira sites, and GPU lock, asks the user for each local resource (`repos`, `skills`, `refs`, `tickets`) and each optional module (`kb`, `wavescope`) instead of guessing names or locations, maps the knowledge base's folders to roles, and writes the machine-local env file every kernel skill reads. Part D updates the mstack checkout and lists the stale repo remotes. Use for /setup-mstack, /setup-mstack models, /setup-mstack env, /setup-mstack update, "configure mstack", "update mstack", "mstack budget", or when a skill reports that ~/.cursor/mstack/env.md is missing or a fact in it is `not set`, or offers to add a resource.
+description: Configure mstack for this user and this machine. Part A sets the model per role and the reasoning budget. Part B detects the GPU hosts, containers, PR tool, Jira sites, and GPU lock, asks the user for each local resource (`repos`, `skills`, `refs`, `tickets`) and each optional module (`kb`, `wavescope`, `tla2tools`) instead of guessing names or locations, maps the knowledge base's folders to roles, and writes the machine-local env file every kernel skill reads. Part D updates the mstack checkout and lists the stale repo remotes. Use for /setup-mstack, /setup-mstack models, /setup-mstack env, /setup-mstack update, "configure mstack", "update mstack", "mstack budget", or when a skill reports that ~/.cursor/mstack/env.md is missing or a fact in it is `not set`, or offers to add a resource.
 ---
 
 # Setup mstack
@@ -79,7 +79,7 @@ Tell the user the rule was written and that it applies to new sessions. Re-runni
 
 ## Part B. Environment
 
-Machine facts live in `~/.cursor/mstack/env.md`, never in the plugin. The plugin's [`references/env.md`](../ateam-mode/references/env.md) holds only the schema and the rules. [`references/resources.md`](../ateam-mode/references/resources.md) is the contract for the six resources: `repos`, `skills`, `kb`, `wavescope`, `refs`, and `tickets`. A resource is optional on a machine until a step requires it. Every command in this part is read-only. Never `docker exec`, start, stop, or remove a container here, and never write a token or secret into the file.
+Machine facts live in `~/.cursor/mstack/env.md`, never in the plugin. The plugin's [`references/env.md`](../ateam-mode/references/env.md) holds only the schema and the rules. [`references/resources.md`](../ateam-mode/references/resources.md) is the contract for the seven resources: `repos`, `skills`, `kb`, `wavescope`, `refs`, `tickets`, and `tla2tools`. A resource is optional on a machine until a step requires it. Every command in this part is read-only. Never `docker exec`, start, stop, or remove a container here, and never write a token or secret into the file.
 
 ### 7. Load current state
 
@@ -117,6 +117,7 @@ A row that carries the marker `(probe)` names a conventional tool location, such
 | `kb` | The finder: a directory whose root index file, whatever it is called, links to subfolders that have their own index files, with notes that carry YAML frontmatter (`name`, `description`). It excludes skills dirs and the detected repos. Several: `ambiguous`. None: `not found`. The finder also reads the git remote and proposes the role map (see Map the knowledge base) |
 | `wavescope` | The finder: a git checkout whose remote URL ends in `/WaveScope`, or a directory that holds `src/cli/att.js`. Then `node <path>/src/cli/att.js` with no arguments: `runs` when it prints usage, `does not run` when it fails or `node` is absent. Several: `ambiguous`. None: `not found` |
 | `skills` | `$MSTACK_SKILLS_DIR` when set. Else the folders Cursor loads user skills from, `~/.claude/skills` and `~/.cursor/skills` (probe), whichever hold `*/SKILL.md` with valid frontmatter. The one that resolves the most bindings in [`references/skill-functions.md`](../ateam-mode/references/skill-functions.md) wins. A tie: `ambiguous`. Then run `MSTACK_SKILLS_DIR=<dir> python3 <plugin>/scripts/check.py --skills-only`. It resolves every binding, checks each bound skill's frontmatter, names each installed skill that no skill function binds, and prints the Skills table. A symlinked skill's row carries its repo and checked-out branch. Exit 1 means at least one row is not `ok`. Record the rows either way. None: `not found` |
+| `tla2tools` | The finder: a `.jar` file whose zip listing contains `tlc2/TLC.class`. It reads the listing only and never runs the jar. Several: `ambiguous`. None: `not found` |
 | `refs` | The finder: markdown under the `docs` folder of each detected repo, outside the detected KB and any skills dir, that mentions peaks (`TB/s`, `TFLOPS`, `peak`), roofline, or numerics at least twice. The KB is cited through its roles, so it is never a `refs` source. Each hit is a proposed source with those topics. None: `not found` |
 
 ### 9. Ask what detection cannot settle
@@ -130,8 +131,8 @@ Ask once, in one AskQuestion form. Offer the detected values as options, plus `n
   - `repos`: the checkout path of each repo the user works in, for GPU runs and PRs.
   - `skills`: the skills dir, for skill functions. `$MSTACK_SKILLS_DIR` also sets it.
   - `tickets`: the ticket root, for ticket work.
-- An `ambiguous` resource: show the candidates and let the user pick one, or say none. That covers several checkouts of one repo, several skills dirs that tie, several knowledge bases, several WaveScope checkouts, and ticket folders under several parents.
-- An optional module that was `not found`, once, and it may be skipped. Ask in this same form: "Do you have a knowledge base? Where?", "Do you use WaveScope? Where is its checkout?", and "Do you have reference docs? Where?". For `refs`, ask for a name, a path, and topics (`peaks`, `roofline`, `numerics`) per source, and allow more than one source. mstack works without any of them.
+- An `ambiguous` resource: show the candidates and let the user pick one, or say none. That covers several checkouts of one repo, several skills dirs that tie, several knowledge bases, several WaveScope checkouts, several `tla2tools.jar` files, and ticket folders under several parents.
+- An optional module that was `not found`, once, and it may be skipped. Ask in this same form: "Do you have a knowledge base? Where?", "Do you use WaveScope? Where is its checkout?", "Do you have reference docs? Where?", and "Do you run TLA+ models? Where is tla2tools.jar?". For `refs`, ask for a name, a path, and topics (`peaks`, `roofline`, `numerics`) per source, and allow more than one source. mstack works without any of them.
 - A value that failed its check: a path that is not a git checkout (`git -C <path> rev-parse --show-toplevel`), a path that does not exist, or a WaveScope CLI that does not run. Show the failing test. Ask again, or record `not set`.
 - A search that hit its time limit. Ask for the path directly.
 - Other GPU hosts, one per arch not present here (for example `gfx942` when this host is `gfx950`). For each: SSH alias, default container, and repo path. `none` is a valid answer.
@@ -200,6 +201,9 @@ Overwrite `~/.cursor/mstack/env.md` in full, so a rerun stays idempotent. Carry 
 ## WaveScope
 | Path | CLI runs | Source |
 
+## TLA2tools
+| Resource | Path | Source |
+
 ## Refs
 | Name | Path | Topics | Source |
 
@@ -212,7 +216,7 @@ Overwrite `~/.cursor/mstack/env.md` in full, so a rerun stays idempotent. Carry 
 | Skill function | Skill | Status | Repo | Branch | Warning | Source |
 ```
 
-Each resource has a section named for its key: Repos, Skills, KB, WaveScope, Refs, and Tickets. A resource the user skipped gets one row with `not set` in each value cell. Repos has one row per repo, and Refs has one row per source. KB has one row for the root, the index file, and the remote if any, then one row per role: `hardware`, `method`, `levers`, `failure-modes`, `papers`, `dsl`. Path inside the KB is relative to the root. A role with no folder is `not set`. A skipped KB has `not set` in the root row and in every role row. WaveScope has one row. CLI runs is `runs` or `does not run`. The Dir row of Skills holds the `skills` directory, and `scripts/check.py` reads that row when `$MSTACK_SKILLS_DIR` is unset. The skill function rows of Skills are the rows `check.py --skills-only` prints, plus the Source column. Status is `ok`, `missing`, `malformed`, or `unbound`. Repo is `mstack` for mstack's own skill, `local` for a plain directory, and the repo root for a symlinked skill. A symlink follows its repo's checked-out branch, so a repo that is not on `main` gets a warning.
+Each resource has a section named for its key: Repos, Skills, KB, WaveScope, TLA2tools, Refs, and Tickets. A resource the user skipped gets one row with `not set` in each value cell. Repos has one row per repo, and Refs has one row per source. KB has one row for the root, the index file, and the remote if any, then one row per role: `hardware`, `method`, `levers`, `failure-modes`, `papers`, `dsl`. Path inside the KB is relative to the root. A role with no folder is `not set`. A skipped KB has `not set` in the root row and in every role row. WaveScope has one row. CLI runs is `runs` or `does not run`. TLA2tools has one row, keyed `tla2tools`, with the jar path or `not set`. The Dir row of Skills holds the `skills` directory, and `scripts/check.py` reads that row when `$MSTACK_SKILLS_DIR` is unset. The skill function rows of Skills are the rows `check.py --skills-only` prints, plus the Source column. Status is `ok`, `missing`, `malformed`, or `unbound`. Repo is `mstack` for mstack's own skill, `local` for a plain directory, and the repo root for a symlinked skill. A symlink follows its repo's checked-out branch, so a repo that is not on `main` gets a warning.
 
 The GPU lock row holds commands, not paths. The Picker cell is the full picker command line, which prints one HIP index, as the GPU claim stage of `validate-kernel-pr` runs it. The Lock cell is the lock prefix with `<id>` for that index, such as `flock /tmp/gpu-<id>.lock`. **verify-gpu-kernel** runs both cells as written.
 
@@ -223,7 +227,7 @@ Then write `~/.cursor/rules/mstack-env.mdc`, overwriting it in full:
 description: mstack machine facts
 alwaysApply: true
 ---
-mstack machine facts (hosts, containers, PR tool, Jira sites, GPU lock) and local resources (repos, skills, kb, wavescope, refs, tickets) are in ~/.cursor/mstack/env.md. Read it before a GPU run, a container exec, a PR, or a Jira read. A missing file or a `not set` required fact means: stop and ask the user to run /setup-mstack env. A `not set` optional resource (kb, wavescope, refs) means: skip it, write one line, and ask once per session whether the user has it. A KB role that is `not set` is skipped the same way.
+mstack machine facts (hosts, containers, PR tool, Jira sites, GPU lock) and local resources (repos, skills, kb, wavescope, refs, tickets, tla2tools) are in ~/.cursor/mstack/env.md. Read it before a GPU run, a container exec, a PR, or a Jira read. A missing file or a `not set` required fact means: stop and ask the user to run /setup-mstack env. A `not set` optional resource (kb, wavescope, refs, tla2tools) means: skip it, write one line, and ask once per session whether the user has it. A KB role that is `not set` is skipped the same way.
 ```
 
 ### 11. Report
@@ -234,7 +238,7 @@ List every resource with its value and how it was identified, so the user can co
 | Resource | Value | Identified by |
 ```
 
-The `Identified by` cell is the signature that matched and `detected <date>`, or `user <date>` for a path the user gave, or `not set`. Show the KB role map under the table. Then show the env file as a short table per section. List each fact that is `not set`, and which skill stops on it. List each resource that is `not set` and what skipping it costs: `kb` and `refs` lose cited notes and peaks, `kb` also loses `kb.capture`, `wavescope` loses the annotation loop (trace findings go in the reply or the ticket folder), a KB role that is `not set` loses its notes only, `tickets` stops ticket work, `repos` stops GPU runs and PRs, `skills` stops every skill function. List each Skills row that is not `ok` or has a warning, and the skill function it breaks. Show what changed since the last run.
+The `Identified by` cell is the signature that matched and `detected <date>`, or `user <date>` for a path the user gave, or `not set`. Show the KB role map under the table. Then show the env file as a short table per section. List each fact that is `not set`, and which skill stops on it. List each resource that is `not set` and what skipping it costs: `kb` and `refs` lose cited notes and peaks, `kb` also loses `kb.capture`, `wavescope` loses the annotation loop (trace findings go in the reply or the ticket folder), `tla2tools` skips the model check of `protocol.check`, a KB role that is `not set` loses its notes only, `tickets` stops ticket work, `repos` stops GPU runs and PRs, `skills` stops every skill function. List each Skills row that is not `ok` or has a warning, and the skill function it breaks. Show what changed since the last run.
 
 ## Part C. Verification
 

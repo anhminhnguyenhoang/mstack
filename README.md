@@ -54,8 +54,9 @@ read-only search of your home  (bounded depth, time limit, no .git internals)
 | `refs` | cited peaks, rooflines, numerics | no | markdown in your repos' docs, outside the kb, that covers peaks, roofline, or numerics. setup proposes the topics | peaks come from public sources |
 | `kb` | cited notes, and `kb.capture` for lessons. any name, any layout | no | a directory whose root index links to subfolders that have their own index files, with notes that carry `name` and `description` frontmatter. setup maps its folders to roles, and asks only about a role it cannot match | no cited notes, no `kb.capture` |
 | `wavescope` | the trace annotation loop. an independent checkout with a node cli | no | a checkout whose remote url ends in `/WaveScope`, or a directory that holds `src/cli/att.js`, and the cli runs | trace findings go in the reply or the ticket folder |
+| `tla2tools` | the statechart model check of a synchronization protocol before a timing run. the tla2tools jar | no | a `.jar` file whose listing contains `tlc2/TLC.class` | protocol changes are timed without a model check |
 
-the knowledge base and wavescope are independent, optional modules. mstack works without them.
+the knowledge base, wavescope, and the tla2tools jar are independent, optional modules. mstack works without them.
 
 if setup missed one, answer its question with a path, or rerun `/setup-mstack env`. for the skills dir, you can also set `$MSTACK_SKILLS_DIR`. the report at the end lists every resource, its value, and how it was identified, so you can correct any of them.
 
