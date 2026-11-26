@@ -15,9 +15,10 @@ FILE is relative to ROOT. When ROOT is in a git checkout, B is its HEAD at freez
 file that B tracks counts as changed when a descendant worktree lacks it. The hook acts
 only for the chat that ran freeze (CURSOR_CONVERSATION_ID) and only on a completed stop.
 It sends the turn back when the harness changed, or when the best worktree (S*, else B)
-has no TICKET/bench_*.json with correctness passed at its clean HEAD. It prints {} on any
-error, so a broken lock never blocks an unrelated chat.
+has no TICKET/bench_*.json with correctness passed at its clean HEAD on the pinned
+toolchain. It prints {} on any error, so a broken lock never blocks an unrelated chat.
 """
+import datetime
 import glob
 import hashlib
 import json
@@ -64,7 +65,8 @@ def freeze(ticket, root, files):
     top = git(root, "rev-parse", "--show-toplevel")
     rels = [os.path.relpath(os.path.join(root, f), top) for f in files] if top else files
     top = top or root
-    lock = {"root": top, "base": git(top, "rev-parse", "HEAD"), "files": {r: digest(os.path.join(top, r)) for r in rels}}
+    frozen = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+    lock = {"root": top, "base": git(top, "rev-parse", "HEAD"), "files": {r: digest(os.path.join(top, r)) for r in rels}, "frozen": frozen}
     os.makedirs(ticket, exist_ok=True)
     with open(lock_file(ticket), "w") as f:
         json.dump(lock, f, indent=1)
@@ -109,6 +111,11 @@ def load(ticket):
         return json.load(f)
 
 
+def save(ticket, lock):
+    with open(lock_file(ticket), "w") as f:
+        json.dump(lock, f, indent=1)
+
+
 def pause_file(ticket):
     return os.path.join(ticket, "harness.pause")
 
@@ -120,9 +127,9 @@ def best(ticket, worktree):
     if not head:
         red(f"{worktree} is not a git worktree")
     lock = load(ticket)
+    pin_toolchain(ticket, lock)
     lock["best"] = os.path.abspath(worktree)
-    with open(lock_file(ticket), "w") as f:
-        json.dump(lock, f, indent=1)
+    save(ticket, lock)
     print(f"stop gate checks {lock['best']}")
 
 
@@ -134,18 +141,59 @@ def pause(ticket, reason):
     print("the next stop passes without proof")
 
 
-def proven(ticket, head):
+def toolchain(art):
+    ver = art.get("versions") or {}
+    return {"image": art.get("image"), "gpu.arch": (art.get("gpu") or {}).get("arch"),
+            **{f"versions.{k}": ver.get(k) for k in ("rocm", "torch", "hip", "triton")}}
+
+
+def when(ts):
+    try:
+        t = datetime.datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+        return t if t.tzinfo else t.replace(tzinfo=datetime.timezone.utc)
+    except ValueError:
+        return None
+
+
+def differs(pin, art):
+    return [f"{k} {v} -> {art[k]}" for k, v in pin.items() if v and art[k] and art[k] != v]
+
+
+def proofs(ticket, head, lock):
+    found = []
     for path in glob.glob(os.path.join(ticket, "bench_*.json")):
         try:
             with open(path) as f:
                 art = json.load(f)
-            if art["correctness"]["passed"] is True and any(
+            ts, frozen = when(art.get("ts")), lock.get("frozen") and when(lock["frozen"])
+            if art["correctness"]["passed"] is True and (not frozen or (ts and ts >= frozen)) and any(
                 len(r.get("sha") or "") >= 7 and head.startswith(r["sha"]) and r.get("dirty") is False for r in art["repos"]
             ):
-                return True
+                found.append((ts or datetime.datetime.min.replace(tzinfo=datetime.timezone.utc), toolchain(art)))
         except (OSError, ValueError, KeyError, TypeError, AttributeError):
             continue
-    return False
+    return [t for _, t in sorted(found, key=lambda p: p[0])]
+
+
+def pin_toolchain(ticket, lock):
+    found = lock["base"] and "toolchain" not in lock and proofs(ticket, lock["base"], lock)
+    if found:
+        lock["toolchain"] = found[0]
+        save(ticket, lock)
+
+
+def proof_gap(ticket, head, lock):
+    pin_toolchain(ticket, lock)
+    found = proofs(ticket, head, lock)
+    if not found:
+        return f"has no bench_*.json with correctness passed at {head[:12]}", None
+    pin = lock.get("toolchain")
+    if not pin or any(not differs(pin, t) for t in found):
+        return None
+    return (
+        f"has no bench_*.json with correctness passed at {head[:12]} on the pinned toolchain",
+        f"The toolchain changed: {'; '.join(differs(pin, found[-1]))}. Re-freeze, then re-measure B through the bench.run skill function.",
+    )
 
 
 def proof_message(ticket, lock):
@@ -154,14 +202,15 @@ def proof_message(ticket, lock):
     if not head:
         return None
     dirty = git(target, "status", "--porcelain", "--untracked-files=no")
-    if not dirty and proven(ticket, head):
+    gap = ("has uncommitted changes", None) if dirty else proof_gap(ticket, head, lock)
+    if gap is None:
         return None
     me = os.path.abspath(__file__)
     what = "S*" if lock.get("best") else "B"
-    state = "has uncommitted changes" if dirty else f"has no bench_*.json with correctness passed at {head[:12]}"
+    state, fix = gap
     return "\n".join([
         f"mstack stop gate: {what} in {target} {state}, in {ticket}.",
-        "Commit it and measure it through the bench.run skill function before you end the turn.",
+        fix or "Commit it and measure it through the bench.run skill function before you end the turn.",
         f'To stop on purpose first, such as NO_GPU or a question for the human, log the reason in decision.tsv, run `python3 {me} pause {ticket} "<reason>"`, and end the turn.',
     ])
 
