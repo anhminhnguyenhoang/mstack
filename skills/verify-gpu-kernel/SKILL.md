@@ -86,6 +86,25 @@ PICK=$(<Picker cell>)
 - The host is shared. A lock file coordinates only runs that use the same convention. Treat a busy GPU as taken, lock or no lock.
 - If no GPU stays idle, stop and report `NO_GPU`. Do not benchmark on a busy GPU. A compile-only check (the `isa.diff` skill function) still works.
 
+## Run as the host uid
+
+A container runs as root by default. Root writes root-owned files into the bind-mounted worktree, and then `git worktree remove` fails with Permission denied. Run the command as the host uid.
+
+- Add `-u $(id -u) -e HOME=/tmp/h$(id -u)` right after `docker exec` in the lock command above. The files the run writes then belong to the host uid. `HOME` gives the uid a directory it can write for caches.
+- Check the uid before the first run in each container. The uid run drops the image's supplementary groups, so it may lose the `render` and `video` access that `/dev/kfd` and `/dev/dri` need. `docker exec` cannot add groups. Run:
+
+```bash
+docker exec -u $(id -u) -e HOME=/tmp/h$(id -u) <container> bash -c 'mkdir -p "$HOME" && rocminfo | grep -m1 gfx'
+```
+
+- If that prints no `gfx` line, or a step fails with Permission denied as the uid, the image needs root. Then run as root on a copy of the tree, in the container's `/tmp`, so root never writes into a mount. Copy the tree in:
+
+```bash
+tar -C <worktree path> --exclude=.git -cf - . | docker exec -i <container> bash -c 'mkdir -p /tmp/verify-<run> && tar -C /tmp/verify-<run> -xf -'
+```
+
+- Run the lock line as written, without the `-u` and `HOME` flags, with `<wt>` set to `/tmp/verify-<run>`. `<run>` is a unique name for this run. The artifact's `surface.wt` then holds that path. Delete the copy at Cleanup.
+
 ## Check the import
 
 Run this before the first command of a worktree. It prints the package path and does not import the package, so no JIT build runs. Run it from `/`, not from `<wt>`. `python3 -c` puts the cwd on `sys.path`, so a check from `<wt>` passes even when `PYTHONPATH` is missing.
@@ -185,6 +204,7 @@ A number is a result only after `gates.py` reports `GATES: PASS` on its artifact
 ## Cleanup
 
 - Release the `flock` by letting the command exit. Do not delete another user's lock file.
-- Remove only what this run created: scratch files, its own `AITER_JIT_DIR`, its own worktrees.
+- Remove only what this run created: scratch files, its own `AITER_JIT_DIR`, its own worktrees, and its copy of the tree (`docker exec -u 0 <container> rm -rf /tmp/verify-<run>`).
+- A worktree that already holds root-owned files: as root in the user's container, run `docker exec -u 0 <container> chown -R $(id -u):$(id -g) <wt>`, then `git worktree remove`. `<wt>` is its container path.
 - Keep the ticket folder's artifacts. Cleanup never removes evidence.
 - Never `docker rm`, `docker stop`, `pkill`, or `rocm-smi --reset*` on anything this run did not start.
