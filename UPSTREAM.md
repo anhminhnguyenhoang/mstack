@@ -9,11 +9,17 @@ mstack tracks [pstack](https://github.com/cursor/plugins) at `pstack/`, MIT lice
 | Reviewed through | `1ba91fc` (pstack 0.15.36) |
 | Pristine import | `1491916` (pstack 0.15.20) |
 
-List the upstream commits after the reviewed point:
+To list the upstream commits after the reviewed point, with their mstack files, run `python3 scripts/pstack-updates.py`.
 
-```bash
-git -C /tmp/cursor-plugins log --oneline 1ba91fc..origin/main -- pstack
-```
+## Name map
+
+| Upstream | mstack |
+|----------|--------|
+| `pstack` | `mstack` |
+| `poteto-mode` | `ateam-mode` |
+| `poteto-agent` | `ateam-agent` |
+| `poteto-help` | `ateam-help` |
+| `setup-pstack` | `setup-mstack` |
 
 ## Decisions
 
@@ -26,5 +32,3 @@ git -C /tmp/cursor-plugins log --oneline 1ba91fc..origin/main -- pstack
 | `a0b0ad9` | skipped | Changes the pstack README only. | none |
 
 Each port commit ends with an `Upstream-Pstack: <sha>` trailer, so the lookup survives a squash merge.
-
-The name map for porting is in the Upstream section of [`README.md`](./README.md).

@@ -559,6 +559,93 @@ st() { python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))[sys.argv[
 diff -r "$O" "$O2" >/dev/null || fail "two runs with the same flags differ"
 echo "ok mine-chats"
 
+# --- pstack-updates.py
+UPD="$ROOT/scripts/pstack-updates.py" PD="$T/pu" PS="$T/pu/seed" PM="$T/pu/mstack"
+mkdir -p "$PD" && g init -q --bare "$PD/remote.git" && g -C "$PD/remote.git" config uploadpack.allowFilter true
+g clone -q "$PD/remote.git" "$PS" 2>/dev/null
+pput() { mkdir -p "$PS/${1%/*}"; printf '%s\n' "$2" > "$PS/$1"; }
+pput pstack/.cursor-plugin/plugin.json '{"name": "pstack", "version": "0.1.0"}'
+pput pstack/skills/poteto-mode/SKILL.md 'mode v1'
+pput pstack/skills/poteto-mode/playbooks/old-name.md 'same text'
+pput pstack/agents/poteto-agent.md 'agent v1'
+g -C "$PS" add -A && g -C "$PS" commit -qm base
+base=$(git -C "$PS" rev-parse HEAD)
+pput pstack/skills/poteto-mode/SKILL.md 'mode v2'
+pput pstack/agents/poteto-agent.md 'agent v2'
+pput pstack/.cursor-plugin/plugin.json '{"name": "pstack", "version": "0.2.0"}'
+g -C "$PS" commit -qam 'feat(pstack): mode v2'
+ca=$(git -C "$PS" rev-parse HEAD)
+pput pstack/skills/statechart/SKILL.md 'statechart'
+pput pstack/.cursor-plugin/plugin.json '{"name": "pstack", "version": "0.2.1"}'
+g -C "$PS" add -A && g -C "$PS" commit -qm 'feat(pstack): add statechart'
+cb=$(git -C "$PS" rev-parse HEAD)
+g -C "$PS" mv pstack/skills/poteto-mode/playbooks/old-name.md pstack/skills/poteto-mode/playbooks/new-name.md
+pput pstack/skills/poteto-mode/playbooks/extra.md 'extra'
+pput pstack/.cursor-plugin/plugin.json '{"name": "pstack", "version": "0.3.0"}'
+g -C "$PS" add -A && g -C "$PS" commit -qm 'feat(pstack): rename a playbook and add one'
+cc=$(git -C "$PS" rev-parse HEAD)
+g -C "$PS" push -q origin main
+mkdir -p "$PM/skills/ateam-mode/playbooks" "$PM/agents" "$PM/.cursor-plugin"
+printf '{}\n' > "$PM/.cursor-plugin/plugin.json"
+printf 'mode\n' > "$PM/skills/ateam-mode/SKILL.md"
+printf 'agent\n' > "$PM/agents/ateam-agent.md"
+cat > "$PM/UPSTREAM.md" <<EOF
+# Upstream
+
+| Item | Value |
+|------|-------|
+| Reviewed through | \`${base:0:7}\` (pstack 0.1.0) |
+
+## Name map
+
+| Upstream | mstack |
+|----------|--------|
+| \`pstack\` | \`mstack\` |
+| \`poteto-mode\` | \`ateam-mode\` |
+| \`poteto-agent\` | \`ateam-agent\` |
+
+## Decisions
+
+| Upstream commit | Decision | Reason | mstack commits |
+|-----------------|----------|--------|----------------|
+| \`${cb:0:7}\` | skipped | mstack has no statechart skill. | none |
+EOF
+rc=0; "$UPD" --remote "$PD/remote.git" --clone "$PD/clone" --mstack "$PM" --json > "$PD/out.json" || rc=$?
+[ "$rc" = 2 ] || fail "pstack-updates exit $rc with undecided commits, want 2"
+python3 - "$PD/out.json" "$cb" <<'PY' || fail "pstack-updates --json: $(cat "$PD/out.json")"
+import json, sys
+c = json.load(open(sys.argv[1]))
+files = [{f["upstream"]: (f["mstack"], f["status"]) for f in x["files"]} for x in c]
+assert [x["verdict"] for x in c] == ["review", "skip-candidate", "review"], [x["verdict"] for x in c]
+assert [x["decided"] for x in c] == [False, True, False], [x["decided"] for x in c]
+assert c[1]["sha"] == sys.argv[2]
+assert [x["version"] for x in c] == ["0.2.0", "0.2.1", "0.3.0"], [x["version"] for x in c]
+assert files[1]["pstack/.cursor-plugin/plugin.json"] == (".cursor-plugin/plugin.json", "manifest"), files[1]
+assert files[0]["pstack/skills/poteto-mode/SKILL.md"] == ("skills/ateam-mode/SKILL.md", "shipped"), files[0]
+assert files[0]["pstack/agents/poteto-agent.md"] == ("agents/ateam-agent.md", "shipped"), files[0]
+assert files[1]["pstack/skills/statechart/SKILL.md"] == ("skills/statechart/SKILL.md", "absent"), files[1]
+assert files[2]["pstack/skills/poteto-mode/playbooks/new-name.md"] == ("skills/ateam-mode/playbooks/new-name.md", "missing-in-shipped-skill"), files[2]
+assert files[2]["pstack/skills/poteto-mode/playbooks/extra.md"][1] == "missing-in-shipped-skill", files[2]
+assert not any("old-name" in k for k in files[2]), files[2]
+PY
+rc=0; "$UPD" --no-fetch --remote "$PD/remote.git" --clone "$PD/clone" --mstack "$PM" > "$PD/report.md" || rc=$?
+[ "$rc" = 2 ] || fail "markdown run exit $rc, want 2"
+head -1 "$PD/report.md" | grep -qxF 'pstack 0.1.0 -> 0.3.0 : 3 new commits (2 review, 1 skip-candidate)' || fail "report header: $(head -1 "$PD/report.md")"
+grep -qF "| ${cb:0:7} | 0.2.1 | skip-candidate | yes | feat(pstack): add statechart | 0 |" "$PD/report.md" || fail "report table lacks the decided row"
+grep -qF -- '- `skills/ateam-mode/SKILL.md` shipped (from `pstack/skills/poteto-mode/SKILL.md`)' "$PD/report.md" || fail "report lacks the mapped path of a shipped file"
+rc=0; out=$("$UPD" --no-fetch --remote "$PD/remote.git" --clone "$PD/clone" --mstack "$PM" --since "$cc") || rc=$?
+[ "$rc" = 0 ] && [ "$out" = "pstack up to date at ${cc:0:7}" ] || fail "up-to-date run: exit $rc: $out"
+pput pstack/skills/poteto-mode/SKILL.md 'mode v3'
+g -C "$PS" commit -qam 'fix(pstack): mode v3' && g -C "$PS" push -q origin main
+cnew=$(git -C "$PS" rev-parse HEAD)
+rc=0; out=$("$UPD" --remote "$PD/remote.git" --clone "$PD/clone" --mstack "$PM" --since "$cc" --json) || rc=$?
+[ "$rc" = 2 ] && [ "$(python3 -c 'import json,sys; print([x["sha"] for x in json.load(sys.stdin)])' <<<"$out")" = "['$cnew']" ] || fail "run without --no-fetch missed a new upstream commit: exit $rc"
+rc=0; "$UPD" --remote "$PD/remote.git" --clone "$PD/clone" --mstack "$PM" --since 0000000 >/dev/null 2>&1 || rc=$?
+[ "$rc" = 1 ] || fail "unknown --since exit $rc, want 1"
+rc=0; "$UPD" --bogus >/dev/null 2>&1 || rc=$?
+[ "$rc" = 1 ] || fail "bad flag exit $rc, want 1"
+echo "ok pstack-updates"
+
 # --- verify-gpu-kernel scripts: one run directory through gate, perf, artifact, and the five gates
 VS="$ROOT/skills/verify-gpu-kernel/scripts"
 for s in gate perf gates triton_isa; do python3 "$VS/$s.py" --selftest >/dev/null || fail "$s.py selftest"; done
