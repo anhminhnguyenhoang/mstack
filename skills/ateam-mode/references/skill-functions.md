@@ -9,7 +9,7 @@ The bound skills live outside the plugin, in `<name>/SKILL.md` under the directo
 - Every bound skill resolves to a `SKILL.md` with a `name` and a `description`.
 - A missing skill that only optional skill functions bind prints a NOTE and does not fail. A missing skill that a required skill function binds fails.
 - Every installed skill is bound below or listed under Ignored.
-- No other mstack file names a bound skill. The exceptions are `skills/setup-mstack/SKILL.md`, `scripts/check.py`, and `archive/`. mstack's own skills may be named anywhere.
+- No other mstack file names a bound skill. The exceptions are `skills/setup-mstack/SKILL.md`, `scripts/check.py`, `archive/`, and the statechart test fixtures in `skills/statechart/scripts/test/`. mstack's own skills may be named anywhere.
 
 `/setup-mstack env` runs the same check and records the result in the Skills table of `~/.cursor/mstack/env.md`. With no `skills` resource, the check skips with a note and does not fail.
 

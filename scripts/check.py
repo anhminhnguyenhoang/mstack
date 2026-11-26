@@ -35,7 +35,8 @@ RETIRED_PRINCIPLES = [
 ]
 SKILL_FUNCTIONS = "skills/ateam-mode/references/skill-functions.md"
 NAME_EXEMPT = {SKILL_FUNCTIONS, "skills/setup-mstack/SKILL.md", "scripts/check.py"}
-NAME_EXEMPT_DIRS = ("archive/",)
+# The statechart tests hold verbatim upstream fixtures: TLC recordings with machine paths.
+NAME_EXEMPT_DIRS = ("archive/", "skills/statechart/scripts/test/")
 STALE = re.compile(
     r"poteto-mode|poteto-agent|poteto-help|setup-pstack|pstack-models|cursor-team-kit|/deslop|smci355|silotiger-1164-mhc|mi355x-tritoners|fhuizing",
     re.I,
