@@ -17,7 +17,7 @@ Update the doc in place as levers change status. The decision log is the append-
 One row per lever. IDs are `L1`, `L2`, and so on, or the owner's own scheme.
 
 ```
-| ID | Lever | Screen Δ vs B | Class | In S* | Marginal Δ in S* | Why it failed | Retry if | Evidence |
+| ID | Lever | Screen Δ vs B | Class | In S* | Marginal Δ in S* | Why it failed | Retry if | Evidence | Progress |
 ```
 
 - **ID.** Stable. Never reused.
@@ -29,6 +29,7 @@ One row per lever. IDs are `L1`, `L2`, and so on, or the owner's own scheme.
 - **Why it failed.** The root cause in one line. Empty for a winner.
 - **Retry if.** The condition that makes a retry worth it, or `no`.
 - **Evidence.** A path or SHA to the trace, ISA diff, counter table, or bench log, or a WaveScope note id. Never prose.
+- **Progress.** How far the lever got, apart from its gain: `edits <n>` (commits ahead of B), `built yes|no` (its ISA diff ran), and `measured <bench artifact path, or no>`. Fill it for every lever with edits, and update it at each milestone. The stop rule reads this cell (`playbooks/autonomous-run.md`, step 7).
 
 Example rows, from a past lever search.
 
@@ -45,6 +46,7 @@ Several levers can fail for one root cause. Name the cause in each row, so a rea
 Status, for a lever. Use it in the `result` cell of `decision.tsv`.
 
 - `queued`. Named, with a premise, not yet screened.
+- `stopped-before-measure`. Edits landed or a build ran, then a cap or another stop ended the lever before its first measurement. It has no class, because it claims neither a gain nor a loss. Its Progress cell shows how far it got. Retry if: its budget reaches the first measurement.
 - `winner`. Beat B past noise with the gate green. In W.
 - `loser`. Did not. It has a class.
 - `kept`. In S*.
