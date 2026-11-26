@@ -20,6 +20,10 @@ Work in a scratch folder outside the repo. Write a TLA+ spec and its config. The
 
 The first run installs TLC and Java with mise and needs the network.
 
+## TLC on this machine
+
+When `mise` is absent, set `TLA2TOOLS` to the `tla2tools` resource: the `tla2tools` row of `~/.cursor/mstack/env.md`. Java 11 or later runs TLC. Set `JAVA` when `java` is not on `PATH`.
+
 ## Write the spec
 
 - Write each rule that the reader agrees to as an INVARIANT. A rule can be about a screen, a result, a stored value, or a message. If the model has no variable for a rule, add the variable. Never weaken a rule to make it hold.
@@ -80,3 +84,32 @@ Render charts with Pele. When the user asks for an image, or a chart is too larg
 Give each chart and its Mermaid text to the person who must decide. Add one line for each bug: the rule, the reader's sentence for that rule, and the path as the report numbers it. Say what the model leaves out. Give the command that makes the files again, with a new `--out` folder.
 
 When the model describes code, replay each bug path against the real code, as a test or a live repro, one step for each action. If a bug does not occur, think that the model is wrong until you show that it is not.
+
+## GPU kernel protocols
+
+Model a synchronization protocol before you time a change to it. Use this for:
+
+- A lever that removes a barrier, changes the LDS buffer count, or changes the prefetch depth.
+- A split-K or stream-K counter, or a flag that says a partial result is ready.
+- A persistent-kernel work queue.
+- A multi-GPU dispatch or combine flag.
+- A hang found in runtime forensics.
+- A lock protocol, such as mstack's GPU lock or build lock.
+
+Label the chart in kernel terms. A state is a phase of a wave, a workgroup, or a rank, such as `next tile`, `writing LDS`, `at barrier`, or `reading LDS`. A step is a kernel event, such as `the copy lands` or `both waves pass s_barrier`.
+
+Name each rule after the hazard it stops:
+
+| Hazard | INVARIANT | Rule |
+|---|---|---|
+| Overwrite while read | `NoOverwriteWhileRead` | No buffer is written while another wave reads it. |
+| Read before land | `NoReadBeforeLand` | No wave reads a buffer before its copy lands. |
+| Flag seen before data | `NoFlagBeforeData` | No consumer sees a ready flag before the data it guards. |
+
+The limits:
+
+- The model shows the protocol, not the code. A rule that holds shows the protocol holds in the model. Replay each bug path against the kernel, as in Hand off.
+- Model each `s_waitcnt` as its own state, because a wave stops at that wait.
+- Use 2 to 4 actors and 2 or 3 iterations. The state count grows fast past that.
+
+The ping-pong example is in `references/kernel-pingpong/`. Two waves reuse LDS buffers across K steps, with one `s_barrier` per step. The buffer count is `NBUF`. Run `--config references/kernel-pingpong/nb1.cfg` (`NBUF = 1`) to see the race: the report breaks `NoOverwriteWhileRead` on a 7-step path. Run `nb2.cfg` (`NBUF = 2`) to see the rule hold.
