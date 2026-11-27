@@ -1,6 +1,6 @@
 ---
 name: setup-mstack
-description: Configure mstack for this user and this machine. Part A sets the model per role and the reasoning budget. Part B detects the GPU hosts, containers, PR tool, Jira sites, and GPU lock, asks the user for each local resource (`repos`, `skills`, `refs`, `tickets`) and each optional module (`kb`, `wavescope`) instead of guessing names or locations, maps the knowledge base's folders to roles, and writes the machine-local env file every kernel skill reads. Use for /setup-mstack, /setup-mstack models, /setup-mstack env, "configure mstack", "mstack budget", or when a skill reports that ~/.cursor/mstack/env.md is missing or a fact in it is `not set`, or offers to add a resource.
+description: Configure mstack for this user and this machine. Part A sets the model per role and the reasoning budget. Part B detects the GPU hosts, containers, PR tool, Jira sites, and GPU lock, asks the user for each local resource (`repos`, `skills`, `refs`, `tickets`) and each optional module (`kb`, `wavescope`) instead of guessing names or locations, maps the knowledge base's folders to roles, and writes the machine-local env file every kernel skill reads. Part D updates the mstack checkout and lists the stale repo remotes. Use for /setup-mstack, /setup-mstack models, /setup-mstack env, /setup-mstack update, "configure mstack", "update mstack", "mstack budget", or when a skill reports that ~/.cursor/mstack/env.md is missing or a fact in it is `not set`, or offers to add a resource.
 ---
 
 # Setup mstack
@@ -12,7 +12,7 @@ Two outputs, both outside the plugin, so a plugin update never overwrites them:
 | A. Models | `~/.cursor/rules/mstack-models.mdc` | `ateam-mode` and every routed skill that spawns a subagent |
 | B. Environment | `~/.cursor/mstack/env.md` and `~/.cursor/rules/mstack-env.mdc` | `verify-gpu-kernel`, `references/env.md`, `references/skill-functions.md`, Ticket, Deliver, Opening a PR |
 
-`/setup-mstack` runs A, B, then C. `/setup-mstack models` runs A only. `/setup-mstack env` runs B only. A skill that stops on a missing or `not set` env fact sends the user to `/setup-mstack env`.
+`/setup-mstack` runs A, B, then C. `/setup-mstack models` runs A only. `/setup-mstack env` runs B only. `/setup-mstack update` runs D only. A skill that stops on a missing or `not set` env fact sends the user to `/setup-mstack env`.
 
 ## Part A. Models
 
@@ -89,7 +89,7 @@ If `~/.cursor/mstack/env.md` exists, read it. A fact marked `user` is the user's
 
 Run these and keep the raw output for step 10. A command that fails or is missing is a fact too. Record it as `absent`.
 
-Look it up before you ask. Run `python3 <plugin>/scripts/find-resources.py`, where `<plugin>` is the mstack plugin root, two directories above this SKILL.md. It finds each local resource by what it contains, never by its name or location. It prints each resource as `found`, `ambiguous`, or `not found`, with the signature that matched. `--json` prints the same data.
+Look it up before you ask. Run `python3 <plugin>/scripts/find-resources.py`, where `<plugin>` is the mstack plugin root, two directories above this SKILL.md. It finds each local resource by what it contains, never by its name or location. It prints each resource as `found`, `ambiguous`, or `not found`, with the signature that matched. `--json` prints the same data. It also compares each Repos row's recorded push remote with `git remote -v` and prints the `remotes` lines. Exit 2 means a recorded remote is stale.
 
 Search policy.
 
@@ -228,7 +228,7 @@ mstack machine facts (hosts, containers, PR tool, Jira sites, GPU lock) and loca
 
 ### 11. Report
 
-List every resource with its value and how it was identified, so the user can correct any of them by rerunning `/setup-mstack env`. Use one table.
+List every resource with its value and how it was identified, so the user can correct any of them by rerunning `/setup-mstack env`. Use one table. List each stale Repos row from the finder, with its recorded and its live remote.
 
 ```
 | Resource | Value | Identified by |
@@ -241,3 +241,19 @@ The `Identified by` cell is the signature that matched and `detected <date>`, or
 ### 12. Offer a verification skill (optional)
 
 **verify-gpu-kernel** runs one command on one locked GPU. For each repo in the `repos` resource, check whether it has a `verify-<lib>` skill that maps its op families to correctness, perf, and ISA checks. If not, offer once: "want a repo-local verification skill for <lib>, so agents know what to run per op family and can prove changes work? I can generate one with /create-verification-skill." On yes, invoke `/create-verification-skill` (resolves wherever mstack is installed: workspace, user, or plugin). On no, move on without pushing.
+
+## Part D. Update
+
+### 13. Update the mstack checkout
+
+`/setup-mstack update` runs `scripts/mstack-update.sh` in the mstack checkout, which is `<plugin>`. It writes no env file and changes no remote. It runs these steps in order and stops at the first failure:
+
+```
+preflight ──► WIP backup ──► git pull --ff-only ──► check.py ──► tests ──► find-resources
+(main only)   (tarball)      (origin main)          (gate)       (gate)    (stale rows shown)
+```
+
+1. Run `bash <plugin>/scripts/mstack-update.sh`. It prints the backup path when it makes one.
+2. Report the failed step name, its output, and the backup path. Do not reset, stash, or delete the checkout to get past the failure.
+3. A stale Repos row does not fail the update. Show each `remotes` line. Fix a stale row with `/setup-mstack env`, which re-checks it in step 8. For a `user` row, step 7 shows both values and asks.
+4. Restore a backup with `tar -xzf <backup> -C <plugin>`.
