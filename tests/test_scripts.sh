@@ -791,7 +791,7 @@ RUN="$T/vrun"; mkdir -p "$RUN"
 printf '[snr_db=28.40] fp8 out\n[aiter] q[checkAllclose atol=0.01 rtol=0.01 passed~]\n' > "$RUN/stdout.log"
 echo "op_tests/test_x.py" > "$RUN/cmd.txt"
 for i in 1 2 3 4 5; do printf '| m | us | TB/s |\n|---|---|---|\n| 1 | 1%s | 4.%s |\n' "$i" "$i" > "$RUN/r$i.log"; done
-facts() { printf 'feature=x\nhost=h\ncontainer=c\nimage=i\nhip_index=6\narch=gfx950\narch_expected=%s\nrepo=/r\nwt=/w/t\npkg=aiter\naiter=/w/t/aiter/__init__.py\nsha=abc\ndirty=0\njit_dir=/tmp/j\nsnr_required=1\n' "$1" > "$RUN/facts.env"; }
+facts() { printf 'feature=x\nhost=h\ncontainer=c\nimage=i\nhip_index=6\narch=gfx950\narch_expected=%s\nrepo=/r\nwt=/w/t\npkg=aiter\norigin_aiter=/w/t/aiter/__init__.py\nsha=abc\ndirty=0\njit_dir=/tmp/j\nsnr_required=1\n' "$1" > "$RUN/facts.env"; }
 facts gfx950
 "$VS/gate.py" "$RUN/stdout.log" 0 --json "$RUN/gate.json" >/dev/null || fail "gate.py on a passing log"
 "$VS/perf.py" --col us --key m --regime warm --rate-col TB/s --peak 8.0 --peak-source spec "$RUN"/r*.log > "$RUN/perf.json" || fail "perf.py"
