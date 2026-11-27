@@ -22,7 +22,7 @@ The first run installs TLC and Java with mise and needs the network.
 
 ## TLC on this machine
 
-When `mise` is absent, set `TLA2TOOLS` to the `tla2tools` resource: the `tla2tools` row of `~/.cursor/mstack/env.md`. Java 11 or later runs TLC. Set `JAVA` when `java` is not on `PATH`.
+On this machine, run `scripts/protocol-check.sh` from the mstack repo instead of `<skill dir>/scripts/statechart`. It takes the jar from `TLA2TOOLS`, else from the `tla2tools` row of `~/.cursor/mstack/env.md`. Java 11 or later runs TLC. Set `JAVA` when `java` is not on `PATH`.
 
 ## Write the spec
 
@@ -112,4 +112,4 @@ The limits:
 - Model each `s_waitcnt` as its own state, because a wave stops at that wait.
 - Use 2 to 4 actors and 2 or 3 iterations. The state count grows fast past that.
 
-The ping-pong example is in `references/kernel-pingpong/`. Two waves reuse LDS buffers across K steps, with one `s_barrier` per step. The buffer count is `NBUF`. Run `--config references/kernel-pingpong/nb1.cfg` (`NBUF = 1`) to see the race: the report breaks `NoOverwriteWhileRead` on a 7-step path. Run `nb2.cfg` (`NBUF = 2`) to see the rule hold.
+The ping-pong example is in `references/kernel-pingpong/`. Two waves reuse LDS buffers across K steps, with one `s_barrier` per step. The buffer count is `NBUF`. Run `scripts/protocol-check.sh skills/statechart/references/kernel-pingpong/PingPong.tla --config skills/statechart/references/kernel-pingpong/nb1.cfg --out DIR` (`NBUF = 1`, with a new `DIR`) to see the race: the report breaks `NoOverwriteWhileRead` on a 7-step path. Run it with `nb2.cfg` (`NBUF = 2`) to see the rule hold.
