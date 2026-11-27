@@ -777,3 +777,11 @@ for t in "$ROOT"/tests/test_*.sh; do
   [ "$t" = "$ROOT/tests/test_scripts.sh" ] && continue
   bash "$t" || fail "$(basename "$t")"
 done
+# --- progress record: stopped-before-measure is its own outcome
+LG="$ROOT/skills/ateam-mode/references/lever-doc.md" AR="$ROOT/skills/ateam-mode/playbooks/autonomous-run.md" KH="$ROOT/skills/ateam-mode/playbooks/kernel-hillclimb.md"
+grep -qF '| Evidence | Progress |' "$LG" || fail "lever table has no Progress column"
+grep -qF '`stopped-before-measure`. Edits landed' "$LG" || fail "lever doc has no stopped-before-measure status"
+grep -qF 'stopped-before-measure' "$KH" || fail "kernel hillclimb does not route an unmeasured bet to the status"
+grep -iwE 'caps?' "$AR" | grep -q 'first measurement' || fail "autonomous run has no cap rule"
+grep -qF 'stopped before first measurement' "$AR" || fail "autonomous run reply does not name stopped bets"
+echo "ok progress"
