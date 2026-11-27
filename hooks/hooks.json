@@ -29,6 +29,16 @@
         "command": "python3 \"${CURSOR_PLUGIN_ROOT:-.}/scripts/draft-lint.py\" hook",
         "timeout": 10,
         "loop_limit": 3
+      },
+      {
+        "command": "python3 \"${CURSOR_PLUGIN_ROOT:-.}/scripts/task-lint.py\" hook",
+        "timeout": 10,
+        "loop_limit": 3
+      },
+      {
+        "command": "python3 \"${CURSOR_PLUGIN_ROOT:-.}/scripts/push-check.py\" hook",
+        "timeout": 10,
+        "loop_limit": 3
       }
     ]
   }
