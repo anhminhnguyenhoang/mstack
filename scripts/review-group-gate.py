@@ -22,6 +22,16 @@ inline comment, at most 40 body words for a finding that has an inline comment, 
 draft-lint.py, the card's Validation and Perf lines unchanged, and the pr.review skill's
 own Step 8 gates green, run from the snapshot that produced $WORK. post-review.py posts
 only a draft whose stamp matches it.
+
+merge also keeps the findings ledger, review-ledger-<repo>-<N>.json, beside the draft (or
+review-ledger.json for a draft with another name). The ledger is keyed by finding id (F1, F2, ...).
+Each entry holds the finding's file, line range, normalized title, status (new, still-open,
+or resolved), the head it was last checked at, and the head that first raised it. Every
+finding on the draft is new, so a finding that matches an open entry raised by an earlier head
+(same file with overlapping lines, or the same normalized title) turns merge red. Each
+`still-open @` or `resolved @` line in the draft notes sets the status of the prior finding
+it names, found by its `P<k> <path>:<line>` line in prior-round.md. Only a green merge writes
+the ledger, so a re-run at the same head changes nothing.
 """
 import glob
 import hashlib
@@ -48,6 +58,11 @@ DROP = re.compile(r"^(\w+) DROPPED (duplicate|refuted|out-of-scope|capped) -- (.
 GROUP_TAG = "review-group:"
 DOCS_OR_CONFIG = re.compile(r"(^|/)docs?/|\.(md|rst|txt|csv|json|ya?ml|toml|ini|cfg)$")
 BODY_WORDS = 40
+LEDGER_OPEN = ("new", "still-open")
+NOTE = re.compile(r"^\W*(still-open|resolved) @ ([0-9a-f]{7}): P(\d+)\b", re.M)
+PRIOR = re.compile(r"^\W*P(\d+)\b.*?[\s`]([^\s:`]+):(\d+)(?:-(\d+))?", re.M)
+MARK = re.compile(r"^\s*(?:[-*+]\s+)?(?:🔴|⚠\uFE0F?|📝)\s*")
+TITLE_END = re.compile(r"[:;\u2014\u2013]| -- |\. ")
 
 
 def red(*msgs):
@@ -244,6 +259,80 @@ def sources_of(line, ids, errs, where):
     return srcs
 
 
+def ledger_path(draft):
+    m = re.match(r"review-draft-(.+)-(\d+)", os.path.basename(draft))
+    name = f"review-ledger-{m.group(1)}-{m.group(2)}.json" if m else "review-ledger.json"
+    return os.path.join(os.path.dirname(os.path.abspath(draft)), name)
+
+
+def title_of(line):
+    s = MARK.sub("", SOURCE.sub("", line)).replace("*", "")
+    return " ".join(re.findall(r"[a-z0-9]+", TITLE_END.split(s, 1)[0].lower()))
+
+
+def overlaps(entry, path, start, end):
+    return entry.get("file") is not None and entry["file"] == path and entry["start"] <= end and start <= entry["end"]
+
+
+def matches(entry, locs, title):
+    return any(overlaps(entry, *loc) for loc in locs) or (bool(title) and entry.get("title") == title)
+
+
+def next_id(found):
+    return f"F{max([int(i[1:]) for i in found] + [0]) + 1}"
+
+
+def ledger_update(draft, text, body, items, errs):
+    """Fold this draft into the ledger. items: (finding line, [(path, start, end)]). Appends to errs
+    for each red check and returns the ledger, which the caller writes only when errs is empty."""
+    head = re.search(r"^Reviewed head: *([0-9a-f]{40})\b", text, re.M)
+    if not head:
+        errs.append("the draft has no `Reviewed head:` line, so the findings ledger cannot record its head")
+        return None
+    h = head.group(1)
+    path = ledger_path(draft)
+    ledger = json.load(open(path, encoding="utf-8")) if os.path.isfile(path) else {"findings": {}}
+    found = ledger["findings"]
+    prior_file = os.path.join(os.path.dirname(os.path.abspath(draft)), "prior-round.md")
+    prior = {int(n): (p, int(s), int(e or s)) for n, p, s, e in PRIOR.findall(read(prior_file))} if os.path.isfile(prior_file) else {}
+    for status, sha7, k in NOTE.findall(body):
+        k = int(k)
+        if h[:7] != sha7:
+            errs.append(f"P{k} is marked `{status}` at {sha7}, but the draft checks {h[:7]}")
+        elif k not in prior:
+            errs.append(f"P{k} is not in prior-round.md, which lists each prior finding as `P<k> <path>:<line>`")
+        else:
+            p, s, e = prior[k]
+            hits = [i for i, f in found.items() if f.get("raised") != h and overlaps(f, p, s, e)]
+            if hits:
+                target = max(hits, key=lambda i: (found[i]["status"] in LEDGER_OPEN, int(i[1:])))
+            else:
+                target = next_id(found)
+                found[target] = {"raised": None, "title": "", "file": p, "start": s, "end": e}
+            found[target].update(status=status, head=h)
+    for line, locs in items:
+        title = title_of(line)
+        open_hit = [i for i, f in found.items() if f["status"] in LEDGER_OPEN and f.get("raised") != h and matches(f, locs, title)]
+        if open_hit:
+            o = found[open_hit[0]]
+            errs.append(f"`{line.strip()[:70]}` is marked new, but it matches open {open_hit[0]} ({o['status']}, last checked at {o['head'][:7]}): "
+                        "keep an open finding off the draft, or mark it still-open")
+            continue
+        place = {"file": locs[0][0], "start": locs[0][1], "end": locs[0][2]} if locs else {"file": None, "start": None, "end": None}
+        rec = dict(place, title=title, raised=h)
+        if not any(all(f.get(k) == v for k, v in rec.items()) for f in found.values()):
+            found[next_id(found)] = dict(rec, status="new", head=h)
+    return ledger
+
+
+def write_ledger(path, ledger):
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(ledger, f, indent=2, sort_keys=True)
+        f.write("\n")
+    os.replace(tmp, path)
+
+
 def merge(work, draft, no_review_group):
     errs = []
     labels = sorted(f[:-4] for f in os.listdir(group_path(work)) if f.endswith(".ids") and LABEL.fullmatch(f[:-4]))
@@ -299,12 +388,13 @@ def merge(work, draft, no_review_group):
     tagged = [sources_of(f, ids, errs, "finding") for f in findings]
     cited = {s[len(GROUP_TAG):] for srcs in tagged if srcs for s in srcs if s.startswith(GROUP_TAG)}
     inline = rest[0] if rest else ""
-    inlined = set()
+    inlined, placed = set(), []
     for anchor, section in zip(ANCHOR.findall(inline), re.split(r"^### \S+?:\d+(?:-\d+)?\s*$", inline, flags=re.M)[1:]):
         srcs = sources_of(section, ids, errs, f"inline comment {anchor[0]}:{anchor[1]}")
         if srcs and srcs not in tagged:
             errs.append(f"inline comment {anchor[0]}:{anchor[1]} carries [src: {', '.join(sorted(srcs))}], which matches no finding on the draft")
         inlined.add(srcs)
+        placed.append((anchor[0], int(anchor[1]), int(anchor[2] or anchor[1]), srcs))
     for line, srcs in zip(findings, tagged):
         words = len(re.findall(r"\w\S*", SOURCE.sub("", line)))
         if srcs in inlined and words > BODY_WORDS:
@@ -313,6 +403,8 @@ def merge(work, draft, no_review_group):
     for fid, (_, title) in ids.items():
         if fid not in cited and fid not in dropped:
             errs.append(f"review-group finding {fid} ({title}) is neither on the draft nor dropped with a reason in review-group/dispositions.txt")
+    items = [(line, [(p, s, e) for p, s, e, src in placed if srcs is not None and src == srcs]) for line, srcs in zip(findings, tagged)]
+    ledger = ledger_update(draft, text, body, items, errs)
 
     lint = subprocess.run([sys.executable, os.path.join(ROOT, "scripts", "draft-lint.py"), draft, "--channel", "pr-review"],
                           capture_output=True, text=True)
@@ -342,8 +434,10 @@ def merge(work, draft, no_review_group):
 
     if errs:
         red(*errs)
+    write_ledger(ledger_path(draft), ledger)
     open(draft + ".gate", "w").write(hashlib.sha256(text.encode()).hexdigest() + "\n")
-    print(f"merge gate green: {len(findings)} finding(s), {len(ids)} review-group finding(s) accounted for. Stamped {draft}.gate")
+    print(f"merge gate green: {len(findings)} finding(s), {len(ids)} review-group finding(s) accounted for, "
+          f"{len(ledger['findings'])} ledger entr(ies). Stamped {draft}.gate")
 
 
 def main():

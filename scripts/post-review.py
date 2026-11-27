@@ -8,10 +8,11 @@ the diff moves into the body, because GitHub rejects the whole review otherwise.
 Refuses when the head moved (exit 3), when this user already reviewed that head (exit 5,
 REPOST=1 posts again), or when the draft leaks a local path, an internal ticket key, or a
 pattern from the optional machine-local file ~/.cursor/mstack/leak-patterns.txt (exit 6),
-or when it has no merge stamp from review-group-gate.py that matches its text (exit 8). The
-internal `[src: ...]` tags are stripped before posting, and the evidence labels become plain
-words: `[verified]` is dropped, `[inferred]` becomes `(not tested)`, and `[unverified]` becomes
-`(no source found)`.
+or when the posted text has third-person coaching or a draft-only marker (exit 7, the
+VOICE_PHRASES below), or when it has no merge stamp from review-group-gate.py that matches
+its text (exit 8). The internal `[src: ...]` tags are stripped before posting, and the
+evidence labels become plain words: `[verified]` is dropped, `[inferred]` becomes
+`(not tested)`, and `[unverified]` becomes `(no source found)`.
 """
 import hashlib
 import json
@@ -26,6 +27,18 @@ GH = os.environ.get("GH", "gh")
 LOCAL_PATTERNS = os.path.expanduser(os.environ.get("MSTACK_LEAK_PATTERNS", "~/.cursor/mstack/leak-patterns.txt"))
 EXTRA = [p.strip() for p in open(LOCAL_PATTERNS) if p.strip() and not p.startswith("#")] if os.path.isfile(LOCAL_PATTERNS) else []
 LEAK = re.compile("|".join([r"/home/[A-Za-z0-9_.-]+/", re.escape(os.environ.get("TMPDIR", "/tmp")) + r"/review-pr-", r"\bSILOTIGER-\d+", r"\bROCM-3\d+", *EXTRA]), re.I)
+# Third-person coaching aimed at the reviewer, and the markers that only a draft carries.
+VOICE_PHRASES = (
+    r"\breviewer (?:should|could|might|must|ought|needs? to)\b",
+    r"\bthe reviewer\b",
+    r"\bask the author to\b",
+    r"\bdraft only\b",
+    r"\breview group\b",
+    r"\bdraft notes\b",
+    r"\b(?:round [0-9]+|(?:this|prior|previous|last) round)\b",
+    r"^\W*(?:new|still-open|resolved) @ [0-9a-f]{7}:",
+)
+VOICE = re.compile("|".join(VOICE_PHRASES), re.I)
 HUNK = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@")
 SOURCE = re.compile(r"\s*\[src: [^\]]*\]")
 ANCHOR = re.compile(r"^### (\S+?):(\d+)(?:-(\d+))?\s*$")
@@ -89,6 +102,9 @@ def main():
     leaks = [f"{n}: {line}" for n, line in enumerate(text.splitlines(), 1) if LEAK.search(line)]
     if leaks:
         die(6, "\n".join(leaks) + "\nthe draft leaks a local path or an internal ticket key. Edit it, then post.")
+    voice = [f"{n}: {raw.strip()}" for n, raw in enumerate(text.splitlines(), 1) if VOICE.search(plain(raw))]
+    if voice:
+        die(7, "\n".join(voice) + "\nthe draft has third-person coaching or a draft-only marker. Edit it, then post.")
 
     live = gh("api", f"repos/{repo}/pulls/{pr}", "--jq", ".head.sha").strip()
     if live != reviewed:

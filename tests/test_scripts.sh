@@ -428,6 +428,51 @@ printf 'Reviewed head: %s\nReview (advisory): ✅ NO FINDINGS\nValidation (deter
 W6="$T/work6"; work "$W6"
 printf '{"title": "Fix the a.py bound", "body": "Because b.\\r\\nThe tail is masked."}' > "$W6/pr_meta.json"
 blind "$W6" A m-one "no findings" || fail "a PR body with CRLF line endings broke the blind prompt's hash"
+# findings ledger: a 'new' finding that repeats an open entry stays red until the entry resolves
+LD="$T/ledger"; WL="$T/work-ledger"; mkdir -p "$LD"; work "$WL"
+blind "$WL" A m-one "no findings" && blind "$WL" B m-two "no findings" && cp "$W/independent.txt" "$WL/" && cp "$W/review-group/reader" "$WL/review-group/" || fail "ledger fixture: reviewers or reader"
+L1="$LD/review-draft-o-r-7.md"; LDG="$LD/review-ledger-o-r-7.json"
+third=$(printf 'c%.0s' {1..40}) fourth=$(printf 'd%.0s' {1..40}) fifth=$(printf 'e%.0s' {1..40})
+ldraft() { printf 'Reviewed head: %s\nReview (advisory): ⚠️ NEEDS WORK\nValidation (deterministic): N/A — no runtime surface changed\nPerf (advisory): N/A — no runtime surface changed\n\n%s\n## Inline\n%s\n' "$1" "$2" "$3" > "$L1"; }
+lf() { python3 -c 'import json,sys; f=json.load(open(sys.argv[1]))["findings"]; print(eval(sys.argv[2], {"f": f}))' "$LDG" "$1"; }
+X="⚠️ Off by one in the bound check [src: card]"
+XA="### src/a.py:2-3
+the bound check skips the last element. [src: card]"
+ldraft "$sha" "$X" "$XA"; "$G" merge "$WL" "$L1" >/dev/null || fail "ledger: round one stayed red"
+[ "$(lf 'f["F1"]["status"], f["F1"]["head"] == f["F1"]["raised"] == "'"$sha"'", f["F1"]["file"], f["F1"]["start"], f["F1"]["end"]')" = "('new', True, 'src/a.py', 2, 3)" ] || fail "ledger: round one entry wrong: $(lf 'f')"
+"$G" merge "$WL" "$L1" >/dev/null || fail "ledger: re-merging the same head stayed red"
+[ "$(lf 'sorted(f)')" = "['F1']" ] || fail "ledger: re-merging the same head added an entry: $(lf 'sorted(f)')"
+cp "$LDG" "$T/ledger.before"
+ldraft "$other" "$X" "### src/a.py:3
+the bound check skips the last element. [src: card]"
+red "$G" merge "$WL" "$L1"; cmp -s "$LDG" "$T/ledger.before" || fail "a red merge rewrote the ledger"
+ldraft "$other" "⚠️ Off by one in the bound check [src: card]" "### src/c.py:50
+the same check, in another file. [src: card]"
+red "$G" merge "$WL" "$L1"
+printf -- '- P1 `src/a.py:2-3` (commit %s): Off by one in the bound check\n' "$sha" > "$LD/prior-round.md"
+ldraft "$other" "## Draft notes
+Round headline: 0 new, 1 still-open, 0 resolved
+still-open @ ${other:0:7}: P1, first posted @ ${sha:0:7}" ""
+"$G" merge "$WL" "$L1" >/dev/null || fail "ledger: a still-open note for P1 stayed red"
+[ "$(lf 'f["F1"]["status"], f["F1"]["head"] == "'"$other"'"')" = "('still-open', True)" ] || fail "ledger: P1 not still-open at the new head: $(lf 'f')"
+ldraft "$third" "$X" "### src/a.py:2
+the bound check skips the last element. [src: card]"
+red "$G" merge "$WL" "$L1"
+ldraft "$third" "## Draft notes
+Round headline: 0 new, 0 still-open, 1 resolved
+resolved @ ${third:0:7}: P1, first posted @ ${sha:0:7}" ""
+"$G" merge "$WL" "$L1" >/dev/null || fail "ledger: a resolved note for P1 stayed red"
+[ "$(lf 'f["F1"]["status"]')" = resolved ] || fail "ledger: P1 not resolved: $(lf 'f')"
+ldraft "$fourth" "$X" "### src/a.py:2
+the bound check skips the last element. [src: card]"
+"$G" merge "$WL" "$L1" >/dev/null || fail "ledger: a finding that repeats a resolved entry was refused"
+[ "$(lf 'sorted(f), f["F2"]["status"], f["F2"]["raised"] == "'"$fourth"'"')" = "(['F1', 'F2'], 'new', True)" ] || fail "ledger: no new entry for the re-raised finding: $(lf 'f')"
+ldraft "$fifth" "## Draft notes
+still-open @ ${fourth:0:7}: P1, first posted @ ${sha:0:7}" ""
+red "$G" merge "$WL" "$L1"
+ldraft "$fifth" "## Draft notes
+still-open @ ${fifth:0:7}: P9, first posted @ ${sha:0:7}" ""
+red "$G" merge "$WL" "$L1"
 echo "ok review-group-gate"
 
 # --- post-review.py
@@ -482,6 +527,18 @@ draft "tracked in SILO""TIGER-123"; post "$sha" COMMENT 2>/dev/null; [ $? -eq 6 
 printf '# local only\nsecret-model-[0-9]+\n' > "$H/.cursor/mstack/leak-patterns.txt"
 draft "tuned for Secret-Model-7"; post "$sha" COMMENT 2>/dev/null; [ $? -eq 6 ] || fail "posted a name from leak-patterns.txt"
 draft "tuned for a public model"; post "$sha" COMMENT >/dev/null 2>&1; [ $? -eq 0 ] || fail "leak-patterns.txt blocked a clean draft"
+draft "The reviewer should split this PR."; post "$sha" COMMENT 2>/dev/null; [ $? -eq 7 ] || fail "posted third-person coaching"
+draft "Summary.
+## Inline
+### src/a.py:2
+the reviewer could ask the author to add a test"; post "$sha" COMMENT 2>/dev/null; [ $? -eq 7 ] || fail "posted coaching inside an inline comment"
+draft "Summary.
+
+## Draft notes
+new @ 1234567: finding 1"; post "$sha" COMMENT 2>/dev/null; [ $? -eq 7 ] || fail "posted draft notes"
+draft "Round 2 headline: 1 new, 0 still-open."; post "$sha" COMMENT 2>/dev/null; [ $? -eq 7 ] || fail "posted a round headline"
+draft "This is a draft only, not for posting."; post "$sha" COMMENT 2>/dev/null; [ $? -eq 7 ] || fail "posted a draft-only marker"
+draft "The author should split this PR, and one round-trip is enough."; post "$sha" COMMENT >/dev/null 2>&1; [ $? -eq 0 ] || fail "voice lint refused a clean draft"
 rm "$T/draft.md.gate"; post "$sha" COMMENT 2>/dev/null; [ $? -eq 8 ] || fail "posted a draft with no merge stamp"
 draft "stamped text"; echo "edited after the gate" >> "$T/draft.md"; post "$sha" COMMENT 2>/dev/null; [ $? -eq 8 ] || fail "posted a draft edited after its stamp"
 sed -i 1d "$T/draft.md"; post "$sha" COMMENT 2>/dev/null; [ $? -eq 2 ] || fail "posted a draft with no head line"
