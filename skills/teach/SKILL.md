@@ -18,7 +18,7 @@ orient ──► how (data flow, mapping, waits) ──┐
 1. Pick the few things the reader must understand. Read their goal from the conversation: about to change it, reviewing it, debugging it, or new to it. Skip what they know.
 2. Orient. Read the kernel source, the tile constants, the dtype, and the arch (`gfx942` or `gfx950`). For an API fact, read the reference of the `kernel.write` skill function. Do not recall API facts from memory.
 3. Run `how` for the data flow and `why` for the design reasons. Run them in parallel. Narrow `why` in the ask, for example the tile size, the stage count, or the swizzle. Widen it only when the reasons are the point. Keep its confidence words. A hedge reports real uncertainty.
-4. Draw the data flow as a build-up series. Draw one part per diagram. See Diagrams.
+4. Draw the data flow as a build-up series. Draw one part per diagram. See Diagrams. When the kernel has a pipeline, wave roles, or flags, also draw its control skeleton with the `protocol.check` skill function: who waits for whom, and which buffer each wave touches.
 5. Explain the numbers. See Numbers.
 6. When the structure is rich, write the HTML page. See HTML page.
 7. Reply per Reply.
