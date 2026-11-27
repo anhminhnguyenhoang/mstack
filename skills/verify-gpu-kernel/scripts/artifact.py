@@ -5,23 +5,40 @@ RUN must hold: facts.env (key=value, from the doctor commands), cmd.txt,
 stdout.log, gate.json (gate.py --json). Optional: perf.json (perf.py) and
 isa.json (the isa.diff `--json` report).
 
-usage: artifact.py RUN OUT.json
+usage: artifact.py RUN OUT.json [--climb DIR | --base SHA]
+  --climb DIR  base_sha is the baseline SHA (B) in DIR/harness.lock
+  --base SHA   base_sha is SHA, given directly
+  neither      the artifact has no base_sha
 """
 
+import argparse
 import datetime
+import importlib.util
 import json
 import pathlib
 import re
 import sys
 
 PACKAGES = ("aiter", "sglang")
+CLIMB_GATE = pathlib.Path(__file__).resolve().parents[3] / "scripts" / "climb-gate.py"
 
 
 def optional_json(path, default):
     return json.loads(path.read_text()) if path.exists() else default
 
 
-def main(run, out):
+def climb_baseline(climb):
+    spec = importlib.util.spec_from_file_location("climb_gate", CLIMB_GATE)
+    cg = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cg)
+    lock = cg.lock_file(climb)
+    if not pathlib.Path(lock).is_file():
+        sys.exit(f"no {lock}: freeze the climb first")
+    return (cg.load(climb).get("baseline") or {}).get("sha")
+
+
+def main(run, out, climb=None, base=None):
+    base_sha = base or (climb_baseline(climb) if climb else None)
     f = dict(
         ln.split("=", 1) for ln in (run / "facts.env").read_text().splitlines() if "=" in ln
     )
@@ -67,11 +84,18 @@ def main(run, out):
         "isa": optional_json(run / "isa.json", None),
         "raw_output": str((run / "stdout.log").resolve()),
     }
+    if base_sha:
+        art["base_sha"] = base_sha
     out.write_text(json.dumps(art, indent=2) + "\n")
     print(out)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        sys.exit(__doc__)
-    main(pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2]))
+    p = argparse.ArgumentParser(usage=__doc__)
+    p.add_argument("run", type=pathlib.Path)
+    p.add_argument("out", type=pathlib.Path)
+    g = p.add_mutually_exclusive_group()
+    g.add_argument("--climb")
+    g.add_argument("--base")
+    a = p.parse_args()
+    main(a.run, a.out, a.climb, a.base)

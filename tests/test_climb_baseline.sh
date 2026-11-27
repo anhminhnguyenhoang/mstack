@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Self-checks for the climb baseline record: freeze writes B and why, and the stop gate
-# refuses a B that moved and a bench artifact that names another base_sha. Offline: local repos.
+# Self-checks for the climb baseline record: freeze writes B and why, the stop gate refuses a
+# B that moved and a bench artifact that names another base_sha, and artifact.py writes that
+# base_sha from the lock. Offline: local repos.
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 T=$(mktemp -d)
@@ -103,3 +104,35 @@ art "$TK" s "$SH" "${B:0:12}"
 rm "$TK/bench_s.json"; art "$TK" s "$SH"
 [ "$(stop c5)" = '{}' ] || fail "S* proof with no base_sha refused"
 echo "ok artifact base_sha"
+
+VS="$ROOT/skills/verify-gpu-kernel/scripts"
+run_dir() {
+  mkdir -p "$1"
+  printf 'feature=f\nkey=K\nhost=h\ncontainer=c\nimage=i\nhip_index=0\narch=gfx950\nrepo=%s\nsha=%s\ndirty=0\n' "$2" "$3" > "$1/facts.env"
+  echo op_tests/test_x.py > "$1/cmd.txt"; echo ok > "$1/stdout.log"; echo '{"passed": true, "verdict": "PASS"}' > "$1/gate.json"
+}
+
+R=$(newrepo f); OLD=$(head_of "$R"); echo k1 > "$R/kernel.py"; g -C "$R" commit -qam B; B=$(head_of "$R")
+TK="$T/t6"; CURSOR_CONVERSATION_ID=c6 python3 "$CG" freeze "$TK" "$R" test_x.py --reason "the first commit" >/dev/null
+run_dir "$T/run6" "$R" "$B"
+python3 "$VS/artifact.py" "$T/run6" "$TK/bench_a.json" --base "$OLD" >/dev/null || fail "artifact.py --base"
+stop c6 | grep -q "bench_a.json names baseline $OLD, but the baseline recorded at freeze is $B" || fail "an artifact naming the commit before B passed"
+echo "ok artifact.py refuses another base"
+
+R=$(newrepo g); B=$(head_of "$R"); TK="$T/t7"; run_dir "$T/run7" "$R" "$B"
+CURSOR_CONVERSATION_ID=c7 python3 "$CG" freeze "$TK" "$R" test_x.py --reason "the first commit" >/dev/null
+python3 "$VS/artifact.py" "$T/run7" "$T/plain.json" >/dev/null && python3 -c 'import json,sys; assert "base_sha" not in json.load(open(sys.argv[1]))' "$T/plain.json" || fail "artifact.py without a flag wrote base_sha"
+python3 "$VS/artifact.py" "$T/run7" "$TK/bench_a.json" --climb "$TK" >/dev/null || fail "artifact.py --climb"
+python3 -c 'import json,sys; assert json.load(open(sys.argv[1]))["base_sha"] == sys.argv[2]' "$TK/bench_a.json" "$B" || fail "artifact.py --climb did not write the lock's B"
+[ "$(stop c7)" = '{}' ] || fail "an artifact naming the recorded B was refused"
+echo "ok artifact.py base_sha from the lock"
+
+R=$(newrepo h); B=$(head_of "$R"); TK="$T/t8"; run_dir "$T/run8" "$R" "$B"
+CURSOR_CONVERSATION_ID=c8 python3 "$CG" freeze "$TK" "$R" test_x.py >/dev/null
+edit_lock "$TK/harness.lock" schema -; edit_lock "$TK/harness.lock" baseline -
+python3 "$VS/artifact.py" "$T/run8" "$TK/bench_a.json" --climb "$TK" >/dev/null || fail "artifact.py --climb on an old lock"
+python3 -c 'import json,sys; assert "base_sha" not in json.load(open(sys.argv[1]))' "$TK/bench_a.json" || fail "an old lock wrote base_sha"
+[ "$(stop c8)" = '{}' ] || fail "old-schema climb refused an artifact with no base_sha"
+rc=0; python3 "$VS/artifact.py" "$T/run8" "$T/nolock/bench_a.json" --climb "$T/nolock" >/dev/null 2>"$T/err8" || rc=$?
+[ "$rc" != 0 ] && grep -q "freeze the climb first" "$T/err8" || fail "--climb on a dir with no lock: exit $rc"
+echo "ok artifact.py old lock"

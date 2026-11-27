@@ -155,7 +155,7 @@ Write `<tickets>/<KEY>/bench_<topic>.json` for ticket work, and `./bench_<topic>
 }
 ```
 
-`snr_db` is the lowest SNR over the shapes checked. It is required for an fp8, fp4, or mxfp4 output, per **principle-correctness-before-speed**, and `null` otherwise. An A/B command adds a `side` field to each `perf` row. Save the full stdout beside it. The JSON must come from the run, never typed by hand.
+`snr_db` is the lowest SNR over the shapes checked. It is required for an fp8, fp4, or mxfp4 output, per **principle-correctness-before-speed**, and `null` otherwise. A climb's artifact also carries `base_sha`, the full SHA the gain is measured against, written by `artifact.py --climb`. An A/B command adds a `side` field to each `perf` row. Save the full stdout beside it. The JSON must come from the run, never typed by hand.
 
 ## Scripts
 
@@ -172,7 +172,7 @@ RUN/ facts.env cmd.txt stdout.log exit_code ──► gate.py ──► gate.jso
 | `gate.py` | host | `gate.py LOG EXIT_CODE --json RUN/gate.json`. Reads `checkAllclose`, pytest, unittest, NaN, JSON-table, and `[snr_db=X]` lines. `--strict` fails a `warning!` check, for a zero-error predicate. Exit 0 PASS, 1 FAIL, 2 INCONCLUSIVE. Exit 0 of the test alone is not a pass |
 | `checkwrap.py` | container | `python3 checkwrap.py snr\|shift\|zero <script> [args]`, or `... -m pytest <target>`. `snr` prints `[snr_db=X]` for each check and keeps the verdict. `shift` and `zero` are negative controls, and `gate.py` must report FAIL. Spawned and `torchrun` ranks get the same patch through `checkwrap_site/` on `PYTHONPATH`. Wrap `-m torch.distributed.run`, not the `torchrun` binary |
 | `perf.py` | host | `perf.py --col COL --key K1,K2 --regime cold-L2\|warm\|hipGraph [--ms] [--rate-col RCOL --peak P --peak-source SRC] LOG...`. Gives the median, range, and `spread_pct` per row, and `pct_of_peak` with `--rate-col` |
-| `artifact.py` | host | `artifact.py RUN OUT.json`. The facts come from the doctor in `RUN/facts.env` |
+| `artifact.py` | host | `artifact.py RUN OUT.json --climb DIR`. The facts come from the doctor in `RUN/facts.env`. `--climb` writes `base_sha` from `DIR/harness.lock`. Outside a climb, omit it |
 | `gates.py` | host | `gates.py OUT.json [--min-runs 5]`. Checks the five gates below. Exit 0 PASS, 1 FAIL, 2 INCONCLUSIVE |
 | `triton_isa.py` | host | `triton_isa.py TRITON_CACHE_DIR OUT_DIR`. Lays out a Triton cache as an `isa.diff` dump, keyed by kernel symbol |
 
