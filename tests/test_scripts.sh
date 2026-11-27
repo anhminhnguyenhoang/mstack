@@ -731,3 +731,8 @@ printf '%s\n%s\n' "{\"role\":\"user\",\"message\":{\"content\":[{\"type\":\"text
 edge=$("$LN" "$T/lanes-edge") || fail "lanes.py crashed on a half-written last line"
 [ "$(awk -F'\t' 'NR==2{print $2 "," length($5)}' <<<"$edge")" = "running,60" ] || fail "lanes.py half-written line or 60 character brief: $edge"
 echo "ok lanes"
+
+for t in "$ROOT"/tests/test_*.sh; do
+  [ "$t" = "$ROOT/tests/test_scripts.sh" ] && continue
+  bash "$t" || fail "$(basename "$t")"
+done
