@@ -1,6 +1,6 @@
 ---
 name: statechart
-description: "Check a TLA+ model of a system that moves between states, such as a product flow, a protocol, or a service, and draw it as a Mermaid statechart. The report gives the shortest path to each state that breaks a rule. Use for /statechart, or to show a bug as a path through states."
+description: "Check a TLA+ model of a system that moves between states, such as a sync protocol, an iterative loop, a hand-off between workers, or an item lifecycle, and draw it as a Mermaid statechart. The report gives the shortest path to each state that breaks a rule. Use for /statechart, or to show a bug as a path through states."
 disable-model-invocation: true
 ---
 
@@ -85,31 +85,30 @@ Give each chart and its Mermaid text to the person who must decide. Add one line
 
 When the model describes code, replay each bug path against the real code, as a test or a live repro, one step for each action. If a bug does not occur, think that the model is wrong until you show that it is not.
 
-## GPU kernel protocols
+## Kinds of work
 
-Model a synchronization protocol before you time a change to it. Use this for:
+Model the states of a design before you build, run, or time a change to it. Four kinds of work fit:
 
-- A lever that removes a barrier, changes the LDS buffer count, or changes the prefetch depth.
-- A split-K or stream-K counter, or a flag that says a partial result is ready.
-- A persistent-kernel work queue.
-- A multi-GPU dispatch or combine flag.
-- A hang found in runtime forensics.
-- A lock protocol, such as mstack's GPU lock or build lock.
+| Kind | Examples | Actors | Hazard rules |
+|---|---|---|---|
+| Sync protocol | Barriers and LDS buffers in a kernel, split-K counters, persistent-kernel queues, multi-GPU flags, file locks | Waves, workgroups, ranks, processes | `NoOverwriteWhileRead`, `NoReadBeforeLand`, `NoFlagBeforeData` |
+| Iterative loop | A search, tuning, retry, or optimization loop with phases and a stop rule | The loop and its candidates | `NeverKeepIncorrect`, `StopOnlyWhenDone`, `NoStarvedCandidate` |
+| Hand-off | A parent and its workers, a request and its reply, a wait and its resume | The parent, each worker | `NoWaitOnEndedWorker`, `NoLostResult`, `NoDoubleClaim` |
+| Item lifecycle | A finding across review rounds, a ticket, a PR, a cache entry | Each item | `NoSkippedState`, `NoReopenWithoutCause`, `NoUseOfStale` |
 
-Label the chart in kernel terms. A state is a phase of a wave, a workgroup, or a rank, such as `next tile`, `writing LDS`, `at barrier`, or `reading LDS`. A step is a kernel event, such as `the copy lands` or `both waves pass s_barrier`.
+Name each rule after the hazard it stops, as in the table. A state is a phase of an actor in the reader's words, such as `writing LDS`, `2 kept, 1 open`, or `waiting for worker`. A step is an event, such as `the copy lands`, `a candidate is measured`, or `the worker ends`.
 
-Name each rule after the hazard it stops:
-
-| Hazard | INVARIANT | Rule |
-|---|---|---|
-| Overwrite while read | `NoOverwriteWhileRead` | No buffer is written while another wave reads it. |
-| Read before land | `NoReadBeforeLand` | No wave reads a buffer before its copy lands. |
-| Flag seen before data | `NoFlagBeforeData` | No consumer sees a ready flag before the data it guards. |
+A sync change in a diff makes `scripts/protocol-touch.py <range>` exit 2. The other kinds have no such signal, so model them when a design or a review changes their states, their transitions, or their stop rule.
 
 The limits:
 
-- The model shows the protocol, not the code. A rule that holds shows the protocol holds in the model. Replay each bug path against the kernel, as in Hand off.
-- Model each `s_waitcnt` as its own state, because a wave stops at that wait.
-- Use 2 to 4 actors and 2 or 3 iterations. The state count grows fast past that.
+- The model shows the design, not the code. A rule that holds shows the design holds in the model. Replay each bug path against the real system, as in Hand off.
+- Model each wait as its own state, such as an `s_waitcnt` or a blocked receive, because an actor stops there.
+- Use 2 to 4 actors or candidates, and 2 or 3 iterations. The state count grows fast past that.
 
-The ping-pong example is in `references/kernel-pingpong/`. Two waves reuse LDS buffers across K steps, with one `s_barrier` per step. The buffer count is `NBUF`. Run `scripts/protocol-check.sh skills/statechart/references/kernel-pingpong/PingPong.tla --config skills/statechart/references/kernel-pingpong/nb1.cfg --out DIR` (`NBUF = 1`, with a new `DIR`) to see the race: the report breaks `NoOverwriteWhileRead` on a 7-step path. Run it with `nb2.cfg` (`NBUF = 2`) to see the rule hold.
+Two worked examples ship with the skill. Run each with `scripts/protocol-check.sh <spec> --config <cfg> --view <view.mjs> --out <new dir>`.
+
+| Example | Kind | Configs |
+|---|---|---|
+| `references/kernel-pingpong/` | Sync protocol. Two waves reuse LDS buffers across K steps, with one `s_barrier` per step. | `nb1.cfg` (1 buffer) breaks `NoOverwriteWhileRead` on a 7-step path. `nb2.cfg` (2 buffers) holds. |
+| `references/search-loop/` | Iterative loop. Three candidates are measured, kept or retired, and retried after each keep. | `good.cfg` holds. `plateau-stop.cfg` stops after 2 misses and breaks `StopOnlyWhenDone` on a 3-step path. `no-correctness-gate.cfg` keeps a fast but wrong candidate and breaks `NeverKeepIncorrect` in 1 step. |

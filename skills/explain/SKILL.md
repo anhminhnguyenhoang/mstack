@@ -18,7 +18,7 @@ Every route answers with a visual first. Draw a diagram for one idea, per the **
 |---|---|
 | A quoted line, term, or number from this chat or a draft | Follow the steps under Quoted text. |
 | A GPU kernel or a kernel change | Run the [`teach`](../teach/SKILL.md) skill. |
-| A sync scheme between waves, workgroups, or GPUs | Draw it with the `protocol.check` skill function, so the chart comes from a checked model. |
+| A stateful design: a sync scheme, an iterative loop, a hand-off between workers, or an item lifecycle | Draw it with the `protocol.check` skill function, so the chart comes from a checked model. |
 | A design, a subsystem, or "how does X work" | Run the [`how`](../how/SKILL.md) skill. Add the [`why`](../why/SKILL.md) skill when the reasons are the point. |
 | "Why was this built this way" | Run the [`why`](../why/SKILL.md) skill. |
 | An optimization or a lever that the lever doc records | Read the lever's row in the lever doc, as the [lever doc](../ateam-mode/references/lever-doc.md) defines it. Outside a ticket, the doc sits in the work dir. Explain the premise that queued the lever, its screen result, and its root cause. Explain its numbers per the Numbers section of [`teach`](../teach/SKILL.md). |

@@ -45,6 +45,11 @@ if command -v java >/dev/null 2>&1 && [ -f "$JAR" ]; then
   holds=$(awk '/^## Rules that hold/{getline; print; exit}' "$T/pp2.out")
   [[ $holds == *NoOverwriteWhileRead* ]] || fail "protocol-check nb2 holds: $holds"
   printf 'not a jar\n' > "$T/fake.jar"
+  SL="$ROOT/skills/statechart/references/search-loop"
+  sl() { rc=0; out=$(TLA2TOOLS="$JAR" "$PC" "$SL/SearchLoop.tla" --config "$SL/$1.cfg" --view "$SL/view.mjs" --out "$T/sl-$1" 2>"$T/sl-$1.err") || rc=$?; }
+  sl good; [ "$rc" = 0 ] && grep -q 'NeverKeepIncorrect, StopOnlyWhenDone' <<<"$out" || fail "search-loop good: exit $rc, $(cat "$T/sl-good.err")"
+  sl plateau-stop; [ "$rc" = 1 ] && grep -q 'StopOnlyWhenDone breaks' <<<"$out" && ! grep -q 'NeverKeepIncorrect breaks' <<<"$out" || fail "search-loop plateau-stop: exit $rc"
+  sl no-correctness-gate; [ "$rc" = 1 ] && grep -q 'NeverKeepIncorrect breaks' <<<"$out" && ! grep -q 'StopOnlyWhenDone breaks' <<<"$out" || fail "search-loop no-correctness-gate: exit $rc"
   rc=0; TLA2TOOLS="$T/fake.jar" "$PC" "$SPEC" --config "$PP/nb2.cfg" --out "$T/pp3" >/dev/null 2>"$T/pp3.err" || rc=$?
   [ "$rc" = 1 ] && grep -q sha256 "$T/pp3.err" && [ ! -e "$T/pp3" ] || fail "protocol-check accepted a jar with the wrong checksum (exit $rc)"
 else

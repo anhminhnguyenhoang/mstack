@@ -88,7 +88,7 @@ The default answer is `/ateam-mode`, which runs most of the others when its step
 | Bring a kernel library's verification skill and its feature map back in line with its tests | [`/maintain-verification-skill`](../maintain-verification-skill/SKILL.md) |
 | Start from a Jira ticket key and set up its ticket folder | [`/ticket-init`](../ticket-init/SKILL.md) |
 | Run, reproduce, or benchmark a kernel on the real GPU | [`/verify-gpu-kernel`](../verify-gpu-kernel/SKILL.md) |
-| Model-check a synchronization protocol, such as barriers, LDS buffers, flags, or a lock, and see the shortest path to each bad state before timing a change to it | [`/statechart`](../statechart/SKILL.md) |
+| Model-check a stateful design, such as a sync protocol, an iterative loop and its stop rule, a hand-off between workers, or an item lifecycle, and see the shortest path to each bad state before building or timing a change to it | [`/statechart`](../statechart/SKILL.md) |
 | Vet a performance number before reporting or acting on it | [`/benchmark-checklist`](../benchmark-checklist/SKILL.md) |
 | Find the domain skill for a kernel step: write, optimize, debug, trace, or ship | The skill function bindings in [`skill-functions.md`](../ateam-mode/references/skill-functions.md) |
 | Run a large or cross-cutting change, or one to review after stepping away | [`/figure-it-out`](../figure-it-out/SKILL.md) |
