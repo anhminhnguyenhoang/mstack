@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Harness lock and stop gate for the Kernel hillclimb playbook. check exits 1 on a red gate.
 
-  climb-gate.py freeze <TICKET> <ROOT> <FILE>...   hash the harness files into TICKET/harness.lock
+  climb-gate.py freeze <TICKET> <ROOT> <FILE>... [--chosen-by WHO] [--reason WHY]
+                                                   hash the harness files into TICKET/harness.lock,
+                                                   record B (ROOT's HEAD) with who chose it and why,
                                                    and turn the stop hook on for this chat
   climb-gate.py check  <TICKET>                    re-hash them in ROOT and in every worktree
                                                    of ROOT's repo whose HEAD descends from B
@@ -17,6 +19,10 @@ only for the chat that ran freeze (CURSOR_CONVERSATION_ID) and only on a complet
 It sends the turn back when the harness changed, or when the best worktree (S*, else B)
 has no TICKET/bench_*.json with correctness passed at its clean HEAD on the pinned
 toolchain. It prints {} on any error, so a broken lock never blocks an unrelated chat.
+The lock's baseline record holds B's SHA, who chose it, and why. The stop gate refuses a lock
+with no baseline record, a ROOT whose HEAD is no longer that SHA, and a bench artifact whose
+base_sha names another commit. A pause never covers these. A lock with no schema predates the
+record, so it is checked as before.
 """
 import datetime
 import glob
@@ -29,6 +35,7 @@ import sys
 
 CLIMBS = os.path.join(os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"), "mstack", "climbs")
 CONV = re.compile(r"^[\w-]+$")
+LOCK_SCHEMA = 2  # a lock from schema 2 on carries the baseline record; older locks have no schema key
 
 
 def red(*msgs):
@@ -55,7 +62,18 @@ def registration(conv):
     return os.path.join(CLIMBS, conv) if conv and CONV.match(conv) else None
 
 
-def freeze(ticket, root, files):
+def take(args, flag):
+    if flag not in args:
+        return None
+    i = args.index(flag)
+    if i + 1 == len(args):
+        red(f"{flag} needs a value")
+    value = args[i + 1]
+    del args[i:i + 2]
+    return value
+
+
+def freeze(ticket, root, files, chosen_by=None, reason=None):
     root = os.path.abspath(root)
     if not files:
         red("give at least one FILE")
@@ -66,7 +84,11 @@ def freeze(ticket, root, files):
     rels = [os.path.relpath(os.path.join(root, f), top) for f in files] if top else files
     top = top or root
     frozen = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
-    lock = {"root": top, "base": git(top, "rev-parse", "HEAD"), "files": {r: digest(os.path.join(top, r)) for r in rels}, "frozen": frozen}
+    base = git(top, "rev-parse", "HEAD")
+    kept = previous_baseline(ticket)
+    kept = kept if kept.get("sha") == base else {}
+    baseline = {"sha": base, "chosen_by": chosen_by or kept.get("chosen_by"), "reason": reason or kept.get("reason"), "recorded_at": frozen}
+    lock = {"schema": LOCK_SCHEMA, "root": top, "base": base, "files": {r: digest(os.path.join(top, r)) for r in rels}, "frozen": frozen, "baseline": baseline}
     os.makedirs(ticket, exist_ok=True)
     with open(lock_file(ticket), "w") as f:
         json.dump(lock, f, indent=1)
@@ -77,6 +99,8 @@ def freeze(ticket, root, files):
             f.write(os.path.abspath(ticket))
     else:
         print("NOTE stop hook off: no CURSOR_CONVERSATION_ID in this shell. Run check before each keep.")
+    if not baseline["reason"]:
+        print('NOTE B has no reason: pass --reason "<why this commit is the baseline>" to freeze')
     print(f"frozen {len(rels)} files at {lock['base'] or top}")
 
 
@@ -114,6 +138,13 @@ def load(ticket):
 def save(ticket, lock):
     with open(lock_file(ticket), "w") as f:
         json.dump(lock, f, indent=1)
+
+
+def previous_baseline(ticket):
+    try:
+        return load(ticket).get("baseline") or {}
+    except (OSError, ValueError, AttributeError):
+        return {}
 
 
 def pause_file(ticket):
@@ -159,7 +190,7 @@ def differs(pin, art):
     return [f"{k} {v} -> {art[k]}" for k, v in pin.items() if v and art[k] and art[k] != v]
 
 
-def proofs(ticket, head, lock):
+def at_head(ticket, head, lock):
     found = []
     for path in glob.glob(os.path.join(ticket, "bench_*.json")):
         try:
@@ -169,10 +200,14 @@ def proofs(ticket, head, lock):
             if art["correctness"]["passed"] is True and (not frozen or (ts and ts >= frozen)) and any(
                 len(r.get("sha") or "") >= 7 and head.startswith(r["sha"]) and r.get("dirty") is False for r in art["repos"]
             ):
-                found.append((ts or datetime.datetime.min.replace(tzinfo=datetime.timezone.utc), toolchain(art)))
+                found.append((ts or datetime.datetime.min.replace(tzinfo=datetime.timezone.utc), path, art))
         except (OSError, ValueError, KeyError, TypeError, AttributeError):
             continue
-    return [t for _, t in sorted(found, key=lambda p: p[0])]
+    return sorted(found, key=lambda p: p[0])
+
+
+def proofs(ticket, head, lock):
+    return [toolchain(art) for _, _, art in at_head(ticket, head, lock)]
 
 
 def pin_toolchain(ticket, lock):
@@ -232,6 +267,30 @@ def done(ticket):
     print("stop hook off")
 
 
+def named_other(name, sha):
+    return bool(name) and not (len(str(name)) >= 7 and sha.startswith(str(name)))
+
+
+def baseline_message(ticket, lock):
+    if lock.get("schema", 1) < LOCK_SCHEMA:
+        return None
+    base = lock.get("baseline")
+    if not base:
+        return (f"mstack frozen baseline: {lock_file(ticket)} has no baseline record. Re-freeze B with "
+                f"`python3 {os.path.abspath(__file__)} freeze {ticket} {lock['root']} <file>...`, passing --chosen-by and --reason.")
+    sha = base.get("sha")
+    now = sha and git(lock["root"], "rev-parse", "HEAD")
+    if now and now != sha:
+        return (f"mstack frozen baseline: B in {lock['root']} is at {now}, but the baseline recorded at freeze is {sha}. "
+                f"Check out {sha} in {lock['root']}, or re-freeze at {now} with --reason, then re-measure B.")
+    head = sha and git(lock.get("best") or lock["root"], "rev-parse", "HEAD")
+    for _, path, art in (at_head(ticket, head, lock) if head else []):
+        if named_other(art.get("base_sha"), sha):
+            return (f"mstack frozen baseline: {path} names baseline {art['base_sha']}, but the baseline recorded at freeze is {sha}. "
+                    "Re-measure on the recorded baseline through the bench.run skill function.")
+    return None
+
+
 def stop_message(event):
     reg = registration(event.get("conversation_id"))
     if event.get("status") != "completed" or not reg or not os.path.isfile(reg):
@@ -243,6 +302,9 @@ def stop_message(event):
     lock = load(ticket)
     bad = changed(lock)
     if not bad:
+        wrong = baseline_message(ticket, lock)
+        if wrong:
+            return wrong
         if os.path.isfile(pause_file(ticket)):
             os.remove(pause_file(ticket))
             return None
@@ -269,8 +331,9 @@ def hook():
 
 def main(argv):
     cmd, args = (argv[0], argv[1:]) if argv else ("", [])
+    flags = {"chosen_by": take(args, "--chosen-by"), "reason": take(args, "--reason")} if cmd == "freeze" else {}
     if cmd == "freeze" and len(args) >= 2:
-        freeze(args[0], args[1], args[2:])
+        freeze(args[0], args[1], args[2:], **flags)
     elif cmd == "check" and len(args) == 1:
         check(args[0])
     elif cmd == "best" and len(args) == 2:
