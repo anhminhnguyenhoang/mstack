@@ -10,13 +10,19 @@ A chat is skipped when its file is older than --since, when its first user messa
 --exclude-text, or when its file was written after --as-of. A chat written again after --as-of
 drops out of later runs, so to freeze a live directory, copy it and run on the copy.
 
+Each user message is typed or injected. The harness wraps or replaces the user's words with
+injected text, matched by SIGNATURES. Only typed messages count in n_user_msgs. A message with
+no typed words left counts in n_injected. A mixed message keeps its <user_query> text.
+
 Writes to --out:
   chats.csv         one row per chat, oldest first
-  user_messages.md  per chat: a header, then each user message (1500 characters at most)
-  stats.json        totals, parse errors, unknown line shapes, and the filters used
+  user_messages.md  per chat: a header, then each typed user message (1500 characters at most)
+  stats.json        totals, injected counts by signature, parse errors, unknown line shapes,
+                    and the filters used
 """
 
 import argparse
+import collections
 import csv
 import glob
 import json
@@ -26,6 +32,25 @@ import time
 
 TEXT_LIMIT = 1500
 PROMPT_LIMIT = 300
+
+# One row per injected signature. A wrapper row matches a block the harness puts around the
+# user's words, and the block is removed. A turn row matches the start of the typed words of a
+# whole turn that the harness or a stop hook writes, and the message is injected.
+SIGNATURES = (
+    ('manually_attached_skills', 'wrapper', r'<manually_attached_skills>.*?</manually_attached_skills>'),
+    ('system_reminder', 'wrapper', r'<system_reminder>.*?</system_reminder>'),
+    ('system_notification', 'wrapper', r'<system_notification>.*?</system_notification>'),
+    ('cursor_commands', 'wrapper', r'<cursor_commands>.*?</cursor_commands>'),
+    ('image_files', 'wrapper', r'<image_files>.*?</image_files>'),
+    ('side_chat_boundary', 'wrapper', r'<side_chat_boundary>.*?</side_chat_boundary>'),
+    ('agent_catalog', 'wrapper', r'<(available_subagent_types|available_subagent_models|dynamic_tool_catalog|dynamic_tool_namespaces)>.*?</\1>'),
+    ('timestamp', 'wrapper', r'<timestamp>.*?</timestamp>'),
+    ('draft_lint', 'turn', r'mstack draft lint is red on a draft (changed in the last 20 minutes|this chat edited)\.'),
+    ('task_finished', 'turn', r'Briefly inform the user about the task result|Perform any necessary follow-up actions in response to the subagent completion'),
+    ('harness_continue', 'turn', r'Your previous response was interrupted\. Continue from where you left off\.'),
+)
+TYPED, INJECTED = 'typed', 'injected'
+Msg = collections.namedtuple('Msg', ['kind', 'signature', 'text'])
 
 
 def load(path, stats):
@@ -57,12 +82,25 @@ def text_of(blocks):
     return '\n'.join(b['text'] for b in blocks if b.get('type') == 'text' and isinstance(b.get('text'), str))
 
 
-def query_text(raw):
-    """The typed text: the <user_query> body, else the message with injected blocks removed."""
+def classify(raw):
+    """Return a Msg. TYPED carries the typed words. INJECTED carries the signature that made the
+    whole message injected, or 'empty' when no words and no wrapper remain."""
     found = re.findall(r'<user_query>(.*?)</user_query>', raw, re.DOTALL)
-    if found:
-        return '\n'.join(found).strip()
-    return re.sub(r'<([a-z_]+)>.*?</\1>', '', raw, flags=re.DOTALL).strip()
+    body = '\n'.join(found) if found else raw
+    hit = None
+    for name, kind, pattern in SIGNATURES:
+        if kind != 'wrapper':
+            continue
+        if hit is None and re.search(pattern, body, re.DOTALL):
+            hit = name
+        body = re.sub(pattern, '', body, flags=re.DOTALL)
+    body = body.strip()
+    if not body:
+        return Msg(INJECTED, hit or 'empty', '')
+    for name, kind, pattern in SIGNATURES:
+        if kind == 'turn' and re.match(pattern, body):
+            return Msg(INJECTED, name, '')
+    return Msg(TYPED, None, body)
 
 
 def attached_skills(raw):
@@ -104,6 +142,7 @@ def main():
     files = {os.path.splitext(os.path.basename(p))[0]: p for p in paths}
     mtime = {cid: os.path.getmtime(p) for cid, p in files.items()}
     chats, excluded = [], []
+    by_signature = collections.Counter()
     for cid in sorted(files, key=lambda c: (mtime[c], c)):
         if mtime[cid] < since or not kept(mtime[cid]):
             continue
@@ -117,22 +156,26 @@ def main():
         for s in subs:
             load(s, stats)
         tools = [b for _, blocks in msgs for b in blocks if b.get('type') == 'tool_use']
-        texts = [query_text(r) for r in raws]
+        msgs_typed = [classify(r) for r in raws]
+        texts = [m.text for m in msgs_typed if m.kind == TYPED]
+        injected = [m.signature for m in msgs_typed if m.kind == INJECTED]
+        by_signature.update(injected)
         chats.append({
             'id': cid,
             'mtime': time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(mtime[cid])),
-            'n_user_msgs': len(raws),
+            'n_user_msgs': len(texts),
+            'n_injected': len(injected),
             'n_assistant_msgs': sum(1 for role, _ in msgs if role == 'assistant'),
             'n_tool_uses': len(tools),
             'attached_skills': ';'.join(dict.fromkeys(n for r in raws for n in attached_skills(r))),
-            'first_prompt': ' '.join(next((t for t in texts if t), '').split())[:PROMPT_LIMIT],
+            'first_prompt': ' '.join(next(iter(texts), '').split())[:PROMPT_LIMIT],
             'n_subagents': len(subs),
             'task_calls': sum(is_task(b) for b in tools),
             'texts': texts,
         })
 
     os.makedirs(args.out, exist_ok=True)
-    cols = ['id', 'mtime', 'n_user_msgs', 'n_assistant_msgs', 'n_tool_uses', 'attached_skills',
+    cols = ['id', 'mtime', 'n_user_msgs', 'n_injected', 'n_assistant_msgs', 'n_tool_uses', 'attached_skills',
             'first_prompt', 'n_subagents', 'task_calls']
     with open(os.path.join(args.out, 'chats.csv'), 'w', newline='', encoding='utf-8') as fh:
         w = csv.writer(fh)
@@ -144,8 +187,7 @@ def main():
         for c in chats:
             fh.write(f"## {c['id']} | {c['mtime']} | {c['first_prompt'][:80]}\n\n")
             for i, text in enumerate(c['texts'], 1):
-                if text:
-                    fh.write(f'**msg {i}**\n\n{clip(text)}\n\n')
+                fh.write(f'**msg {i}**\n\n{clip(text)}\n\n')
 
     with open(os.path.join(args.out, 'stats.json'), 'w', encoding='utf-8') as fh:
         json.dump({
@@ -155,6 +197,8 @@ def main():
             'n_parent_chats': len(chats),
             'n_subagent_files': sum(c['n_subagents'] for c in chats),
             'n_user_msgs': sum(c['n_user_msgs'] for c in chats),
+            'n_injected_msgs': sum(c['n_injected'] for c in chats),
+            'injected_by_signature': dict(sorted(by_signature.items())),
             'parse_errors': stats['parse_errors'],
             'unknown_line_shapes': stats['unknown_line_shapes'],
         }, fh, indent=2)
