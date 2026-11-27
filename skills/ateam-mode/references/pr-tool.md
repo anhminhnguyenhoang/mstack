@@ -10,8 +10,23 @@ built-in PR tool ─► gh ─► GitHub MCP namespace ─► stop
 
 ## Resolution order
 
+Before the first `gh` call or push on a repo, resolve its identity from `~/.cursor/mstack/env.md`:
+
+- The org is the owner of the repo's PR target, from the Repos table.
+- The login is the account that the PR tool row for that host or org names. The row gives it as `gh auth token -u <login>` or as `signed in as <login>`.
+
+If the env file is missing, or the org or login is `not set`, stop and ask the user to run `/setup-mstack env`.
+
+Run each `gh` command with its own token. The active `gh` account is not a fallback.
+
+```
+GH_TOKEN=$(gh auth token -u <login>) gh pr view <n>
+```
+
+If `gh auth token` fails or prints nothing, stop. An empty `GH_TOKEN` makes `gh` use the active account. On a 404, retry the same command once with the same login. If the retry also returns 404, stop and report the repo, the login, and the error. Do not switch accounts.
+
 1. The run's built-in PR tool, when it has one. It covers create, edit, retarget, and ready.
-2. `gh`. Only when `gh auth status` succeeds. A `gh` that is installed but not signed in is not a path.
+2. `gh`, as the repo's login. Only when `gh auth status` succeeds and the token command above works. A `gh` that is installed but not signed in is not a path.
 3. The GitHub MCP namespace that the PR tool table of `~/.cursor/mstack/env.md` maps to the repo's host or org.
 4. If no path resolves, stop and report. If the env file is missing, or its PR tool row is `not set`, stop and ask the user to run `/setup-mstack env`.
 
@@ -19,6 +34,7 @@ Push is always `git push` over the remote that the Repos table of the env file n
 
 Rules for push.
 
+- Before a push, check that the owner in the remote URL matches the Repos table row. Git over SSH uses the user's key, not the `gh` login, so this check is the guard.
 - Use the remote and the scheme the env file records. Never switch a remote's scheme on the user's behalf.
 - SSH: git uses the user's key.
 - HTTPS: git uses the configured credential helper (`git config --get-all credential.helper`), or `gh` when `gh` is the helper.
