@@ -23,6 +23,8 @@ Run each `gh` command with its own token. The active `gh` account is not a fallb
 GH_TOKEN=$(gh auth token -u <login>) gh pr view <n>
 ```
 
+`scripts/gh-as.sh -C <repo dir> -- <gh args>` runs a `gh` call with that token and stops when the token is empty.
+
 If `gh auth token` fails or prints nothing, stop. An empty `GH_TOKEN` makes `gh` use the active account. On a 404, retry the same command once with the same login. If the retry also returns 404, stop and report the repo, the login, and the error. Do not switch accounts.
 
 1. The run's built-in PR tool, when it has one. It covers create, edit, retarget, and ready.

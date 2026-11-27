@@ -32,6 +32,8 @@ rocminfo 2>/dev/null | grep -m1 gfx
 docker exec <container> bash -c 'rocminfo 2>/dev/null | grep -m1 gfx'
 ```
 
+Name the host uid on each `docker exec` with `-u $(id -u)`. The shell guard hook (`scripts/shell-guard.py`) warns when a `docker exec` has no `-u`.
+
 ## Resolve the container
 
 Prefer the container the ticket already names. Look in this order:
@@ -188,3 +190,4 @@ A number is a result only after `gates.py` reports `GATES: PASS` on its artifact
 - Remove only what this run created: scratch files, its own `AITER_JIT_DIR`, its own worktrees.
 - Keep the ticket folder's artifacts. Cleanup never removes evidence.
 - Never `docker rm`, `docker stop`, `pkill`, or `rocm-smi --reset*` on anything this run did not start.
+- The shell guard hook (`scripts/shell-guard.py`) denies a kill by name pattern. Kill the PID this run started, by its PID.
