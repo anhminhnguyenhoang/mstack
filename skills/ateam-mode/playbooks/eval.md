@@ -8,6 +8,7 @@
 - The candidate prompt looks like an organic user request. State the goal, not the meta.
 - No chain-eliciting cues. Don't ask the candidate to list which skills, principles, or files they applied. Ask for design notes generally and grade chain-following from code shape, not self-report.
 - Sanitize directory and slug names. Use project-shaped names a user might pick.
+- When a folder holds held-out or oracle files, the delegate brief lists each allowed file by its exact full path. The brief forbids `ls`, globs, `wc`, `find`, and any other listing of that folder. A listing leaks the held-out names.
 - Don't tell the candidate other candidates exist.
 - The judge can know it's judging but sees outputs by sanitized label only, never by model name.
 - Comparing two variants: one judge scores both sets in a single pass on one scale, blind to which set each came from.
