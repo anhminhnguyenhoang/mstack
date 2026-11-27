@@ -2,6 +2,9 @@
 """Lint a draft the human posts. Exits 1 on a red check.
 
   draft-lint.py <draft> [--channel slack|pr-comment|jira|pr-review|pr-body]
+  draft-lint.py prune <dir> [--stem STEM] [--yes]
+                         keep the newest version of each draft stem and the one the human
+                         last approved; list the rest, and delete them only with --yes
   draft-lint.py record   the plugin afterFileEdit hook: note each draft this chat's agent edits
   draft-lint.py hook     the plugin stop hook: lint the drafts this chat's agent edited,
                          once per file version
@@ -19,7 +22,18 @@ file ~/.cursor/mstack/jargon.txt (one term per line, # starts a comment).
 Prose is the text outside fenced code, tables, headings, and the review card's
 Reviewed head, Review, Validation, and Perf lines. Inline code counts as one word,
 a link as its text, and a [src: ...] tag as nothing.
+
+Every channel also fails with LOCATION on a draft that sits directly in $HOME or in a
+non-work root listed in ~/.cursor/mstack/non-work-roots.txt (one path per line, # starts a
+comment). A draft in a subfolder of those roots passes.
+
+A draft is <stem>.md (version 1) or <stem>-v<N>.md (version N). prune keeps the highest N of
+each stem and the file the human last approved. The approval ledger is <dir>/posted.txt: one
+file name per line, in approval order. A deleted draft takes its <draft>.gate stamp with it.
+prune exits 0 when nothing is left to prune or after --yes, 1 when it lists candidates
+without --yes, and 2 on a usage error.
 """
+import argparse
 import hashlib
 import json
 import os
@@ -37,6 +51,7 @@ NAMES = [
 ]
 SENTENCE_WORDS = 100
 REPEAT_WORDS = 6
+VERSION = re.compile(r"^(?P<stem>.+?)(?:-v(?P<n>\d+))?\.md$")
 SEEN = os.path.join(os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"), "mstack", "draft-lint")
 CARD = ("Reviewed head:", "Review (", "Validation (", "Perf (")
 PLEASANTRY = re.compile(
@@ -79,17 +94,35 @@ def words(s):
     return re.findall(r"[\w][\S]*", s)
 
 
-def jargon_terms():
-    path = os.path.expanduser("~/.cursor/mstack/jargon.txt")
+def read_list(path):
     if not os.path.isfile(path):
         return []
     with open(path, encoding="utf-8") as f:
-        terms = [line.split("#", 1)[0].strip() for line in f]
-    return [(t, re.compile(r"(?<![\w-])" + re.escape(t) + r"(?![\w-])")) for t in terms if t]
+        return [s for s in (line.split("#", 1)[0].strip() for line in f) if s]
+
+
+def jargon_terms():
+    return [(t, re.compile(r"(?<![\w-])" + re.escape(t) + r"(?![\w-])"))
+            for t in read_list(os.path.expanduser("~/.cursor/mstack/jargon.txt"))]
+
+
+def non_work_roots():
+    roots = {os.path.realpath(os.path.expanduser("~"))}
+    roots.update(os.path.realpath(os.path.expanduser(p))
+                 for p in read_list(os.path.expanduser("~/.cursor/mstack/non-work-roots.txt")))
+    return roots
+
+
+def location_errors(path):
+    folder = os.path.dirname(os.path.realpath(path))
+    if folder not in non_work_roots():
+        return []
+    return [f"LOCATION {os.path.basename(path)} sits in {folder}, not in a work folder: "
+            "move it to its ticket folder or to <work>/<repo>-<N>/"]
 
 
 def lint(path, channel):
-    errs, total = [], 0
+    errs, total = location_errors(path), 0
     jargon = jargon_terms()
     sentences = {}
     for n, line in prose_lines(open(path, encoding="utf-8").read()):
@@ -121,6 +154,76 @@ def lint(path, channel):
 def is_draft(path):
     f = os.path.basename(path)
     return f.endswith(".md") and ".posted" not in f and any(f.startswith(pre) for pre, _ in NAMES)
+
+
+def versions(folder):
+    found = {}
+    for name in sorted(os.listdir(folder)):
+        path = os.path.join(folder, name)
+        if is_draft(path) and os.path.isfile(path):
+            m = VERSION.match(name)
+            found.setdefault(m["stem"], []).append((int(m["n"] or 1), path))
+    return found
+
+
+def approved_order(folder):
+    names = read_list(os.path.join(folder, "posted.txt"))
+    return {os.path.basename(n): i for i, n in enumerate(names)}
+
+
+def prune_plan(folder, stem=None):
+    order = approved_order(folder)
+    plans = []
+    for name, found in sorted(versions(folder).items()):
+        if stem not in (None, name):
+            continue
+        found.sort()
+        top = found[-1][0]
+        reasons = {path: [] for _, path in found}
+        for n, path in found:
+            if n == top:
+                reasons[path].append("newest")
+        approved = [p for _, p in found if os.path.basename(p) in order]
+        if approved:
+            reasons[max(approved, key=lambda p: order[os.path.basename(p)])].append("approved")
+        prune = [path for _, path in found if not reasons[path]]
+        if prune:
+            keep = [(path, reasons[path]) for _, path in found if reasons[path]]
+            plans.append((name, keep, prune))
+    return plans
+
+
+def prune_cmd(argv):
+    ap = argparse.ArgumentParser(prog="draft-lint.py prune",
+                                 description="list or delete superseded draft versions")
+    ap.add_argument("dir")
+    ap.add_argument("--stem", help="prune only this draft stem")
+    mode = ap.add_mutually_exclusive_group()
+    mode.add_argument("--dry-run", action="store_true", help="list only (the default)")
+    mode.add_argument("--yes", action="store_true", help="delete the listed drafts and their .gate stamps")
+    args = ap.parse_args(argv)
+    if not os.path.isdir(args.dir):
+        ap.error(f"not a directory: {args.dir}")
+    plans = prune_plan(args.dir, args.stem)
+    total = sum(len(prune) for _, _, prune in plans)
+    if not total:
+        return print("nothing to prune")
+    for name, keep, prune in plans:
+        print(name)
+        for path, reasons in keep:
+            print(f"  keep   {os.path.basename(path)} ({', '.join(reasons)})")
+        for path in prune:
+            gate = " (+ .gate)" if os.path.isfile(path + ".gate") else ""
+            print(f"  prune  {os.path.basename(path)}{gate}")
+    if not args.yes:
+        print(f"{total} to prune in {len(plans)} stem(s). Dry run: nothing deleted. Run with --yes to delete.")
+        sys.exit(1)
+    for _, _, prune in plans:
+        for path in prune:
+            os.remove(path)
+            if os.path.isfile(path + ".gate"):
+                os.remove(path + ".gate")
+    print(f"deleted {total} draft(s) in {len(plans)} stem(s)")
 
 
 def state_file(event):
@@ -189,6 +292,8 @@ def main(argv):
         except Exception:
             pass
         return print("{}")
+    if argv[:1] == ["prune"]:
+        return prune_cmd(argv[1:])
     if not argv or argv[0].startswith("-"):
         sys.exit(__doc__)
     path = argv[0]
