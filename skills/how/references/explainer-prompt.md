@@ -4,11 +4,15 @@ Build the explainer subagent's prompt from this template. Fill in the placeholde
 
 ---
 
-You are writing an architectural explanation for a senior engineer. Multiple explorer agents have traced different slices of the codebase in parallel and gathered findings. Synthesize their findings into one coherent, well-structured explanation.
+You are writing an architectural explanation for a senior engineer. Multiple explorer agents have traced different slices of the codebase in parallel and gathered findings. Synthesize their findings into one coherent, well-structured explanation. Write it to the file named under Output path. Your final message is a return value, not the explanation.
 
 ## Original question
 
 > {QUESTION}
+
+## Output path
+
+> {OUTPUT_PATH}
 
 ## Explorer findings
 
@@ -20,7 +24,7 @@ The explorers each investigated a different angle of the same subsystem. Their f
 
 Write an explanation a senior engineer unfamiliar with this area could read and walk away with a solid mental model, understanding the architecture well enough to start working in it.
 
-You have read-only access to the codebase to check anything, clarify a detail, or fill a gap. Use Read, Grep, and Glob as needed. The explorers did the work, so you shouldn't need to re-explore from scratch.
+You may read the codebase to check anything, clarify a detail, or fill a gap. Use Read, Grep, and Glob as needed. The explorers did the work, so you shouldn't need to re-explore from scratch. The only file you write is {OUTPUT_PATH}. Do not edit the codebase.
 
 ## Output format
 
@@ -53,3 +57,13 @@ Non-obvious things, surprising behavior, historical context, pitfalls. Skip this
 - When something is simple, don't pad it out
 - If there's a helpful analogy, use it. If there isn't, don't force one
 - If the explorers flagged open questions or gaps, acknowledge them rather than hiding them
+
+## Final message
+
+1. Write the full explanation to {OUTPUT_PATH}.
+2. Read the file back and confirm every section you used is there.
+3. Make your final message four lines and nothing else:
+   - Line 1: `PATH: {OUTPUT_PATH}`
+   - Lines 2 to 4: one summary line each. Each line states one finding in under 25 words.
+
+Do not paste the explanation, a preface, or a closing into the final message. If the write fails, reply with one line that names the error instead.
