@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+"""Find the local mstack resources by what they contain, and check the Repos remotes of the env file.
+
+  find-resources.py [--json] [--env FILE] [--root DIR] [--depth N] [--time-limit S] [--plugin DIR]
+
+Each run compares each named Repos row of the env file (default: ~/.cursor/mstack/env.md) with the
+live push remote of its path (git remote -v). A row is stale when:
+  changed          the live push URL under the recorded name differs (a trailing .git or / is ignored)
+  missing-remote   the recorded remote name is not a live remote
+  no-checkout      the path is not a git checkout
+  unrecorded       the push remote is not set, but the checkout has a remote
+A row with no push remote and no live remote is not set.
+
+Exit 0: no stale row, or no Repos row. Exit 2: at least one stale row. The report still prints in full.
+Exit 1: usage error.
+"""
 import argparse
 import json
 import os
@@ -29,11 +44,18 @@ TOPICS = {
 INDEX_NAME = re.compile(r"^(readme|index|_index|contents|toc)(\.[A-Za-z]+)?$", re.I)
 LINK = re.compile(r"\]\(([^)#\s]+)")
 
-ap = argparse.ArgumentParser(description="Read-only search for mstack resources, by signature and never by folder name.")
+
+class Parser(argparse.ArgumentParser):
+    def error(self, message):
+        self.exit(1, f"{self.prog}: error: {message}\n")
+
+
+ap = Parser(description="Read-only search for mstack resources, by signature and never by folder name.")
 ap.add_argument("--root", default=os.path.expanduser("~"), help="search root; it is never left")
 ap.add_argument("--depth", type=int, default=4)
 ap.add_argument("--time-limit", type=float, default=30.0, help="seconds per search")
 ap.add_argument("--plugin", default=os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ap.add_argument("--env", default=os.path.join(os.path.expanduser("~"), ".cursor", "mstack", "env.md"), help="env file whose Repos rows are checked")
 ap.add_argument("--json", action="store_true")
 args = ap.parse_args()
 ROOT = os.path.realpath(args.root)
@@ -229,7 +251,95 @@ def run_wavescope(path):
     return "runs" if (r.stdout + r.stderr).strip() and "Cannot find module" not in r.stderr else "does not run"
 
 
+STALE_REMOTE = ("changed", "missing-remote", "no-checkout", "unrecorded")
+PUSH_NAME = re.compile(r"[\w.-]+")
+PUSH_URL = re.compile(r"(?:git@|ssh://|https?://)\S+")
+REMOTE_DETAIL = {
+    "ok": lambda r: f"{r['remote']} {r['live']}, matches the record",
+    "changed": lambda r: f"{r['remote']} recorded {r['recorded']}, live {r['live']}",
+    "missing-remote": lambda r: f"{r['remote']} recorded, not in git remote -v",
+    "no-checkout": lambda r: f"path {short(r['path']) or 'not set'} is not a git checkout",
+    "unrecorded": lambda r: "push remote not set, live " + ", ".join(f"{n} {u}" for n, u in r["live_remotes"].items()),
+    "not set": lambda r: "push remote not set",
+}
+
+
+def table_rows(text, section):
+    m = re.search(r"^## " + re.escape(section) + r"\s*$(.*?)(?=^## |\Z)", text, re.M | re.S)
+    if not m:
+        return []
+    table = []
+    for line in m.group(1).splitlines():
+        if line.startswith("|"):
+            table.append(line)
+        elif table:
+            break
+    cells = [[c.strip() for c in t.strip().strip("|").split("|")] for t in table if not set(t) <= set("|-: ")]
+    return [dict(zip([c.lower() for c in cells[0]], row)) for row in cells[1:]] if cells else []
+
+
+def live_push_remotes(path):
+    if not path or not os.path.exists(os.path.join(path, ".git")):
+        return None
+    try:
+        r = subprocess.run(["git", "-C", path, "remote", "-v"], capture_output=True, text=True, timeout=10)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if r.returncode:
+        return None
+    remotes = {}
+    for line in r.stdout.splitlines():
+        parts = line.split()
+        if len(parts) == 3 and parts[2] == "(push)":
+            remotes[parts[0]] = parts[1]
+    return remotes
+
+
+def same_remote(a, b):
+    return re.sub(r"\.git$", "", a.rstrip("/")) == re.sub(r"\.git$", "", b.rstrip("/"))
+
+
+def check_remote_row(row):
+    path = os.path.expanduser(os.path.expandvars(row.get("path", "")))
+    cell = next((v for k, v in row.items() if k.startswith("push remote")), "")
+    name_m = PUSH_NAME.match(cell)
+    name = name_m.group(0) if cell not in ("", "not set") and name_m else None
+    url_m = PUSH_URL.search(cell)
+    recorded = url_m.group(0) if url_m else None
+    live = live_push_remotes(path)
+    if name is None:
+        status = "unrecorded" if live else "not set"
+    elif live is None:
+        status = "no-checkout"
+    elif name not in live:
+        status = "missing-remote"
+    elif recorded and not same_remote(recorded, live[name]):
+        status = "changed"
+    else:
+        status = "ok"
+    return {
+        "repo": row.get("repo", ""),
+        "path": path,
+        "remote": name,
+        "recorded": recorded,
+        "live": live.get(name) if live and name else None,
+        "live_remotes": live,
+        "status": status,
+    }
+
+
+def remotes_section(env_path):
+    rows = [r for r in table_rows(read(env_path, 1 << 20), "Repos") if r.get("repo")]
+    signature = "Repos rows of the env file, each push remote compared with git remote -v of its path"
+    if not rows:
+        return {"status": "not found", "rows": [], "stale": [], "signature": signature}
+    checked = [check_remote_row(r) for r in rows]
+    stale = [c for c in checked if c["status"] in STALE_REMOTE]
+    return {"status": "stale" if stale else "ok", "rows": checked, "stale": stale, "signature": signature}
+
+
 result = {}
+result["remotes"] = remotes_section(args.env)
 deadline = time.time() + args.time_limit
 checkouts, ticket_dirs, wave, kb_cands, timed_out = [], [], [], [], False
 domain_paths = []
@@ -319,11 +429,12 @@ ref_excluded = {s["path"] for s in scored} | {k["path"] for k in kbs}
 ref_bases = [b for b in ref_bases if not under(b, ref_excluded)]
 hits = refs_scan(ref_bases, time.time() + args.time_limit, ref_excluded) if ref_bases else []
 result["refs"] = {"status": "found" if hits else "not found", "sources": hits, "signature": "markdown in a detected repo's docs, outside the kb, that mentions TB/s, TFLOPS, peak, roofline, or numerics at least twice"}
-result["_notes"] = {"root": ROOT, "depth": args.depth, "walk_timed_out": timed_out}
+result["_notes"] = {"root": ROOT, "depth": args.depth, "walk_timed_out": timed_out, "env": args.env}
+exit_code = 2 if result["remotes"]["status"] == "stale" else 0
 
 if args.json:
     print(json.dumps(result, indent=2))
-    sys.exit(0)
+    sys.exit(exit_code)
 
 home = os.path.expanduser("~")
 
@@ -359,5 +470,13 @@ for key in ("repos", "skills", "kb", "wavescope", "tickets", "refs"):
     elif key == "refs":
         for s in v["sources"]:
             print(f"refs: {short(s['path'])} topics={','.join(s['topics'])}")
+rem = result["remotes"]
+if rem["status"] == "not found":
+    print("remotes: not found")
+else:
+    for r in rem["rows"]:
+        print(f"remotes/{r['repo']}: {r['status']}: " + REMOTE_DETAIL[r["status"]](r))
+    print(f"remotes: {len(rem['stale'])} stale of {len(rem['rows'])} Repos rows")
 if timed_out:
     print("note: the walk hit its time limit. Raise --time-limit, or name a path in step 9.")
+sys.exit(exit_code)
