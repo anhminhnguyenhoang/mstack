@@ -110,7 +110,7 @@ tar -C <worktree path> --exclude=.git -cf - . | docker exec -i <container> bash 
 Run this before the first command of a worktree. It prints the package path and does not import the package, so no JIT build runs. Run it from `/`, not from `<wt>`. `python3 -c` puts the cwd on `sys.path`, so a check from `<wt>` passes even when `PYTHONPATH` is missing.
 
 ```bash
-docker exec -w / -e PYTHONPATH=<pythonpath> <container> python3 -c "import importlib.util as u; print(u.find_spec('aiter').origin)"
+docker exec -w / -e PYTHONPATH=<pythonpath> <container> python3 -c "import importlib.util as u; p='<pkg>'; print(f'origin_{p}={u.find_spec(p).origin}')"
 ```
 
 Use `flydsl` in place of `aiter` for FlyDSL. The path must start with `<wt>/`. If it does not, stop and report it. The run would test another checkout. Python puts the script's directory on `sys.path`, not the cwd. The JIT builds the sources of the package it imported.
@@ -145,7 +145,7 @@ Write `<tickets>/<KEY>/bench_<topic>.json` for ticket work, and `./bench_<topic>
   "versions": {"rocm": "", "torch": "", "hip": "", "triton": "", "flydsl": ""},
   "repos": [{"path": "<repo path>", "sha": "", "dirty": false}],
   "command": "<exact command>",
-  "imports": {"<aiter or sglang>": "<find_spec origin>"},
+  "imports": {"<pkg>": "<find_spec origin>"},
   "surface": {"wt": "<container path of the tree under test>", "pkg": "aiter", "arch_expected": "gfx950"},
   "jit_dir": "", "jit_modules": [], "jit_modules_in_jit_dir": true,
   "correctness": {"passed": true, "verdict": "PASS", "nan_count": 0, "rtol": 0, "atol": 0, "snr_db": null, "snr_required": false, "shapes_checked": 0, "gate": {}},
@@ -178,7 +178,7 @@ RUN/ facts.env cmd.txt stdout.log exit_code ──► gate.py ──► gate.jso
 
 Copy the scripts into the container once per session: `docker cp <this skill>/scripts/. <container>:/tmp/verify-gpu-kernel-scripts`. Remove that directory at cleanup.
 
-`facts.env` keys: `feature key host container image hip_index arch arch_expected rocm torch hip triton flydsl repo wt pkg sha dirty jit_dir snr_required`. Add one `<pkg>=<find_spec origin>` line per package. `wt` is the container path of the tree under test. `pkg` is the package under test. A multi-GPU run writes `hip_index` as a comma list and holds one lock per index.
+`facts.env` keys: `feature key host container image hip_index arch arch_expected rocm torch hip triton flydsl repo wt pkg sha dirty jit_dir snr_required`. Add one `origin_<pkg>=<find_spec origin>` line per package, such as `origin_flydsl=`, so the origin never collides with a version key. `wt` is the container path of the tree under test. `pkg` is the package under test. A multi-GPU run writes `hip_index` as a comma list and holds one lock per index.
 
 ## Five gates
 

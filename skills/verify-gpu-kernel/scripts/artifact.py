@@ -19,7 +19,6 @@ import pathlib
 import re
 import sys
 
-PACKAGES = ("aiter", "sglang")
 CLIMB_GATE = pathlib.Path(__file__).resolve().parents[3] / "scripts" / "climb-gate.py"
 
 
@@ -59,7 +58,7 @@ def main(run, out, climb=None, base=None):
         "versions": {k: f.get(k, "") for k in ("rocm", "torch", "hip", "triton", "flydsl")},
         "repos": [{"path": f["repo"], "sha": f["sha"], "dirty": f["dirty"] != "0"}],
         "command": (run / "cmd.txt").read_text().strip(),
-        "imports": {k: f[k] for k in PACKAGES if k in f},
+        "imports": {k[len("origin_"):]: v for k, v in f.items() if k.startswith("origin_")},
         "surface": {
             "wt": f.get("wt", ""),
             "pkg": f.get("pkg", ""),
