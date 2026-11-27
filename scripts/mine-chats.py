@@ -53,9 +53,8 @@ TYPED, INJECTED = 'typed', 'injected'
 Msg = collections.namedtuple('Msg', ['kind', 'signature', 'text'])
 
 
-def load(path, stats):
-    """Return (role, blocks) for each message line. Count bad lines in stats."""
-    msgs = []
+def iter_messages(path, stats):
+    """Yield (role, blocks) for each message line, in file order. Count bad lines in stats."""
     with open(path, encoding='utf-8', errors='replace') as fh:
         for line in fh:
             if not line.strip():
@@ -74,8 +73,17 @@ def load(path, stats):
                 continue
             if isinstance(content, str):
                 content = [{'type': 'text', 'text': content}]
-            msgs.append((d['role'], [b for b in content if isinstance(b, dict)]))
-    return msgs
+            yield d['role'], [b for b in content if isinstance(b, dict)]
+
+
+def load(path, stats):
+    return list(iter_messages(path, stats))
+
+
+def chat_files(root):
+    """Map each chat id to its transcript file. Subagent files sit one folder deeper and do not match."""
+    paths = glob.glob(os.path.join(root, '*.jsonl')) + glob.glob(os.path.join(root, '*', '*.jsonl'))
+    return {os.path.splitext(os.path.basename(p))[0]: p for p in paths}
 
 
 def text_of(blocks):
@@ -138,8 +146,7 @@ def main():
         return as_of is None or ts <= as_of
 
     stats = {'parse_errors': 0, 'unknown_line_shapes': 0}
-    paths = glob.glob(os.path.join(args.root, '*.jsonl')) + glob.glob(os.path.join(args.root, '*', '*.jsonl'))
-    files = {os.path.splitext(os.path.basename(p))[0]: p for p in paths}
+    files = chat_files(args.root)
     mtime = {cid: os.path.getmtime(p) for cid, p in files.items()}
     chats, excluded = [], []
     by_signature = collections.Counter()
