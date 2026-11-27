@@ -62,6 +62,7 @@ await browser.close();
 3. Render: `PLAYWRIGHT_BROWSERS_PATH=/tmp/pw/browsers node /tmp/pw/render.mjs file:///abs/page.html /abs/page.png`
 4. If the launch fails on a missing `.so` and you have no root, fetch its package and load it. Find the missing libraries with `ldd /tmp/pw/browsers/chromium_headless_shell-*/chrome-headless-shell-linux64/chrome-headless-shell | grep 'not found'`. For each one: `cd /tmp/pw && apt-get download <pkg> && dpkg -x <pkg>_*.deb libs && export LD_LIBRARY_PATH=/tmp/pw/libs/usr/lib/x86_64-linux-gnu`. Known mappings: `libgbm.so.1` is in `libgbm1`, and `libwayland-server.so.0` is in `libwayland-server0`.
 5. Open the PNG with the Read tool. Fix any layout break or any entry in `errors`, then render again. Ship only a page with empty `errors` and a screenshot that reads right.
+6. Run `python3 <plugin>/scripts/html-check.py --render <page.html>`, where `<plugin>` is the mstack plugin root, two directories above this SKILL.md. Fix every FAIL line, then run it again.
 
 ## 5. Present
 

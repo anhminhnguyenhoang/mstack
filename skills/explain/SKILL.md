@@ -10,7 +10,7 @@ Explain a quoted line, term, or number in plain words, and route each other targ
 
 ## Answer
 
-Every route answers with a visual first. Draw a diagram for one idea, per the **Diagram first** rule in [ateam-mode](../ateam-mode/SKILL.md). Build an interactive HTML page when the target has three or more moving parts, per its **HTML when the gist needs it** rule. Keep prose to a few short ASD-STE100 sentences. Write at a level that a junior engineer and a leader can follow. Define each technical term the first time you use it.
+Every route answers with a visual first. Draw a diagram for one idea, per the **Diagram first** rule in [ateam-mode](../ateam-mode/SKILL.md). Build an interactive HTML page when the target has three or more moving parts, per its **HTML when the gist needs it** rule. Before you present the page, run the check in [how](../how/SKILL.md) step 6 on it. Keep prose to a few short ASD-STE100 sentences. Write at a level that a junior engineer and a leader can follow. Define each technical term the first time you use it.
 
 ## Route
 
