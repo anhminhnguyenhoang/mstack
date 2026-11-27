@@ -72,7 +72,7 @@ echo "ok old climb"
 
 R=$(newrepo c); B=$(head_of "$R"); TK="$T/t3"
 CURSOR_CONVERSATION_ID=c3 python3 "$CG" freeze "$TK" "$R" test_x.py >/dev/null
-art "$TK" a "$B"
+art "$TK" a "$B" "$B"
 [ "$(stop c3)" = '{}' ] || fail "measured B refused"
 edit_lock "$TK/harness.lock" baseline -
 stop c3 | grep -q "has no baseline record" || fail "a new climb with no baseline record passed"
@@ -82,7 +82,7 @@ echo "ok missing record"
 
 R=$(newrepo d); B=$(head_of "$R"); TK="$T/t4"
 CURSOR_CONVERSATION_ID=c4 python3 "$CG" freeze "$TK" "$R" test_x.py --reason "the first commit" >/dev/null
-art "$TK" a "$B"
+art "$TK" a "$B" "$B"
 [ "$(stop c4)" = '{}' ] || fail "measured B refused"
 echo k1 > "$R/kernel.py"; g -C "$R" commit -qam B2; B2=$(head_of "$R")
 art "$TK" b "$B2"
@@ -102,7 +102,7 @@ stop c5 | grep -q "bench_s.json names baseline ${B:0:6}" || fail "S* proof namin
 art "$TK" s "$SH" "${B:0:12}"
 [ "$(stop c5)" = '{}' ] || fail "S* proof naming the baseline by prefix refused"
 rm "$TK/bench_s.json"; art "$TK" s "$SH"
-[ "$(stop c5)" = '{}' ] || fail "S* proof with no base_sha refused"
+stop c5 | grep -q "bench_s.json names no baseline" || fail "S* proof with no base_sha passed on a schema 2 lock"
 echo "ok artifact base_sha"
 
 VS="$ROOT/skills/verify-gpu-kernel/scripts"

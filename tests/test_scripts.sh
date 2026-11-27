@@ -106,7 +106,10 @@ stop() { printf '{"conversation_id":"%s","status":"%s"}' "$1" "${2:-completed}" 
 env -u CURSOR_CONVERSATION_ID python3 "$CG" freeze "$TK" "$R" test_x.py | grep -q "^NOTE stop hook off" || fail "freeze without a chat id did not say the hook is off"
 CURSOR_CONVERSATION_ID=c1 python3 "$CG" freeze "$TK" "$R" test_x.py >/dev/null
 python3 "$CG" check "$TK" >/dev/null || fail "check red on an unchanged harness"
-art() { printf '{"ts":"%s","correctness":{"passed":%s},"repos":[{"path":"/in/container","sha":"%s","dirty":%s}]}' "$(date -u +%FT%T+00:00)" "$2" "$3" "${4:-false}" > "$TK/bench_$1.json"; }
+lockb() { python3 -c 'import json,sys
+try: print(json.load(open(sys.argv[1]+"/harness.lock")).get("baseline",{}).get("sha",""))
+except Exception: print("")' "$1"; }
+art() { printf '{"ts":"%s","base_sha":"%s","correctness":{"passed":%s},"repos":[{"path":"/in/container","sha":"%s","dirty":%s}]}' "$(date -u +%FT%T+00:00)" "$(lockb "$TK")" "$2" "$3" "${4:-false}" > "$TK/bench_$1.json"; }
 B=$(git -C "$R" rev-parse HEAD)
 stop c1 | grep -q "B in $R has no bench_" || fail "stop gate passed B with no artifact"
 art b false "$B"; stop c1 | grep -q "has no bench_" || fail "stop gate passed a failed correctness run"
@@ -149,7 +152,7 @@ CURSOR_CONVERSATION_ID=c1 python3 "$CG" done "$TK" >/dev/null
 CURSOR_CONVERSATION_ID=c3 python3 "$CG" freeze "$T/ticket3" "$R" test_x.py >/dev/null
 rm -rf "$T/ticket3"
 [ "$(stop c3)" = '{}' ] && [ ! -e "$T/cache/mstack/climbs/c3" ] || fail "stop hook kept the registration of a deleted ticket"
-tc() { printf '{"ts":"%s","image":"img:1","gpu":{"arch":"gfx950"},"versions":{"rocm":"%s","torch":"2.9"},"correctness":{"passed":true},"repos":[{"path":"/in/container","sha":"%s","dirty":false}]}' "${5:-$(date -u +%FT%T+00:00)}" "$2" "$3" > "$1/bench_$4.json"; }
+tc() { printf '{"ts":"%s","base_sha":"'"$(lockb "$1")"'","image":"img:1","gpu":{"arch":"gfx950"},"versions":{"rocm":"%s","torch":"2.9"},"correctness":{"passed":true},"repos":[{"path":"/in/container","sha":"%s","dirty":false}]}' "${5:-$(date -u +%FT%T+00:00)}" "$2" "$3" > "$1/bench_$4.json"; }
 PR="$T/pin/repo" PS="$T/pin/s" TP="$T/pin/t1" TP2="$T/pin/t2" TP3="$T/pin/t3" OLD=2000-01-01T00:00:00+00:00
 mkdir -p "$TP" "$TP2" "$TP3"; g init -q "$PR"; echo k0 > "$PR/kernel.py"; echo h0 > "$PR/test_x.py"; g -C "$PR" add -A; g -C "$PR" commit -qm B
 PB=$(git -C "$PR" rev-parse HEAD)
@@ -182,7 +185,7 @@ python3 "$CG" best "$TP4" "$PS" >/dev/null; tc "$TP4" 6.4 "$PSH" s
 tc "$TP4" 6.3 "$PB" a
 stop c7 | grep -q "The toolchain changed: versions.rocm 6.3 -> 6.4" || fail "S* proof pinned the toolchain before B's proof"
 CURSOR_CONVERSATION_ID=c6 python3 "$CG" freeze "$TP3" "$PR" test_x.py >/dev/null
-printf '{"ts":"%s","correctness":{"passed":true},"repos":[{"path":"/in/container","sha":"%s","dirty":false}]}' "$(date -u +%FT%T+00:00)" "$PB" > "$TP3/bench_old.json"
+printf '{"ts":"%s","base_sha":"%s","correctness":{"passed":true},"repos":[{"path":"/in/container","sha":"%s","dirty":false}]}' "$(date -u +%FT%T+00:00)" "$(lockb "$TP3")" "$PB" > "$TP3/bench_old.json"
 [ "$(stop c6)" = '{}' ] || fail "artifact without toolchain fields refused before any pin"
 rm "$TP3/bench_old.json"; tc "$TP3" 6.4 "$PB" new
 [ "$(stop c6)" = '{}' ] || fail "a toolchain field the pin lacks counted as a change"

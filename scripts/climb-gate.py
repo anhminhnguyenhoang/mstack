@@ -285,6 +285,9 @@ def baseline_message(ticket, lock):
                 f"Check out {sha} in {lock['root']}, or re-freeze at {now} with --reason, then re-measure B.")
     head = sha and git(lock.get("best") or lock["root"], "rev-parse", "HEAD")
     for _, path, art in (at_head(ticket, head, lock) if head else []):
+        if not art.get("base_sha"):
+            return (f"mstack frozen baseline: {path} names no baseline. Write the artifact with "
+                    f"`artifact.py <run> {path} --climb {ticket}` so it records {sha}.")
         if named_other(art.get("base_sha"), sha):
             return (f"mstack frozen baseline: {path} names baseline {art['base_sha']}, but the baseline recorded at freeze is {sha}. "
                     "Re-measure on the recorded baseline through the bench.run skill function.")
