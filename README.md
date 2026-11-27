@@ -54,8 +54,9 @@ read-only search of your home  (bounded depth, time limit, no .git internals)
 | `refs` | cited peaks, rooflines, numerics | no | markdown in your repos' docs, outside the kb, that covers peaks, roofline, or numerics. setup proposes the topics | peaks come from public sources |
 | `kb` | cited notes, and `kb.capture` for lessons. any name, any layout | no | a directory whose root index links to subfolders that have their own index files, with notes that carry `name` and `description` frontmatter. setup maps its folders to roles, and asks only about a role it cannot match | no cited notes, no `kb.capture` |
 | `wavescope` | the trace annotation loop. an independent checkout with a node cli | no | a checkout whose remote url ends in `/WaveScope`, or a directory that holds `src/cli/att.js`, and the cli runs | trace findings go in the reply or the ticket folder |
+| `tla2tools` | the statechart model check of a stateful design before a run. the tla2tools jar | no | a `.jar` file whose listing contains `tlc2/TLC.class` | protocol changes are timed without a model check |
 
-the knowledge base and wavescope are independent, optional modules. mstack works without them.
+the knowledge base, wavescope, and the tla2tools jar are independent, optional modules. mstack works without them.
 
 if setup missed one, answer its question with a path, or rerun `/setup-mstack env`. for the skills dir, you can also set `$MSTACK_SKILLS_DIR`. the report at the end lists every resource, its value, and how it was identified, so you can correct any of them.
 
@@ -162,6 +163,7 @@ to keep [`/ateam-mode`](./skills/ateam-mode/SKILL.md) on across turns, pick it f
 | [`/setup-mstack`](./skills/setup-mstack/SKILL.md) | you want to pick which models mstack uses per role, or map this machine for kernel work. `/setup-mstack models` writes the model rule. `/setup-mstack env` writes `~/.cursor/mstack/env.md`. |
 | [`/reflect`](./skills/reflect/SKILL.md) | a long task landed and you want the recipe captured as a skill edit. |
 | [`/correct`](./skills/correct/SKILL.md) | you keep correcting agents for the same mistakes. mines history for mistake classes, fixes each at the highest level that works (architecture, then types, lint, and ci, then tests, with docs last), and keeps a table pairing each rule with what enforces it. |
+| [`/statechart`](./skills/statechart/SKILL.md) | you need to check a stateful design before you build, run, or time a change to it: a sync protocol (barriers, lds buffers, flags, a lock), an iterative loop and its stop rule, a hand-off between workers, or an item lifecycle. checks a tla+ model and draws each bad path as a mermaid statechart. |
 | [`/teach`](./skills/teach/SKILL.md) | you want to understand a kernel or a kernel change: data flow, tiling, pipeline waits, and what the numbers mean. runs how + why, diagrams first, optional HTML page. |
 | [`/tdd`](./skills/tdd/SKILL.md) | you're fixing a bug and there's a cheap local test path. write the failing test first, then the fix. |
 | [`/benchmark-checklist`](./skills/benchmark-checklist/SKILL.md) | you ran a benchmark or measured a speedup or regression. vets the number (limiter, tuning, errors, repeat runs, end-to-end relevance) before you report or act on it. |

@@ -22,7 +22,7 @@ Run Phase A steps 3 and 4 and Phase B of the **arena** skill, with four changes.
 
 > Break this change. Prove each finding with a run against the real code, such as a failing test, a repro script, or command output that shows the wrong behavior. For a kernel, that is an op test or a repro that prints wrong values, or a fault, on a named shape, dtype, and arch. For a design or plan, run a prototype or probe the current tree. Keep repros in your own worktree. Report each finding with a title, the exact command, the output it printed, and the output the intent requires. Leave out anything you did not run. That covers style, naming, structure, and risks that need a future change to matter. No findings is a valid result.
 
-When the diff touches a GPU kernel or its dispatch, also add the GPU kernel findings section of `../ateam-mode/references/review-bot-triage.md` to the brief, so each adversary runs the check that settles each kernel finding. Adversaries share the GPU: hold each GPU run to one locked GPU.
+When the diff touches a GPU kernel or its dispatch, also add the GPU kernel findings section of `../ateam-mode/references/review-bot-triage.md` to the brief, so each adversary runs the check that settles each kernel finding. Adversaries share the GPU: hold each GPU run to one locked GPU. When `scripts/protocol-touch.py <range>` exits 2, an adversary proves a race or a deadlock with the `protocol.check` skill function. A diff that changes the states, transitions, or stop rule of a loop, a hand-off, or a lifecycle gets the same check. A broken rule with its bug path is a finding.
 
 ### Read-only review group
 

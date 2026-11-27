@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Architect
 
-Sketch types, function signatures, class shapes, and module boundaries with `not implemented` bodies and pseudocode. For a GPU kernel, the sketch is the op contract instead: the op signature with dtypes, the tensor layouts (including any preshuffle), the output buffer and whether the op writes in place, the dispatch gate (which arch, dtype, and shape classes reach which variant, and the fallback), the tuned-config key, and the tile and grid plan as pseudocode. Synthesize across multiple model perspectives, then fill in code against the chosen sketch.
+Sketch types, function signatures, class shapes, and module boundaries with `not implemented` bodies and pseudocode. For a GPU kernel, the sketch is the op contract instead: the op signature with dtypes, the tensor layouts (including any preshuffle), the output buffer and whether the op writes in place, the dispatch gate (which arch, dtype, and shape classes reach which variant, and the fallback), the tuned-config key, and the tile and grid plan as pseudocode. When the design has states, such as a kernel that syncs waves, a loop with a stop rule, or a hand-off between workers, add the state plan: a small model checked with the `protocol.check` skill function before any code exists. Synthesize across multiple model perspectives, then fill in code against the chosen sketch.
 
 ## Start
 

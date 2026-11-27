@@ -4,7 +4,7 @@
 
 1. Capture the live signal on the matching surface via the control skill. For a GPU symptom, run the kernel on a locked GPU (the `bench.run` skill function), then capture:
    - A slowdown or underused GPU: a `rocprofv3` kernel trace and counters, and an ATT trace for stalls (the `trace.capture` skill function).
-   - A GPU stuck busy or a hang: `rocm-smi` for utilization and the process holding the GPU, then a kernel trace or a reduced repro to find the dispatch that never ends.
+   - A GPU stuck busy or a hang: `rocm-smi` for utilization and the process holding the GPU, then a kernel trace or a reduced repro to find the dispatch that never ends. For a hang in a synchronization protocol, run the `protocol.check` skill function on the protocol to find the path to the stuck state.
    - NaN, wrong results, a crash, or an illegal address: a minimal repro (the `kernel.debug` skill function).
 
    Skill functions resolve in `references/skill-functions.md`. Capture a real artifact, not a guess. For a host-side process, take a CPU profile for a spin or a heap snapshot for a leak.

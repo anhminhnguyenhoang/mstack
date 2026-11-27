@@ -21,6 +21,7 @@ import re
 import subprocess
 import sys
 import time
+import zipfile
 
 import yaml
 
@@ -242,6 +243,14 @@ def under(path, roots):
     return any(path == r or path.startswith(r + os.sep) for r in roots)
 
 
+def tla_jar(path):
+    try:
+        with zipfile.ZipFile(path) as jar:
+            return "tlc2/TLC.class" in jar.namelist()
+    except (OSError, zipfile.BadZipFile):
+        return False
+
+
 def run_wavescope(path):
     cli = os.path.join(path, "src/cli/att.js")
     try:
@@ -341,7 +350,7 @@ def remotes_section(env_path):
 result = {}
 result["remotes"] = remotes_section(args.env)
 deadline = time.time() + args.time_limit
-checkouts, ticket_dirs, wave, kb_cands, timed_out = [], [], [], [], False
+checkouts, ticket_dirs, wave, tla, kb_cands, timed_out = [], [], [], [], [], False
 domain_paths = []
 for item in walk(deadline):
     if item is None:
@@ -359,6 +368,9 @@ for item in walk(deadline):
             wave.append({"path": dirpath, "signature": "remote ends in /WaveScope"})
     elif os.path.isfile(os.path.join(dirpath, "src/cli/att.js")):
         wave.append({"path": dirpath, "signature": "holds src/cli/att.js"})
+    for f in filenames:
+        if f.endswith(".jar") and tla_jar(os.path.join(dirpath, f)):
+            tla.append({"path": os.path.join(dirpath, f), "signature": "jar lists tlc2/TLC.class"})
     if any(f in filenames for f in TICKET_FILES):
         ticket_dirs.append(dirpath)
     if dirpath.count(os.sep) - ROOT.count(os.sep) <= 3:
@@ -414,6 +426,11 @@ else:
         w["cli"] = run_wavescope(w["path"])
     result["wavescope"] = {"status": "found", **wave[0]} if len(wave) == 1 else {"status": "ambiguous", "candidates": wave}
 
+if not tla:
+    result["tla2tools"] = {"status": "not found"}
+else:
+    result["tla2tools"] = {"status": "found", **tla[0]} if len(tla) == 1 else {"status": "ambiguous", "candidates": tla}
+
 parents = sorted({os.path.dirname(d) for d in ticket_dirs})
 if not parents:
     result["tickets"] = {"status": "not found"}
@@ -443,7 +460,7 @@ def short(p):
     return "$HOME" + p[len(home):] if p.startswith(home + os.sep) or p == home else p
 
 
-for key in ("repos", "skills", "kb", "wavescope", "tickets", "refs"):
+for key in ("repos", "skills", "kb", "wavescope", "tla2tools", "tickets", "refs"):
     v = result[key]
     if key == "repos":
         if not v:
@@ -465,6 +482,8 @@ for key in ("repos", "skills", "kb", "wavescope", "tickets", "refs"):
             print(f"  role {role}: ask ({', '.join(opts) or 'no match'})")
     elif key == "wavescope":
         print(f"wavescope: found: {short(v['path'])} cli={v['cli']} [{v['signature']}]")
+    elif key == "tla2tools":
+        print(f"tla2tools: found: {short(v['path'])} [{v['signature']}]")
     elif key == "tickets":
         print(f"tickets: found: {short(v['root'])} ({v['folders']} ticket folders) [{v['signature']}]")
     elif key == "refs":

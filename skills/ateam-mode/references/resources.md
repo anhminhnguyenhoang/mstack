@@ -26,6 +26,7 @@ use it                  required?  ──yes──► stop, ask for `/setup-msta
 | `kb` | A knowledge base, in any layout and under any name. Root, index file, remote if any, and a map from roles to folders inside it (KB roles) | Read by role before research and before a lever search. Receives a lesson through `kb.capture` | No | `## KB` |
 | `wavescope` | A WaveScope checkout. Path, and whether its CLI runs | The human verifies trace findings in it, and replies in `notes.json` (`trace.annotate`). Its capture profiles serve `trace.capture` | No | `## WaveScope` |
 | `refs` | A list of extra reference-doc sources. Each has a name, a path, and topics such as `peaks`, `roofline`, `numerics` | Cited for a peak, a roofline, or a numerics fact | No | `## Refs` |
+| `tla2tools` | The TLA+ tools jar, `tla2tools.jar`, that runs TLC. Path | The `statechart` skill runs TLC with it. `scripts/protocol-check.sh` reads it when `TLA2TOOLS` is unset, before it falls back to `mise` | No | `## TLA2tools` |
 | `tickets` | The root under which the `<KEY>/` ticket folders live | `<tickets>/<KEY>/` holds the artifacts of ticket work | Yes, for ticket work | `## Tickets` |
 
 The values live only in `~/.cursor/mstack/env.md`. `/setup-mstack env` writes that file (**setup-mstack**, Part B). Cursor's own config paths are not resources. `~/.cursor/mstack/env.md` and `~/.cursor/rules/mstack-*.mdc` stay as they are.
@@ -63,6 +64,7 @@ find by signature ──► one match ───────► record it, report
 | `skills` | `$MSTACK_SKILLS_DIR`, else a folder Cursor loads user skills from that holds `*/SKILL.md` with valid frontmatter. The one that resolves the most `skill-functions.md` bindings wins |
 | `kb` | A directory whose root index file links to subfolders that have their own index files, with notes that carry `name` and `description` frontmatter. Skills dirs and detected repos are excluded |
 | `wavescope` | A git checkout whose remote URL ends in `/WaveScope`, or a directory that holds `src/cli/att.js`, and `node <path>/src/cli/att.js` runs |
+| `tla2tools` | A `.jar` file whose listing contains `tlc2/TLC.class`. The listing is read, the jar is not run |
 | `tickets` | Folders that hold `ticket-raw.md`, `ticket-description.md`, or `ticket-description.txt`. The root is their common parent |
 | `refs` | Markdown in a detected repo's docs that covers peaks, roofline, or numerics. Never inside the detected KB or a skills dir, because the KB is cited through its roles |
 
@@ -116,6 +118,16 @@ When `wavescope` is not set, or the `trace.annotate` skill is missing, every Wav
 - Skip the `notes.json` loop.
 - Write `skipped wavescope: not set`.
 - Ask once per session whether the user uses WaveScope.
+
+## Reading the `tla2tools` resource
+
+The `tla2tools` resource is usable when its row is present and its path exists. Setup finds it by signature, or the user gives the path.
+
+When `scripts/protocol-check.sh` finds no jar (no `TLA2TOOLS`, no `tla2tools` row, and no `mise`), or the `statechart` skill is missing, the `protocol.check` skill function skips its step in one way:
+
+- Write `skipped tla2tools: not set`.
+- Time the protocol change without a model check, and say so in the reply.
+- Ask once per session whether the user runs TLA+ models.
 
 ## Reading the `refs` resource
 

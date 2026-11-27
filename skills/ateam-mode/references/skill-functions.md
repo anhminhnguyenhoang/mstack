@@ -9,7 +9,7 @@ The bound skills live outside the plugin, in `<name>/SKILL.md` under the directo
 - Every bound skill resolves to a `SKILL.md` with a `name` and a `description`.
 - A missing skill that only optional skill functions bind prints a NOTE and does not fail. A missing skill that a required skill function binds fails.
 - Every installed skill is bound below or listed under Ignored.
-- No other mstack file names a bound skill. The exceptions are `skills/setup-mstack/SKILL.md`, `scripts/check.py`, and `archive/`. mstack's own skills may be named anywhere.
+- No other mstack file names a bound skill. The exceptions are `skills/setup-mstack/SKILL.md`, `scripts/check.py`, `archive/`, and the statechart test fixtures in `skills/statechart/scripts/test/`. mstack's own skills may be named anywhere.
 
 `/setup-mstack env` runs the same check and records the result in the Skills table of `~/.cursor/mstack/env.md`. With no `skills` resource, the check skips with a note and does not fail.
 
@@ -24,6 +24,7 @@ A playbook step names the skill function, as in "the `isa.diff` skill function".
 | `kernel.write` | A new kernel from a requirement, a Triton port to FlyDSL, a new MFMA or copy atom, or an opus HIP kernel | `flydsl-tile-programming`, `flydsl-kernel-authoring`, `opus-kernel-best-practice`, `add-target-atom-op` | No | A FlyDSL kernel: `flydsl-tile-programming` is the procedure, and `flydsl-kernel-authoring` is the reference it uses. An opus HIP kernel: `opus-kernel-best-practice`. A new atom in a backend dialect: `add-target-atom-op`. |
 | `kernel.cleanup` | A behavior-preserving cleanup of a kernel or its shared helpers | `flydsl-kernel-code-cleanup`, `kernel-code-cleanup` | No | By repo. aiter, a kernel under `aiter/ops/flydsl/`: `flydsl-kernel-code-cleanup`. FlyDSL: `kernel-code-cleanup`. The skill's verification loop is the proof step of Refactoring. |
 | `kernel.debug` | A kernel gives wrong numbers, NaN, or inf, crashes, hits an illegal address, or corrupts memory | `debug-flydsl-kernel`, `oob-detection` | No | Wrong numbers, NaN, inf, a crash, or a compile error in a FlyDSL kernel: `debug-flydsl-kernel`. An illegal address, silent corruption, or suspect address math in any kernel: `oob-detection`. |
+| `protocol.check` | Before building, running, or timing a change to a stateful design: a sync protocol (barrier, LDS buffer count, prefetch depth, flag, counter, work queue, lock), an iterative loop and its stop rule, a hand-off between workers, or an item lifecycle. Also a hang or a race | `statechart` | Yes | Only binding. The GPU kernel protocols section of that skill says what to model. Scripts: `scripts/protocol-touch.py <range>` exits 2 on a diff that changes a sync construct, and `scripts/protocol-check.sh` runs TLC with the verified jar. Needs the `tla2tools` resource: when it is not set, skip the step with `skipped tla2tools: not set`. |
 | `perf.bisect` | A kernel got slower, and the commit that did it is unknown | `bisect-perf-regression` | No | Only binding. |
 | `isa.diff` | A change may have moved VGPR, SGPR, spills, scratch, or LDS. Compile-only, no GPU | `isa-resource-diff` | No | Only binding. Run it before any benchmark. |
 | `compiler.knob` | A compile hint, a function attribute, or an `-mllvm` flag, and the proof that it reached codegen. Reading the IR or ISA the compiler produced | `llvm` | No | Only binding. Resource deltas are `isa.diff`. |
@@ -63,7 +64,7 @@ trace.capture ──► trace.analyze ──► lever.menu ──► next lever
 - A skill bound to one kernel and one arch applies only there. For any other kernel, run Kernel hillclimb (`../playbooks/kernel-hillclimb.md`) and borrow its levers. Confirm the arch before you trust a number from it.
 - Correctness gates every perf number (**principle-correctness-before-speed**).
 - A required skill function whose skill is missing or malformed, or a `skills` resource that is `not set`, stops the step. Tell the user and point them at `/setup-mstack env`. Do not work around it.
-- An optional skill function whose skill is missing, or whose resource is `not set`, skips the step. Write the skip note, and ask once per session. The `trace.annotate` and `kb.capture` skill functions are the optional ones.
+- An optional skill function whose skill is missing, or whose resource is `not set`, skips the step. Write the skip note, and ask once per session. The `trace.annotate`, `kb.capture`, and `protocol.check` skill functions are the optional ones.
 
 ## Ignored
 
