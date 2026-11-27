@@ -50,6 +50,13 @@ if command -v java >/dev/null 2>&1 && [ -f "$JAR" ]; then
   sl good; [ "$rc" = 0 ] && grep -q 'NeverKeepIncorrect, StopOnlyWhenDone' <<<"$out" || fail "search-loop good: exit $rc, $(cat "$T/sl-good.err")"
   sl plateau-stop; [ "$rc" = 1 ] && grep -q 'StopOnlyWhenDone breaks' <<<"$out" && ! grep -q 'NeverKeepIncorrect breaks' <<<"$out" || fail "search-loop plateau-stop: exit $rc"
   sl no-correctness-gate; [ "$rc" = 1 ] && grep -q 'NeverKeepIncorrect breaks' <<<"$out" && ! grep -q 'StopOnlyWhenDone breaks' <<<"$out" || fail "search-loop no-correctness-gate: exit $rc"
+  PCMP="$ROOT/scripts/protocol-compare.py"
+  rc=0; out=$(TLA2TOOLS="$JAR" "$PCMP" --base "$SPEC:$PP/nb1.cfg" --opt "$SPEC:$PP/nb2.cfg" --out "$T/cmp1" 2>&1) || rc=$?
+  [ "$rc" = 0 ] && grep -q '| `NoOverwriteWhileRead` | breaks (7 steps) | holds |' <<<"$out" && grep -q 'Fixed by the optimization: NoOverwriteWhileRead' <<<"$out" || fail "protocol-compare nb1 to nb2: exit $rc, $out"
+  rc=0; TLA2TOOLS="$JAR" "$PCMP" --base "$SPEC:$PP/nb2.cfg" --opt "$SPEC:$PP/nb1.cfg" --out "$T/cmp2" >/dev/null 2>&1 || rc=$?
+  [ "$rc" = 1 ] || fail "protocol-compare missed a regression: exit $rc, want 1"
+  rc=0; "$PCMP" --base "$T/none.tla" --opt "$T/none.tla" --out "$T/cmp3" >/dev/null 2>&1 || rc=$?
+  [ "$rc" = 3 ] || fail "protocol-compare on a missing spec: exit $rc, want 3"
   rc=0; TLA2TOOLS="$T/fake.jar" "$PC" "$SPEC" --config "$PP/nb2.cfg" --out "$T/pp3" >/dev/null 2>"$T/pp3.err" || rc=$?
   [ "$rc" = 1 ] && grep -q sha256 "$T/pp3.err" && [ ! -e "$T/pp3" ] || fail "protocol-check accepted a jar with the wrong checksum (exit $rc)"
 else

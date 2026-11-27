@@ -106,6 +106,8 @@ The limits:
 - Model each wait as its own state, such as an `s_waitcnt` or a blocked receive, because an actor stops there.
 - Use 2 to 4 actors or candidates, and 2 or 3 iterations. The state count grows fast past that.
 
+To teach how a design works, or how an optimized version differs from its baseline, model both sides and run `scripts/protocol-compare.py --base <spec>:<cfg> --opt <spec>:<cfg> [--view <view.mjs>]`. Each side is a spec and its config, so one spec with two configs and two specs both work. It prints each rule on each side, which rules the change fixed or broke, and both charts. It exits 1 when the optimized side breaks a rule that the baseline holds. The ping-pong example compares this way: `nb1.cfg` is the baseline and `nb2.cfg` is the optimized kernel.
+
 Two worked examples ship with the skill. Run each with `scripts/protocol-check.sh <spec> --config <cfg> --view <view.mjs> --out <new dir>`.
 
 | Example | Kind | Configs |
