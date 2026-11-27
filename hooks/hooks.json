@@ -7,6 +7,12 @@
         "timeout": 5
       }
     ],
+    "beforeSubmitPrompt": [
+      {
+        "command": "python3 \"${CURSOR_PLUGIN_ROOT:-.}/scripts/repeat-prompt.py\" hook",
+        "timeout": 5
+      }
+    ],
     "afterFileEdit": [
       {
         "command": "python3 \"${CURSOR_PLUGIN_ROOT:-.}/scripts/draft-lint.py\" record",
