@@ -106,7 +106,7 @@ A row that carries the marker `(probe)` names a conventional tool location, such
 | GPUs and arch | `rocminfo \| grep -o 'gfx[0-9a-f]*' \| sort \| uniq -c`, `rocm-smi --showproductname` |
 | Host ROCm | `readlink -f /opt/rocm` |
 | Host torch | `python3 -c 'import torch'` (expected `absent`: runs go in a container) |
-| The user's containers | `docker ps -a --format '{{.Names}}\t{{.Image}}\t{{.Status}}'`, then `docker inspect --format '{{.Name}} {{range .Mounts}}{{.Source}}:{{.Destination}} {{end}}' <name>`. Keep only containers with a mount under `$HOME`. Every other container belongs to someone else. List it nowhere |
+| The user's containers | `docker ps -a --format '{{.Names}}\t{{.Image}}\t{{.Status}}'`, then `docker inspect --format '{{.Name}} {{range .Mounts}}{{.Source}}:{{.Destination}} {{end}}' <name>`. The candidates are the containers with a mount under `$HOME`. A candidate is only a question for step 9. A name or a mount does not prove ownership. A container that is not a candidate is not listed or recorded. A row is confirmed when its source is `user <date>` and its Use is not `not the user's` |
 | Tickets | The finder: folders that hold `ticket-raw.md`, `ticket-description.md`, or `ticket-description.txt`. The last two names are a load from before mstack. The root is the common parent of those folders. Folders under several parents: `ambiguous`. None: `not found` |
 | Ticket containers | `<tickets>/*/.devcontainer/devcontainer.json`: the `--name=` entry in `runArgs`, and `workspaceMount`. Skipped when `tickets` is `not set` |
 | Repos | The finder: a git checkout, a `.git` directory, whose remote URL ends in `ROCm/aiter`, `ROCm/FlyDSL`, or `triton-lang/triton`, with or without `.git`. The folder name does not count. Several checkouts of one repo: `ambiguous`. For each repo path, confirmed or given: `git -C <path> remote -v`, the current branch, and for each remote its push URL (`git -C <path> remote get-url --push <remote>`). Record the scheme of that URL: `ssh` for `git@host:` and `ssh://`, `https` for `https://`. Never assume `ssh`. Never change a remote's URL. None: `not found` |
@@ -139,6 +139,7 @@ Ask once, in one AskQuestion form. Offer the detected values as options, plus `n
 - The branch prefix for `<prefix>/<topic>` branches, when the Git row found no clear match.
 - Public push, when the env file has no `user` value for it. Ask whether a personal branch may go to a remote that is not the user's fork. Offer `ask-once` (ask one time at the start of each session, the default), `ask-every-push`, and `allow`.
 - For each repo: the default container and its mount path, when no ticket names one.
+- Container ownership, for each candidate from step 8 that no confirmed row covers. Show its name, image, status, and mounts. Ask in the same form whether it is the user's. A yes writes its full row with source `user <date>`. A no writes its name with source `user <date>`, Use `not the user's`, and `not recorded` in the other cells, so the question is not asked again. Until a yes, no step starts, stops, or writes to the container.
 - The GPU lock convention. The default is `flock /tmp/gpu-<id>.lock` with the picker that the skill bound to `pr.validate` ships. Offer `team convention` as free text.
 - The Jira MCP namespace for each site it cannot map, and the project prefixes for each site it has no ticket for. A prefix maps to exactly one site.
 - The PR path for each GitHub host or org (`gh` or an MCP namespace name), when detection finds none or more than one. The push remote is asked only when its reachability test fails or an `https` remote has no credential path. Show the remote URL without any credential, the scheme, and the failing test. Never offer to switch the scheme.
@@ -165,7 +166,7 @@ A fact or a resource the user skips is written as `not set`. A skill that needs 
 
 ### 10. Write the env file
 
-Overwrite `~/.cursor/mstack/env.md` in full, so a rerun stays idempotent. Every row ends with its source: `detected <date>` or `user <date>`. A detected resource records the signature that matched, as in `detected <date>, remote ROCm/aiter`. Use this shape:
+Overwrite `~/.cursor/mstack/env.md` in full, so a rerun stays idempotent. Carry each Containers row from step 7 forward unless step 8 or 9 changed it. Every row ends with its source: `detected <date>` or `user <date>`. A detected resource records the signature that matched, as in `detected <date>, remote ROCm/aiter`. Use this shape:
 
 ```
 # mstack environment (machine-local, written by /setup-mstack env)
