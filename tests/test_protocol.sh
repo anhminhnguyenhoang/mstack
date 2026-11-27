@@ -7,7 +7,7 @@ T=$(mktemp -d)
 trap 'rm -rf "$T"' EXIT
 fail() { echo "FAIL $*" >&2; exit 1; }
 g() { git -c user.name=t -c user.email=t@t -c init.defaultBranch=main -c advice.detachedHead=false "$@"; }
-REAL_HOME=$HOME
+REAL_HOME=$(getent passwd "$(id -un)" | cut -d: -f6)
 PT="$ROOT/scripts/protocol-touch.py" PC="$ROOT/scripts/protocol-check.sh"
 PR="$T/protocol"; mkdir "$PR"; g init -q "$PR"
 printf 'def kern(a, b):\n    num_stages = 2\n    acc = a + b\n    return acc\n' > "$PR/kernel.py"
